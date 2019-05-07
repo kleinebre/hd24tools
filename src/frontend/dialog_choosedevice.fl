@@ -1,0 +1,103 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <hd24devicenamegenerator.h>} {public
+} 
+
+decl {\#include <vector>} {public
+} 
+
+class dialog_choosedevice {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {int choice_startloc;} {public
+  }
+  decl {hd24fs* currfs;} {public
+  }
+  decl {int devnums[10000];} {}
+  decl {string* devicename;} {public
+  }
+  Function {fill_devices()} {open return_type void
+  } {
+    code {hd24devicenamegenerator* dng=new hd24devicenamegenerator();
+
+__uint32 totnames=dng->getnumberofnames();
+device->add("--Use other device--",0,NULL,(void*)this);
+int n=0;
+for (__uint32 i=0;i<totnames;i++)
+{
+   string* devname=dng->getdevicename(i);
+   if (currfs->isexistingdevice(devname)) 
+   {
+      	string* devtype=currfs->drivetype(devname);
+        *devname+=" ("+*devtype+")";
+        delete devtype;
+        devtype=NULL;
+	device->add(devname->c_str(),0,NULL,(void*)this);
+	n++;
+	devnums[n]=i;	   
+   }
+   delete(devname);
+}} {selected
+    }
+  }
+  Function {make_window(hd24fs* p_currfs)} {open
+  } {
+    Fl_Window {} {
+      label {Choose HD24 device} open
+      xywh {389 296 590 115} type Double color 52 labelsize 12
+      code0 {buttonclicked=0;}
+      code1 {currfs=p_currfs;}
+      code2 {currdev->value(currfs->getdevicename()->c_str());} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+if (device->value()==0) {
+   devicename=new string(otherdevice->value());
+} else {
+   hd24devicenamegenerator* dng=new hd24devicenamegenerator();
+   devicename=dng->getdevicename((__uint32)devnums[device->value()]);
+   delete dng;
+}
+//choice_startloc=fromloc->value();
+//choice_endloc=toloc->value();
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {430 85 70 25}
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {505 85 70 25}
+      }
+      Fl_Choice device {
+        label {Choose device:}
+        callback {if (device->value()!=0) {
+   otherdevice->deactivate();
+} else {
+   otherdevice->activate();
+   otherdevice->take_focus();
+}} open
+        xywh {115 30 460 20} down_box BORDER_BOX labelsize 12 textsize 12
+        code0 {fill_devices();}
+      } {}
+      Fl_Input otherdevice {
+        label {Other device:}
+        xywh {115 55 460 20} labelsize 12 textsize 12 deactivate
+        code0 {o->maximum_size(64);}
+      }
+      Fl_Output currdev {
+        label {Current device:}
+        xywh {115 5 455 20} box FLAT_BOX color 53 labelsize 12 textsize 12
+      }
+    }
+  }
+} 

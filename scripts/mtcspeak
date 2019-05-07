@@ -1,0 +1,34 @@
+#!/usr/bin/perl -w --
+$|=1;  # disable output buffering
+use strict;
+open (MTCSOURCE, "amidi --dump --port=hw:1,0,0|");
+open (STDOUT, "|espeak");
+my $hour=0;
+my $min=0;
+my $sec=0;
+my $frame=0;
+my $qframe=-1;
+my $roundedframe;
+while (<MTCSOURCE>) {
+	chomp($_);
+	if (/F0 7F (.*) 06 44 06 01 (.*) F7/) {
+		my @tc=split(' ',substr($_,21,17));
+		$hour=hex("0x".$tc[0]) & 31;
+		$min=hex("0x".$tc[1]);
+		$sec=hex("0x".$tc[2]);
+		$frame=hex("0x".$tc[3]);
+		$qframe=hex("0x".$tc[4]);
+		$roundedframe=$frame;
+		if ($qframe>=50) {
+			$roundedframe++;
+		}
+		if ($hour>0) {
+		print "$hour hours $min minutes $sec seconds $roundedframe frames\r\n";
+		}
+		else
+		{
+		print "$min minutes $sec seconds $roundedframe frames\r\n";
+		}
+	}
+}
+close (MTCSOURCE);

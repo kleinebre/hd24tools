@@ -1,0 +1,46 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Project/Song tab</h2>
+<p>The next tab of the user interface is <b>Project/Song</b>. It consists of the <b>Project information</b> area and the <b>Song information</b> area:</p>
+<p><img src="project_song.png"/></p>
+<h3>Project information</h3>
+<p>The <b>Project information</b> area shows a dropdown box which allows you to choose the project that you want to look at, along with the total number of songs in the project.</p>
+<p>By default, the last accessed project will be displayed. The <b>Number of songs</b> field displays the total number of songs that are recorded within the currently selected project. The <b>Rename...</b> button is similar to the <b>Rename...</b> button on the Drive Info tab and will allow you to set the name of the project. With the buttons <b>Delete</b> and <b>New Project...</b>, existing projects can be removed and new ones created.</p>
+<h3>Song information</h3>
+<p>Below the Project info, you will find the <b>Song information</b> area. This area contains various controls that are related to individual songs. By default, it will display the last song accessed by the HD24 recorder. The information displayed includes the number of tracks, song duration, sample rate, bit depth (usually 24 bit) and write-protect status. As is the case with the Project area, there are buttons to delete, rename and create songs.</p>
+<h3>Creating songs</h3>
+<p>To create a song, first select the project in which you want to create the song, then click the <b>New song...</b> button. The following dialog box will appear:</p>
+<p><img src="newsong.png"/></p>
+<p>This dialog permits you to enter song name, sample rate, number of tracks and song length. HD24tools allows you to create songs with a few alternate track counts not usually offered by the HD24 recorder itself, nor any other software.</p>
+<p>The song length is optional; you can either leave it at 0 or specify the desired song length. In the last case, during song creation, the song will be lengthened to the given length and absolute silence will be written to it.</p>
+<p>Pre-recording silence can be seen as a recovery prevention measure; should a power failure occur when recording to a pre-silenced song, drive space has already been claimed and the drive will be left in a consistent state, eliminating the need for data recovery (for more information about this, see the chapter on data recovery). </p>
+<p>The downside of pre-recording silence is that it places heavier demands on the drive when actually recording, because at recording time it requires the drive to read as well as write. In contrast, in zero-length songs, write-only operation will suffice.<p>
+<h3>Song dropdown box</h3>
+<p>The song dropdown box allows you to select songs belonging to the currently selected project. In addition, a special, unnumbered song entry named <b>--All songs--</b> is available in the Song name dropdown box. Choosing this special song entry tells HD24connect that you wish to selects all tracks of all songs of the entire project for batch transfers from HD24 drives to computer. The export range for the song will be fixed: only entire songs will be exported. </p>
+<h3>Switching the sample rate of a song</h3>
+<p>By clicking on the sample rate field, you can switch the sample rate of the song from 44100 to 48000 and back, as well as from 88200 to 96000 and back.</p><p> As higher sample rates occupy 2 drive tracks per audio channel, it is not possible to switch between lower (44100, 48000) and higher (88200, 96000) sample rates. Clicking on the sample rate field actually changes the sample rate of the song on disk; it will also cause a change of pitch of the audio. The transfer options on the <b>Copy to PC</b> tab permit setting the sample rate of the transferred audio files without affecting the rate on the
+HD24 drive.</p>
+<h3>Time codes and locate points</h3>
+<p>By default, HD24connect displays durations and time codes in the format HOURS:MINUTES:SECONDS.FRAMES. This matches the behaviour of the HD24 recorder.</p>
+<p>The <b>Song information</b> area shows the list of locate points that are defined for the currently selected song. The usual 25 locate points that are defined by the HD24 recorder are listed, as well as a virtual locate point END which is located just after the last sample of the song.</p>
+<p>These locate points can be set from HD24connect, and they are the way that HD24connect knows which range of audio to export during transfers.</p>
+<p>The <b>Edit...</b> button next to the locate point list allows us to edit the locate point that is currently being selected. When this button is clicked, a dialog will pop up. </p>
+<p><img src="editlocate.png"/></p>
+<p>This dialog will permit us to change the name of the locate point, but more importantly also the time code before which the locate point is situated. The button above the subseconds allows us to switch back and forth between hundreths of seconds, frames (30th seconds) and samples, which permits us sample accurate wave export*, should we wish to do so. </p>
+<p>The checkbox, which is only displayed for locatepoint 1 and 2, is enabled by default. When editing locatepoint 1 and 2, this will cause these locatepoints to automatically be used as start and end of the export range, respectively.</p>
+<p>
+It should be noted that the locate points should be seen as being located between the samples; a locate point that has a value of 1 (sample) is located just before sample 1 and just after sample 0. This notion is important when we want to export data split up in several blocks without overlapping samples: we should not do anything such as incrementing sample offsets to allow this. 
+</p>
+<p>
+Just like on the HD24 recorder, locate point 0 (which is called START by default) doesn't indicate a position within the song but the offset of the song itself. During song exports,  HD24connect will ignore the actual value of this locate point and always consider it to be just before the start of the song. Because of this, you may change the value of this locate point, but this will have no effect whatsoever.
+</p>
+<h3>"Seek to" button</h3>
+<p>Next to the locate point dropdown, you will find a button labeled "Seek to &lt;position&gt". This button is related to audio playback. When selecting different locate points, the label of the button will change to reflect the chosen locate point. Clicking on the button will move the transport cusor/tape head to the given locate point. In combination with manually setting locate points, this allows us sample-precise jumps to anywhere within the song*. It should be noted that it is not possible to jump beyond the end of the song. For the <b>Seek</b> button to work, the transport must have been previously activated by clicking the <b>Stop</b> button on the recorder tab.</p>
+<h3>Write protecting a song</h3>
+<p>Simply tick or untick the <b>Write protected</b> checkbox to prevent a song from accidentally being
+overwritten- or to unlock a protected song, respectively.</p>
+<p><i>* In high-samplerate modes (88.2 and 96 kHz), locate points only occur every two samples and as such true sample accuracy can not be obtained. </i></p>
+<h3>Re-ordering songs inside a project</h3>
+<p>It is possible to keep the songs inside a project ordered alphabetically. To re-order songs, simply choose <b>Tools->Alter order of songs in project->Sort alphabetically</b>. This will sort the songs in a project alphabetically, ascending by song name. If you wish to enforce a certain song order, simply rename each song so that it starts with two digits representing the desired sort order, then sort. </p>
+</body></html>

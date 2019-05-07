@@ -1,0 +1,44 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Finding the HD24 device name</h2>
+<p>In some disaster scenarios, the superblock (the first sector
+of the HD24 drive) is overwritten or otherwise corrupted.
+If this happens, HD24tools will be unable to find the drive
+signature that identifies it as HD24 drive, and as such will
+be unable to auto-detect the presence of such a drive.</p>
+<p><i>Note that an undetected drive does not always indicate
+superblock corruption; drive detection may also fail when 
+HD24tools does not have sufficient privileges to access
+the drive. For example, under Windows Vista and up, this 
+may be the case when the program is not run as Administrator.</i> 
+To tell the difference, see if the drive is detected by the
+HD24 recorder. If a HD24 recorder detects the drive properly 
+and HD24tools does not, you are most likely facing a 
+permissions problem.</p>
+<p>If your HD24 drive is not detected, you may have more
+success by manually specifying which drive to use. This 
+is done by providing HD24tools with the device name of
+the drive to use.</p>
+<p>If you choose <b>File->Recovery->Select device...</b>, 
+you will see a drop-down box which lists all drives 
+that HD24tools has detected in your system. How do we
+know which one (if any) is the HD24 drive? The following
+pages will help clear this up.</p>
+<h3>Quickformat workaround</h3>
+<p>Finally, a tip from a HD24tools user: If neither your
+PC nor HD24 recognizes the drive as valid HD24 drive, 
+you can perform a Quickformat (<b>but absolutely not a 
+long format!!</b>) in the HD24 recorder. A quickformat
+will write a new superblock to the drive, but but does 
+not touch the audio area.<b>Quickformat re-initializes 
+the project- and song areas and song allocation information 
+on the drive as well. Because of this this workaround is 
+NOT RECOMMENDED for drives containing lots of songs, 
+as useful recovery information may be lost</b>.
+For drives containing a single long live recording, a
+quickformat is a possible and realistic workaround, 
+when you don't manage to figure out the HD24 device name
+using the procedure outlined on the following pages.
+</p>
+</body></html>

@@ -1,0 +1,13 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Accidentally initialized the drive on the computer</h2>
+<p>This is a mistake that you will probably make only once, and most likely it will be the first time you connect an ADAT HD24 drive to your computer. The computer will not be able to read this drive, and because of this assume that it is an invalid or unformatted drive. Because of this, it is possible that it will ask you a question along the lines of "The drive is not initialized, do you wish to initialize it?" or "The drive is not formatted, format it?" (see <a href="precautions.html">Precautions</a>). When we confirm, the drive will no longer be readable by the HD24 recorder.</p>
+<h3>What happens if the computer initializes the drive?</h3>
+<p>When the computer 'initializes' the drive, it will overwrite at least the first data block of the drive (commonly called Master Boot Record or Superblock) with a superblock that is recognized by the computer. However, this will wipe out the signature by which the HD24 recorder and any HD24 related software recognize the drive as ADAT HD24 drive.</p>
+<p>On Windows-based computers, the superblock is the main thing to be overwritten. In that case, this problem is relatively easy to resolve, as the HD24 recorder keeps a backup of the original superblock elsewhere on disk; Also, HD24connect is able to use its own virtual superblock with HD24 disks.</p><p>You may not be so lucky when you're a Mac user, as the Macintosh wipes out both the superblock of the drive as well as overwriting the end of the drive where the HD24 keeps its backup.</p>
+<h3>How can you prevent yourself from accidentally initializing the drive?</h3>
+<p>There is not much more you can do except being aware that the computer does not understand ADAT HD24 drives. Don't worry- you will quickly learn not to make this mistake very often.</p>
+<h3>How can you recover audio from an accidentally initialized drive?</h3>
+<p>Choose menu option <b>File->Recovery->Select device</b>. After manually selecting the initialized HD24 drive, when asked 'Do you want to load a header file?' answer NO. This will cause HD24connect to use its own virtual superblock.</p><p>If this does not work, follow the General recovery procedure. Try using the unquickformat header first; if that doesn't work, try using the longliverec header.</p>
+</body></html>

@@ -1,0 +1,34 @@
+Inside the HD24
+
+The HD24 is powered by a Motorola Coldfire 
+
+MCF5206EFT54
+K36J
+QAJ0435)
+
+The Ethernet chip is a CrystalLan CS8900A-CQ3,
+a 10Base-T LAN chip.
+
+There is an empty, 26 pin port labelled 'Motorola BDM Port'.
+Motorola BDM stands for Motorola Background Debug Module,
+so we might speculate that this port allows us to perform
+debugging on the HD24 as it is running.
+
+There are to IC41LV16256 chips in the HD24: according to the
+data sheets, they are 256kx16 bit Dynamic RAM with EDO page mode,
+giving the HD24 a total of 1 megabyte of RAM.
+
+There is an ALTERA ACEX EP1K30QC208-2
+FPGA (Field Programmable Gate Array).
+
+There is a Texas Instruments AHCT16541
+AHCT16541 devices are noninverting 16-bit
+buffers composed of two 8-bit sections with
+separate output-enable signals. (possibly 
+used for communication to displays?)
+
+Analog Devices ADSP 21065L KS-264
+A digital signal processor.
+
+
+

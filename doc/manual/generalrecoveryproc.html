@@ -1,0 +1,34 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>General recovery procedure</h2>
+<p>The most frequent cause of data loss on the HD24 recorder is a power failure while recording a live performance. This page outlines the "traditional" procedure for recovering the lost audio, which will work for most recovery scenarios. If, in fact, you have lost a live performance due to a power outage, you probably want to look into the <a href="simplifiedrecovery.html">simplified live recovery</a> procedure.</p>
+<h3>First things first</h3>
+<p>Do not panic. After the power loss, do not record anything on the drive, as it will overwrite the take being recorded before the power loss. Chances of recovery are generally better if the drive was freshly formatted before the recording (a quickformat is just as effective in this as a long format) because it helps keep the recording unfragmented/in one piece. </p>
+<h3>Get HD24tools</h3>
+<p>If you haven't yet, download your copy of HD24tools on the download page. Then, start up HD24connect with the crashed drive connected to your computer. <b>Note: Mac users may need to start HD24connect by clicking the </b>starthd24connect<b> applescript</b>. Under normal circumstances, the drive should be automatically detected. In most cases, the last song that was being recorded was the live performance; in that case, that last song should automatically be selected.</p>
+<p>Should you be unable to find the crashed drive, read the <a href="drivenumber.html">instructions on determining the HD24 device name</a>.</p>
+<h3>Take note</h3>
+<p>Before performing a recovery, you will need to know</p>
+<p><ul>
+<li>The approximate length of the song</li>
+<li>The sample rate of the song</li>
+<li>The total number of tracks of the song.</li>
+</ul>
+</p><p>If you have reserved 16 tracks for your song but only recorded 5, you should consider it to be a 16-track song.</p>
+<h3>Load the longliverec header</h3>
+<p>You should now load the longliverec.h24 header file (using menu option <b>File->Recovery->Load header file...</b>). You should be able to find the <b>longliverec.h24</b> file in the HD24tools installation directory. If for some reason you cannot find it, you can <a href="http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/longliverec.h24">download a copy here</a>.</p>
+<p>Loading the header file will cause HD24connect to treat the drive more or less as a sequential tape, rather than as a drive with projects and songs. Instead of the song list on your drive, the project/song tab will display all possible sample rates and track counts supported by the HD24 recorder. Using the <b>Project</b> and <b>Song</b> dropdown boxes, choose the sample rate and number of tracks that match your song.</p>
+<h3>Set locate points before you transfer</h3>
+<p>You are now almost set to transfer the audio from your drive. You will most definitely want to set the export range to just your recording. If you do not set the export range, the entire drive will be transferred; this will make the transfer take many times longer, require huge amounts of free space on your target drive, and is hardly ever useful.</p>
+<p>Instead, click on the 'Recorder' tab to audition the recording. Once you find the start of your recording, you can click 'SET LOC' followed by 'LOOP START'. Then audition until you find the end of the song and use 'SET LOC' followed by 'LOOP END'. You can use the slider to speed up searching for the end of the performance.</p>
+<p>While auditioning, you may hear audio that does not belong to your live recording; for audio that was recorded with a different sample rate, the pitch will be off; audio that was recorded with a different number of tracks will sound 'chopped up'. This behaviour is normal. Audio that doesn't sound 'right' is not part of the recording that you want to recover.</p>
+<h3>Set the export range</h3>
+<p>After setting locate points for the start and end of the recording, go to the <b>Copy to PC</b> tab. Using the <b>Range...</b> button, select locate point 1 and 2 as startpoint and endpoint for the transfer.<p>
+<h3>Finally, transfer the audio</h3>
+<p>Finally, you can transfer the audio to your PC by clicking on the <b>Transfer</b> button.</p>
+<h3>Limitations</h3>
+<p>If your audio is fragmented, you will need to repeat the process of auditioning, setting locate points and transferring audio several times. If your drive was not formatted before recording the live performance, this may be a long and elaborate process; it is therefore recommended to always record live performances on a freshly formatted drive.</p>
+<p>Contact me if you need help piecing together a heavily fragmented performance.</p>
+<p>As is the case with any read-only recovery procedure, this procedure does not actually recover your drive; it merely allows you to read data from it.</p>
+</body></html>

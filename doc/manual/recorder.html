@@ -1,0 +1,38 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>The Recorder</h2>
+<p>Before exporting audio, you may wish to audition it, for example to specify which part of a track you want to export. The Recorder tab facilitates this by offering a convenient, familiar interface. </p>
+<p><img src="recorder.png"/></p>
+<p>The top of the screen shows a 24-track LED display, similar to the display of the HD24 recorder itself. When auditioning a drive with HD24connect, it will faithfully simulate what the HD24 recorder would have displayed.</p>
+<p>There are three rows of buttons under the display. The first row of buttons record-enables tracks. The record-enable buttons are present in the user interface in preparation for realtime recording functionality. Clicking the dot on the left of this button row allows you to record-enable all tracks at once. As realtime recording functionality is not yet implemented, the Recorder tab is locked to Rehearse mode.
+</p>
+<p>The second and third button rows contain Solo and Mute buttons. This allows you to single out tracks while auditioning the song.</p>
+<p>Under the three button rows, we find the location slider. This slider shows how far audio playback has progressed, and allows us to quickly jump to any point in the song by dragging its handle with the mouse.
+The bottom left shows an information display. This display shows the current playback location and status messages. Beneath the display, there are four buttons, and there is a drop-down on the right. </p>
+<p><ul><li>The <b>Peak mode</b> button allows us to choose between <b>No peak hold</b>, <b>Temporary peak hold</b> and <b>Continuous peak hold</b>. These are similar to the peak modes of the Alesis HD24 recorder. </li>
+<li>The <b>Peak clear</b> button complements <b>Continuous peak hold</b> mode by allowing us to reset the signal peaks manually.</li>
+<li>The <b>All input</b> and <b>Auto input</b> buttons are included for the realtime recording feature which will be implemented in a future release. The <b>All input</b> button permits monitoring signal levels coming from your sound card*.</li>
+<li>The <b>Stereo input mapping</b> dropdown is included for the realtime recording feature which will be implemented in a future release. It is currently disabled. It will give control over how stereo audio signals are routed from your audio hardware card to HD24 tracks.</li>
+</ul>
+</p>
+<p>The transport controls are arranged in a layout similar to the Little Remote Control that came with your HD24 recorder. The <b>Rehearse</b> button is locked. It is included for the realtime recording feature which will be implemented in a future release.
+</p>
+<p>
+<ul>
+<li>During audio playback, it is possible to set four locate points by clicking <b>SET LOC</b> followed by one of the buttons in the darkened area (<b>Loop start</b>, <b>Loop end</b>, <b>Punch in</b> or <b>Punch out</b>). </li>
+<li>Clicking <b>AUTO LOOP</b> toggles loop mode. When loop mode is enabled, playback will end at the <b>Loop End</b> locate point (Locate point 2) and resume at the <b>Loop Start</b> locate point (Locate point 1). This is mostly useful when streaming audio directly from disk.</li>
+<li>Clicking <b>LOC 0</b> rewinds the transport to the beginning of the song.</li>
+<li>The <b>LOOP START</b> button resets the song cursor to Locate point 1 (or sets Locate point 1 after <b>SET LOC</b> is pressed)</li>
+<li>The <b>LOOP END</b> button sets the song cursor to Locate point 2 (or sets Locate point 2 when <b>SET LOC</b> is pressed). Most useful when transport is stopped.</li>
+<li>The <b>PUNCH IN</b> and <b>PUNCH OUT</b> buttons supply two extra locate points that can be set on the Recorder tab, but currently have no additional functionality.</li>
+<li>The <b>Rewind</b> button moves the song cursor backwards by 5 seconds, if possible.</li>
+<li>The <b>FFWD</b> button moves the song cursor forwards by 5 seconds, if possible.</li>
+<li>The <b>STOP</b> button stops audio playback. In addition, this will initialize transport control and re-detect what audio playback mechanism is available. Under Linux, this is useful to switch between the Portaudio and JACK sound systems without restarting the application. </li></ul>
+</p><p>
+During audio preview, the track selection checkboxes on the Copy to PC tab will light up for tracks that have signal. It is possible to switch between songs during audio preview. However, any locate points set in-memory before the switch will be lost. 
+The jog wheel under the transport controls permits setting the 'tape head' or 'song cursor' with sub-frame accuracy. Simply drag it left or right to move the song cursor.
+The display will show information about the current song. When transport is not running, the current HD24tools version is displayed for a short while.
+</p>
+<p><i>* This functionality is still experimental and may currently be disabled.</i></p>
+</body></html>

@@ -1,0 +1,181 @@
+#!/bin/bash
+
+#######################################################################
+# OS Setup Routines
+#######################################################################
+setup_win32()
+{
+    echo "Build environment... Microsoft Windows";
+    BUILD_FOR='Win32'
+    PORTAUDIO_MAKEOPTS='-lwinmm'
+    MORELIBS="$MORELIBS -lwinmm -mwindows"
+#   MOREDEPS="$MOREDEPS \$(BINDIR)nojack.o"
+}
+
+
+setup_linux_gnu()
+{
+    echo "Build environment... GNU/Linux";
+    BUILD_FOR='LinuxGNU'
+    PORTAUDIO_MAKEOPTS='-pthread'
+}
+
+
+setup_linux_win32()
+{
+    echo "Build environment... Microsoft Windows (Linux)"
+    BUILD_FOR='Win32Linux'
+    PORTAUDIO_MAKEOPTS='-lwinmm'
+    GCC='i586-mingw32msvc-gcc'
+}
+
+
+setup_darwin()
+{
+    echo "Build environment... Macintosh OS X";
+    BUILD_FOR='Darwin'
+    JACK_MAKEOPTS='-L/sw/lib -I/sw/include'
+    PORTAUDIO_MAKEOPTS='-L/sw/lib -I/sw/include'
+    export CFLAGS="-no-cpp-precomp -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+    export CXXFLAGS="-no-cpp-precomp -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+}
+
+
+#######################################################################
+# Library Tests
+#######################################################################
+find_fltk()
+{
+    TEST=`fltk-config --version | awk \
+        'BEGIN {FS="=";version="Unavailable"} 1==1 {version=$1}  END {print version}'`
+
+    if [ $? == 0 ]; then
+        echo "Searching for FLTK... found $TEST"
+        TMPCCARGS="$TMPCCARGS -DLIBFLTK=\"$TEST\""
+	FLTKLIB=`fltk-config --libs`
+        FLTK_HAS_FILE_CHOOSER=`ar t $FLTKLIB |grep -c Fl_Native_File_Chooser.o`
+	echo "File Chooser: $FLTK_HAS_FILE_CHOOSER"
+    else
+        echo "Searching for FLTK... not found"
+        echo "Can't continue."
+        exit 1
+    fi
+}
+
+
+#######################################################################
+# Main Configure Routine
+#######################################################################
+main()
+{
+    [[ -e Makefile ]] && make clean
+
+    MORELIBS=''  # Extra libraries
+    MOREDEPS=''  # Extra dependencies
+    BUILD_FOR='' # Build architecture
+    GCC='gcc'    # GCC Command (different if building Win32 on Linux)
+    TMPCCARGS=''    # Extra CC Arguments
+
+    # Check for Windows
+    if [[ $BUILD_FOR == '' && \
+        ($WINDIR == "C:\\WINNT" || $WINDIR == "C:\\WINDOWS") ]]; 
+    then
+        setup_win32
+    fi
+
+    # Check for Linux or Win32 building on Linux
+    if [[ $BUILD_FOR == '' && \
+        `if [ -e /proc/version ]; then cat /proc/version | grep Linux; fi` != "" ]]
+    then
+        if [ "$1" = "--os=win32" ]; then
+            setup_linux_win32
+        else
+            setup_linux_gnu
+        fi
+    fi
+
+    # Check for Mac OS X
+    if [[ $BUILD_FOR == '' && \
+        ("`echo $version|grep powerpc-apple-darwin`" != "" || \
+         "`echo $OSTYPE|grep darwin`" != "") ]]
+    then
+        setup_darwin $1
+    fi
+
+    # Check for Essential Libraries
+    find_fltk
+    DEBUGGING=" -O3 "
+    if [[ "$1" == "--debug" ]]; then
+       echo "Enabling debugging. $1"
+       DEBUGGING=" -g -DHD24DEBUG=1"
+    fi
+
+    if [[ "$1" == "--debug=memory" ]]; then
+           echo "Debugging memory."
+           DEBUGGING=" -g -DHD24DEBUG=1 -DMEMDEBUG=1 "
+	   shift;
+    fi
+    if [[ "$1" == "--debug=mem" ]]; then
+           echo "Debugging memory."
+           DEBUGGING=" -g -DHD24DEBUG=1 -DMEMDEBUG=1 "
+	   shift;
+    fi
+    if [[ "$1" == "--debug=all" ]]; then
+           echo "Debugging EVERYTHING."
+           DEBUGGING=" -g -DSMARTIMAGEDEBUG=1 -DHD24DEBUG=1 -DDEVGENDEBUG=1 -DSMPTE_DEBUG=1 -DRECORDERDEBUG=1 -DHD24FSDEBUG=1 -DHD24FSDEBUG_DEVSCAN=1 -DHD24FSDEBUG_QUICKFORMAT=1 -DHD24FSDEBUG_BITSET=1 -DHD24FSDEBUG_COMMIT=1 -DHD24FSDEBUG_CLUSTERddCALC=1 -DPROJDEBUG=1 -DSONGDEBUG=1 -DHD24SNDFILEDEBUG=1 -DHD24TRANSFERDEBUG=1 -DHD24TRACACTDEBUG=1 -DMEMDEBUG=1 "
+    fi
+
+    if [[ "$1" == "--debug=format" ]]; then
+           echo "Debugging FS formatting related issues."
+           DEBUGGING=" -g -DHD24FSDEBUG=1 -DHD24FSDEBUG_QUICKFORMAT=1 "
+	   shift;
+    fi
+    if [[ "$1" == "--debug=fs" ]]; then
+           echo "Debugging FS related issues."
+           DEBUGGING=" -g -DHD24FSDEBUG=1 -DHD24FSDEBUG_QUICKFORMAT=1 -DHD24FSDEBUG_BITSET=1 -DHD24FSDEBUG_COMMIT=1 -DHD24FSDEBUG_CLUSTERCALC=1 "
+	   shift;
+    fi
+     if [[ "$1" == "--debug=image" ]]; then
+           echo "Debugging FS related issues."
+           DEBUGGING=" -g -DSMARTIMAGEDEBUG=1 -DHD24FSDEBUG=1 -DHD24FSDEBUG_QUICKFORMAT=1 -DHD24FSDEBUG_BITSET=1 -DHD24FSDEBUG_COMMIT=1 -DHD24FSDEBUG_CLUSTERCALC=1 "
+	   shift;
+    fi
+    
+    if [[ "$1" == "--debug=transfer" ]]; then
+           echo "Debugging file transfer related issues."
+           DEBUGGING=" -g -DHD24DEBUG=1 -DHD24FSDEBUG=1 -DHD24TRANSFERDEBUG=1 -DHD24TRACACTDEBUG=1 -DMEMDEBUG=1 "
+           shift;
+    fi
+
+    if [[ "$1" == "--debug=recorder" ]]; then
+           echo "Debugging recorder related issues."
+           DEBUGGING=" -g -DRECORDERDEBUG=1 -DSHOWPOLL=1"
+           shift;
+    fi
+    if [[ "$1" == "--debug=coverage" ]]; then
+           echo "Compile for testing/code coverage"
+           DEBUGGING=" -g -fprofile-arcs -ftest-coverage -lgcov "
+    fi
+    if [[ "$1" == "--debug=test" ]]; then
+           echo "Compile for testing/code coverage"
+           DEBUGGING=" -g -fprofile-arcs -ftest-coverage "
+           shift;
+    fi
+
+    # Create the Makefile
+    echo "BUILD_ARCH=$BUILD_FOR" > Makefile
+    echo "MORELIBS=$MORELIBS" >> Makefile
+    echo "MOREDEPS=$MOREDEPS" >> Makefile
+    echo "TMPCCARGS=$TMPCCARGS" >> Makefile
+    echo "DEBUGGING=$DEBUGGING" >> Makefile
+    echo "FLTK_HAS_FILE_CHOOSER=$FLTK_HAS_FILE_CHOOSER" >> Makefile
+    if [[ $1 == '--with-universal' ]]; then
+        echo "UNIVERSAL=true" >> Makefile
+    fi
+
+    cat Makefile.in >> Makefile
+
+    echo -e "\nConfiguration complete. If all looked OK, now run make.";
+}
+
+main $1 

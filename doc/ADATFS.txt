@@ -1,0 +1,593 @@
+HD24 ADAT file system format
+
+Reading ADAT HD24 disks
+-----------------------
+In the ADAT FST file system, the part of the file system
+that contains directory and song info is grouped in 
+32-bit words. When read on a regular PC, each group of 
+4 bytes will appear reversed. As such, when
+a sector contains a string 'TADATSF ', we should read this
+as 'ADAT FST'. In this document, we will assume that
+doing the byte swapping needed to properly read the sectors
+has already been done.
+
+It should be noted that the actual audio data has not
+undergone such byte swapping. As such, WAV data
+retrieved from the HD24 by FTP is stored in the same
+byte order as the data on disk.
+
+The sector size used on HD24 disks is 512 bytes.
+ADAT FST boasts disk support for disks up to 2 Terabyte.
+This is achieved by using 32-bit pointers that point to
+sector numbers. We will refer to these pointers as 
+sectorpointers.
+
+Writing ADAT HD24 disks
+-----------------------
+Writing HD24 disks is slightly tricky, because FST 
+filesystems contain backup copies of file system 
+sectors to help guarantee data consistency. 
+As a result, when we make an alteration to only the
+first copy of the file system structure on disk, the
+disk is considered inconsistent and the backup copy will
+be written back by the HD24 recorder at the next use.
+
+The backup data is stored at the end of the disk,
+in block-reverse order.
+The original order is something like this:
+
+block 0	
+	sector 0
+block 1	
+	sector 1
+block 2 
+	sectors 2,3,4
+block 3 
+	sectors 5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+block 4-102
+	1 sector of project info
+block 103-
+	song info block (2 sectors)
+	song allocation info block (5 sectors)
+
+The backup blocks are stored in reverse order,
+however each backup block maintains the original 
+sector ordering. That is, 
+
+block 0 has a backup at sector (end-0)
+	(where end=the last sector on disk)
+
+block 1 has a backup at sector (end-1)
+
+block 2, sectors 2,3,4 are backed up at sectors
+	end-4, end-3, end-2, respectively;
+
+block 3, sectors 5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
+	are backed up at sectors
+	end-19,end-18,end-17,end-16,end-15,...end-5,
+	respectively.
+
+The validity of a block is indicated by a checksum which
+is stored in the last 4 bytes of a block (bytes 0x1FC,
+0x1FD, 0x1FE, 0x1FF of the last sector of a block).
+
+The value of the checksum is such that sum of all 32-bit 
+words in the block (which may span several sectors) is 0. 
+When writing a block, we must make sure that the resulting 
+checksum of the block adds up to 0 again.
+
+A second check refers to bytes 0x1f8-0x1fb of the last
+sector of a block. Bytes 0x1F8 and 0x1F9 contain the
+least significant 16 bit of the sector number at which
+the block starts. Thus, a project block which contains
+1 sector and starts on sector 0x14 will contain the 
+values 0x14, 0x00 on bytes 0x1f8 and 0x1f9; a song entry
+2 sectors long, and ending on sector 0x78 will contain
+the byte values 0x77, 0x00 on offset 0x1f8 and 0x1f9,
+respectively (because the song entry starts on sector
+0x77). Bytes 0x1FA and 0x1FB of the last sector of the
+block contain the bit-inverted value of 0x1F8 and 0x1F9**.
+
+** This paragraph assumes the sector is not byte-swapped
+as described in the first paragraph of the document.
+ 
+When a block is not equal to its backup, the checksum
+of both is validated. If one is valid and the other is
+not, the valid copy is written over the invalid copy.
+
+General ADAT FST layout
+-----------------------
+The general ADAT FST layout is as follows:
+
+-----------------------------------------------------------
+Sector 0 / Offset 0000:0000h
+Superblock, identifies drive as an ADAT FST drive.
+Size=512 bytes/0200h
+-----------------------------------------------------------
+Sector 1 / Offset 0000:0200h
+Drive info
+Size=512 bytes/0200h
+-----------------------------------------------------------
+Offset 0000:0400h
+3 sectors, Song Entry Usage Table
+Size=600h
+-----------------------------------------------------------
+Offset 0800h
+15 sectors, Drive Usage Table
+size=1e00h
+-----------------------------------------------------------
+         / Offset 0000:2800h
+Project info, 1 sector (512 bytes) per project entry
+Size: 99*200h=c600h
+-----------------------------------------------------------
+         / Offset 0000:ee00h
+Song info, 7 sectors (3584 bytes) per song entry 
+-----------------------------------------------------------
+	Undo info
+-----------------------------------------------------------
+	Audio data
+-----------------------------------------------------------
+        File system backup
+-----------------------------------------------------------
+
+
+Superblock layout
+-----------------
+Offset 0-0fh	Header line:
+		Offset 0	'ADAT FST'
+		Offset 8	Version number, e.g. '110 '
+		Offset 12	signature bytes: 55h, aah, cch, 33h
+Offset 10h-13h	Size of audio block	(0x480)
+Offset 14h-17h	Number of audio blocks per allocation cluster
+Offset 18h-1fh	0 ?
+Offset 20h-23h	0 ?
+Offset 24h-27h 	0 ?
+Offset 28h-2bh 	1 ?	sectors in superblock?
+Offset 2ch-2fh 	1 ?	sectors in drive info block
+
+Offset 30h-33h 	2 ?	sectornum of song entry usage table?
+Offset 34h-37h 	3 ?	sectors in song entry usage table?
+
+Offset 38h-3bh 	5 ?	sectornum containing allocation info? 
+Offset 3ch-3fh 	15/0fh	- Number of sectors in allocation table?
+
+Offset 40h-43h	042fh=1071
+		--
+			On 1.2gb drive this formats as 0x20 00 00 00
+				((2.4*1024*1024)-(0x12a19eaf-0x128cfa44))/0x20		
+							= 36 367.8 (not an exact sector count)
+
+			On 6 gb drive (0x00c02f0f sectors) this formats as 31 01 00 00
+				0x00c02f0f/0x131=41294.9
+				0x00ab8aa4 / 0x131 = 36 859.5016
+
+			On 40GB drive this formats as 0x2f 04 00 00
+				0x04c92d7f/(0x42f*2) = 37485.176
+				0x04b48914/(0x42f*2) = 36843.6116
+
+			On 160GB drive this formats as 0x99 06 00 00
+				312 581 808 / (0x699 * 5) = 37 013.8316
+				(5=clusters per audio block)
+				0x128cfa44 / (0x699 * 5) = 36 853.6407
+			
+			36860/1152=31.99
+			1152*32=36864
+
+			So this number X equals datasectors/(1152*32*audioblocks per cluster)
+			(rounded up)
+			1152=sectors per audioblock
+			32 = clusters in 1 allocation word
+
+			X=600 means each allocation word represents 1/600 of the drive capacity.
+	
+			where audioblocks per cluster can be found on 0x14
+			and datasectors can be found on offset 0x80
+			(in other words, this number is the total amount of cluster words in allocation table?)
+		
+Offset 44h-47h	Number of free audio clusters on disk
+Offset 48h-4bh	SectorPointer to project info
+Offset 4ch-4fh	1
+Offset 50h-53h  Max allowed no. of projects?
+Offset 54h-57h 	Max allowed no. of songs per project?
+Offset 58h-5bh	SectorPointer to first song info entry
+
+Offset 5ch-5fh	2	(sectors of song info entry w/o alloc info?)
+Offset 60h-63h	5	(sectors of alloc info per song entry?)
+Offset 64h-67h	7	(number of sectors that song info entries are apart?)
+Offset 68h-6bh		current number of songs on disk
+Offset 78h-7bh	041fh	(number of audio blocks reserved for undo buffer).
+			1055 audio blocks=72 track minutes at 48 khz
+		Multiply by contents of offset 14h-17h for number of sectors
+		in undo buffer.
+
+Offset 7ch-7fh	Sector pointer to audio data block on disk (0x1397f6).
+Offset 80h-83h	32-bit word
+		number almost as big as number of sectors on disk
+
+		This number is related to that on offset 0084h and
+		always seems to have a difference of 0x14a46B to 
+	the end of the disk.
+
+		   		0084h        0080h
+		40 gb disk:
+				0x04c92d7f - 0x04B48914 = 0x14A46B
+		120gb disk:
+				0x0df94baf - 0x0de4a744 = 0x14A46B
+		160gb disk:
+				0x12a19eaf - 0x128cfa44 = 0x14A46B
+
+		Perhaps the value is the number of allocatable sectors
+		on disk?
+		(1397f6 used in the beginning; an undo buffer is not
+		needed at the end of the drive)
+
+		0x10C75 used for actual filesystem.?
+		0x1397f6 (first data sector on drive) - (0x41f(size of undo buffer in audio blocks) * 0x480(size of audio block in sectors)) = 0x10C76
+		first data sector is not part of FS so this makes sense.
+		
+offset 84h-87h	32-bit word, highest sector number on disk. 
+		A backup of the first sector can be found here.
+offset 88h-1F7	(empty, zero - reserved for future use?)
+offset 1f8-1FF  Checksum information.
+		
+Drive info layout
+-----------------
+Sector 1
+Offset 0	8 byte drive name (for compatibility with
+		older ADAT FST versions), should be considered
+		obsolete. Replaced by name at offset 01bh.
+Offset 8-9	null bytes
+Offset 0ah-0bh	2 more bytes for drive name. Should be considered
+		obsolete
+Offset 10h	SectorPointer to last active project.
+offset 20h	List of 32-bit sector pointers to all projects.
+Offset 01b8h	64-byte drive name. Null-byte terminated
+		when shorter than 64 chars.
+
+Song Entry Usage Table
+----------------------
+FST 1.10 allows for 99 projects of 99 songs each, giving for
+9801 song entries. Each song entry is not necessarily pre-
+allocated to any given project; song entry 0 may belong to 
+project 0, while song entry 1 may belong to another project.
+The Song Entry Usage Table provides a quick way to look up
+the next free song entry without having to go through all 
+projects to see which song entries are in use.
+
+Each bit in the Song Entry Usage Table represents a song.
+When 0, the song entry is not in use; when 1, it is.
+
+Drive Usage Table
+-----------------
+Each bit in the Drive Usage Table represents a cluster. When 0, the
+cluster is free; when 1, the cluster is in use.
+32-bit words are filled one by one, least-significant bit first, 
+until the entire word has the value 0xFFFFFFFF. In other words, the
+table starting with the following words have the meaning as described:
+
+0x1 contains 1 bit on -> first cluster allocated
+0x3 contains 2 bits on -> first 2 clusters allocated
+0x1f contains 5 bits on -> first 5 clusters allocated
+0x1ff contains 9 bits on -> first 9 clusters allocated.
+
+At the end of the drive usage table, some space seems to be reserved,
+possibly representing the backup of the file system info, or something
+along those lines. The last 32-bit word of the Drive Usage Table is a
+checksum. When all 32-bit words in the entire Drive Usage Table are
+summed, the result must be 0.
+
+Project info
+----------------------
+The project info consists of (by default) 99 entries of 512 bytes each.
+The actual number of projects is contained by the superblock.
+
+100 project entries would be 0xc800 bytes.
+As projects are numbered starting at 01, a maximum of 99 projects
+is possible, giving for 0xc600 bytes.
+
+How to distinguish between an empty project and an unused project entry?
+Answer: Sector 1 (Drive info) contains the project list. 
+
+Projects not mentioned in the drive info project list are empty projects.
+
+Each project entry has the following layout:
+
+Offset 0	8-byte project name (obsolete)
+Offset 8	4-byte (2 bytes of which are partial project name too)
+offset 0ch-0fh	Number of songs in use in project
+offset 10h-19bh	Song info table (a list of 32-bit pointers to the
+		initial sectors of song info). Length of table should be
+		396 bytes for 99 songs per project.
+		First entry in the table is the last accessed song.
+		Zero char means unused entry.
+Offset 01b8h	64-byte project name. Null-byte terminated if project
+		name is less than 64 bytes long.
+
+Song info table
+---------------
+The song info table is part of a project entry. It is a list of 32-bit
+pointers to sectors containing song info.
+
+Song info
+------------------------
+Song info starts at disk offset 0xee00h, or at
+sector 119 (the 120th sector on disk) (depending on
+info in superblock).
+
+Each song entry has a length of 2 sectors and is immediately
+followed by 5 sectors of file allocation info.
+
+Locate points/loops and track slip info is included in the song
+entries.
+
+HD24tools created song (plays incorrectly):
+
+Sector 0000:0077
+0000:EE00  02 3A 00 00 00 00 00 00-10 00 00 00 30 00 00 00  .:..........0...
+0000:EE10  00 20 00 00 00 00 00 00-00 00 00 00 00 00 00 00  . ..............
+0000:EE20  00 00 00 00 00 00 00 00-67 67 69 47 00 67 6E 69  ........ggiG.gni
+0000:EE30  20 20 08 00 18 80 BB 00-C6 44 C0 15 00 00 00 04    ...��.�D�.....
+0000:EE40  00 00 00 00 01 02 00 00-E4 12 04 30 A8 10 00 20  ........�..0�.. 
+
+HD24 created song (plays fine):
+
+Sector 0000:0077
+0000:EE00  01 3A 00 00 00 00 00 00-30 00 00 00 90 00 00 00  .:......0...�...
+0000:EE10  00 60 00 00 00 00 00 00-00 00 00 00 00 00 00 00  .`..............
+0000:EE20  00 00 00 00 00 00 00 00-67 67 69 47 20 67 6E 69  ........ggiG gni
+0000:EE30  20 20 08 00 18 80 BB 00-C6 44 C0 15 00 00 00 00    ...��.�D�.....
+0000:EE40  00 00 00 00 01 02 00 00-00 00 00 00 00 00 00 00  ................
+
+
+Offset 00h-03h		32-bit number indicating no. of audio blocks in song
+Offset 04h-07h		?0
+Offset 08h-0bh		32-bit number related to audio track interlacing.
+			
+			1/512th of the number of samples per interlace block
+			before the audio switches to the next track.
+
+			Value of this field equals 
+
+			(audioblock size in sectors)/(physical tracks*3)
+
+			where the number of physical tracks is understood
+			to be twice the number of logical tracks for higher
+			sample rates. That is: 
+			- For a 96k song with 8 tracks, the value of this 
+			  field is 0x480/((2*8)*3) =0x18
+			- whereas for a 48k song with 8 tracks, the value 
+			  of this field is 0x480/((1*8)*3) = 0x30
+
+Offset 0ch-0fh		32-bit number related to audio track interlacing.
+
+			number of sectors per interlace block
+			before the audio switches to the next track.
+			
+			Value of this field equals audio block size
+			/no. of tracks. 
+			(always equal to the value at offset 0x8, times 3).
+			Default audio block size is defined in superblock
+			(0x480 sectors)
+
+			An audio block size of 0x480 and 2 tracks gives a
+			block size of 0x240h sectors or 0x48000 bytes
+			(=294912 bytes).
+
+Offset 10h-13h		The value stored at offset 08, times 512 (0x200).
+
+Offset 28h-2Fh		First 8 bytes of song name.
+			(Maintained for compatibility
+			with FST before 1.10- 
+			Obsoleted by long filenames
+			at offset 3b8h)
+
+Offset 30h		?
+
+Offset 31h		Number of physical tracks used by song.
+
+			Note: 
+			The HD24 has a high sample rate
+			mode (88200 and 96000 samples per
+			second, respectively). 
+
+			In high sample rate mode, two
+			physical tracks are used for each
+			logical track.
+
+			That is, a 12-track song in high
+			sample rate mode will use 24 tracks
+			on the machine. The number 24 is
+			then what is indicated.
+
+			This allows interlacing samples between
+			tracks for compatibility with systems
+			running at half the sample rate.
+			In high sample rate mode, the track layout
+			is:
+			physical track 0-1 -> samples of logical track 1
+			physical track 2-3 -> samples of logical track 2
+			physical track 4-5 -> samples of logical track 3
+			.. and so on. Even numbered samples (0,....) 
+			are on even numbered tracks. 
+
+Offset 32h-33h		Two more filename characters for short filename,
+			used in obsolete FST 1.0 standard.
+
+Offset 34h-36h		Sample rate in samples/second
+
+			Typical values are:
+
+			00h ach 44h -> 44100 Samples/sec
+			00h bbh 80b -> 48000 Samples/sec
+			01h 58h 88h -> 88200 Samoles/sec
+			01h 77h 00h -> 96000 Samples/sec
+
+Offset 37h		Bit depth (18h or 24 by default)
+
+offset 38h-3bh		Unsigned 32-bit number containing 
+			number of samples in song.
+			
+			For high sample rates, 2 tracks
+			are used for each sample;
+			therefore, a song that according
+			to this 32-bit number contains 44100
+			samples has the same duration at both
+			44100 and 88200 kHz.
+
+offset 3ch		Write protect byte.
+
+			This byte contains 8 bits (0-7, where
+			7 is the most significant bit and 0 the
+			least significant bit. In other words
+			bit 7 has value 128, bit 0 has value 1)
+			
+			Bit 2 is on when song is write protected
+			(value of the byte is 0x4 then), off when
+			song is write enabled.
+
+offset 58h-B7h		Track slip info for track 1-24
+
+			Track slip is measured in number of samples.
+			E.g. for a song recorded at 48 khz, a value
+			of 480 decimal (0x1e0) means 1/100 second
+			(10 ms) of track slip.
+			Track slip is stored as a signed 32-bit number.
+			Valid values for the HD24 are -170..170 msec
+
+Offset 0b8h-1e3h	Locate point block
+
+Offset 3b8h-3e7h	Full song name, max 64 bytes; 
+			terminated by null byte when less
+			than 64 bytes
+
+Offset 400h-????	File allocation info (see below)
+
+Locate point block
+------------------
+The locate point block consists of 24 locate point entries.s
+
+Locate point entry
+------------------
+Each locate point entry has the following layout:
+Offset 0-3	32-bit time code
+		The time code represents the sample number
+		within the song.
+Offset 4-11	The 8-byte locate point name
+
+Locate point 0 indicates the relative time offset of the
+song. This is usually 0, but may be set to other values for
+tape transfers.
+
+The locate point is a 32-bit unsigned integer which contains the
+sample number within the song. In other words, in a 44.1 khz 
+song, the locate point 0:0:1:0 (hours/minutes/seconds/frames)
+is encoded as the number 44100. Thus, the locate point furthest
+in the song is 2^32=4294967296 samples. 
+This is enough for 44.1khz songs with a length of 27 hours.
+
+File allocation info
+====================
+The file allocation info consists of file allocation entries.
+Each file allocation entry has the following format:
+
+Offset 00h-03h	Starting sector number for audio block
+Offset 04h-07h	Number of audio blocks in allocation block
+
+In a valid song, the the 32-bit word on offset 0 of the song
+info equals the total sum of the number of audio blocks in the 
+file allocation info. 
+
+In my disk image, I see songs that had been previously deleted; 
+the song length in audio blocks is zero for these. This also
+goes for songs that have no audio data yet.
+
+However, for deleted songs, the file allocation info remains intact
+and the original song length (rounded up to the number of audio
+blocks) can be derived back from that for recovery of deleted songs.
+
+Audio data layout
+=================
+The audio data of a FST file system is stored in a raw, uncompressed
+format. Audio data that consists of multiple channels is interlaced
+blockwise (as opposed to sample-by-sample interlacing).
+
+The data is stored as 24-bit signed little endian integer data.
+
+The typical audio block size as indicated in the superblock is
+0x480 sectors. In stereo audio, each subblock is then 1/2 audio blocks 
+or 0x240 sectors per channel.
+
+As the number of tracks increases, the block size per track decreases
+proportionally. 
+
+The default audio block size of 0x480 sectors lets itself be divided
+into 2,4,6,8,12,16,24 tracks (with a sample size of 24 bit). Each channel
+then takes up 0x240, 0x120, 0xc0, 0x90, 0x60, 0x48, 0x30 sectors, 
+respectively assuming 0x480 blocks per sector. In high sample rate
+modes, channels are paired to accomodate for the doubled sample rate. 
+This is why in high sample rate mode a max of 12 channels are possible,
+while the maximum song length is still over 27 hours on 88.2 kHz.
+
+
+Not yet accounted for in this document
+======================================
+
+How the undo buffer is used (however, this is not relevant because the
+undo buffer is cleared after each power off. It might as well exist
+in RAM only).
+
+How pitch info is stored in the songs
+auto play
+auto rtn
+auto rec
+
+HD24tools extensions to FST
+===========================
+An extension is proposed where a song on a HD24 drive is used as data
+area, to store non-audio information associated with a song or project.
+This would allow HD24 owners to store track notes, mix settings,
+protools projects and so on along with their songs.
+
+A degree of compatibility with the HD24 is desired; although the HD24
+will not be able to use the information, it should also not corrupt it.
+
+The HD24 does not offer unique file names; moreover, the position of a
+file is not constant within the FS. As a result, songs have no unique
+identifier that allows other data to be associated with them.
+
+It is proposed to use bytes 0x3a0-0x3bf of each song entry as unique
+identifier. Testing shows that the HD24 recorder does not touch these
+bytes, even after a scandisk operation. Moreover, when a song is copied
+to another drive, these bytes are copied over as well.
+
+A single HD24 song would provide ample storage space for most purposes.
+Additionally, by using a single song only, the negative impact to the
+end user is minimal as no users have ever been registered to actually
+create 99 project of 99 songs. To prevent the HD24 from corrupting the
+contents of the song, it can be created as 0-track song; previous
+experiments have shown that the track count is flexible. Having a song
+marked as 0 track prevents the HD24 from arming tracks or playing back
+audio from the song, and will give a user some feedback about the nature
+of the song, without causing the HD24 to claim that the song is corrupt.
+A track count of 0 survives a scandisk command, and it seems that the
+HD24 permits copying such songs to other drives.
+
+A possible way to store data in the song is to have the data song 
+contain a FAT file system. The advantage of the FAT file system is
+that it is well documented, and probably there will be library code
+available that will ease the implementation of an embedded FAT 
+system on HD24 drives.
+
+The root directory of the file system shall contain a 'songdata' 
+dir. This data directory shall contain a subdirectory named after the
+ID of each song. Of course the file names need to be long enough; if 
+this is not possible, a map file may be created to contain mappings 
+from song ID to songname subdirectory ID.
+
+Data placed in the appropriate songname directory is automatically 
+associated with the song. Should we so desire, we can also create a 
+'projdata' directory.
+
+By keeping the songdata directory structure flat, songs can be moved 
+across projects without losing their associated files.
+

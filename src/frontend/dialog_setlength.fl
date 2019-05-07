@@ -1,0 +1,204 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+class dialog_setlength {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {unsigned long locpoint;} {public
+  }
+  decl {int mode;} {public
+  }
+  decl {int useasrange;} {public
+  }
+  decl {hd24song* currsong;} {}
+  decl {int locnum;} {}
+  decl {int subsecmax;} {}
+  Function {make_window(hd24song* p_currsong,int p_locnum)} {open
+  } {
+    Fl_Window {} {
+      label {Set song length} open selected
+      xywh {160 246 455 300} type Double color 52
+      code0 {currsong=p_currsong; buttonclicked=0; mode=2;}
+      code1 {locpoint=currsong->songlength_in_wamples();}
+      code2 {setuiloc(locpoint); subsecmax=29;}
+      code3 {p_locnum=p_locnum;} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {300 270 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+useasrange=0; 
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {375 270 70 20} labelsize 12
+      }
+      Fl_Input hr {
+        label {New song length: }
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(3600*realrate*(currsong->display_hours(locpoint)));
+locpoint+=(unsigned long)(3600*realrate*(strtol(hr->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {150 65 50 20} type Int labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input min {
+        label {:}
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(60*realrate*(currsong->display_minutes(locpoint)));
+locpoint+=(unsigned long)(60*realrate*(strtol(min->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {210 65 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input sec {
+        label {:}
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(realrate*(currsong->display_seconds(locpoint)));
+locpoint+=(unsigned long)(realrate*(strtol(sec->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {265 65 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input subsec {
+        label {.}
+        callback {if (strtol(subsec->value(),0,10)>subsecmax) {
+    string* strmax=Convert::int2str(subsecmax);
+    subsec->value(strmax->c_str());
+    delete strmax;
+    
+}
+
+unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+long subseconds=currsong->display_subseconds(locpoint);
+
+locpoint-=subseconds;
+
+long frames=0;
+switch(mode) {
+   case 0: frames=100; break;
+   case 1: frames=realrate; break;
+   case 2: frames=30; break;
+}
+locpoint+=(unsigned long)(strtol(subsec->value(),0,10)*currsong->samplerate()/(frames*chmult));
+setuiloc(locpoint);}
+        xywh {320 65 60 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(5);}
+      }
+      Fl_Button button_mode {
+        label Frames
+        callback {mode=(mode+1)%3;
+switch(mode) {
+	case 0:
+	{
+		o->label("Sec/100"); 
+		subsecmax=99;
+		break;
+	}
+	case 1:
+	{		
+
+		if ((currsong->physical_channels()/currsong->logical_channels())==2) {
+			o->label("2*Sams"); 		
+		} else { 
+			o->label("Samples"); 		
+		}
+		subsecmax=currsong->samplerate()/(currsong->physical_channels()/currsong->logical_channels());
+		break;
+	}
+	case 2: 
+	{
+		o->label("Frames"); 
+		subsecmax=29;
+		break;
+	}
+}
+setuiloc(locpoint);}
+        xywh {320 45 60 20} labelsize 12 align 18
+      }
+      Fl_Box {} {
+        label Hr
+        xywh {150 48 50 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Min
+        xywh {210 48 45 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Sec
+        xywh {265 48 45 17} labelsize 12
+      }
+      Fl_Box {} {
+        label {Set the approximate song length here. Round up when unsure.}
+        xywh {5 5 440 30} labelsize 12 align 20
+      }
+      Fl_Box {} {
+        label {Note: This operation will requires about 40 MB of free space to write
+recovery information to a header file on your computer.
+
+This operation WILL NOT write to your HD24 drive, and as such should
+be completely safe, while permitting you to save your missing audio.
+Once this operation is complete, you should TRANSFER ALL AUDIO
+that you want to keep from the HD24 drive and then re-format it,
+before recording any more audio to it.
+
+Cancel this dialog if you're not in need of a recovery.}
+        xywh {5 100 440 160} labelsize 12 align 21
+      }
+    }
+  }
+  Function {setuiloc(unsigned long offset)} {open return_type void
+  } {
+    code {unsigned long maxoffset=0xFFFFFFFF;
+if (offset>maxoffset) {
+	offset=maxoffset;
+	locpoint=offset;
+}
+string* strhr=Convert::int2str(currsong->display_hours(offset));
+hr->value(strhr->c_str());
+delete strhr;
+
+string* strmin=Convert::int2str(currsong->display_minutes(offset));
+min->value(strmin->c_str());
+delete strmin;
+
+string* strsec=Convert::int2str(currsong->display_seconds(offset));
+sec->value(strsec->c_str());
+delete strsec;
+
+string* strsubsec;
+
+long subseconds=currsong->display_subseconds(offset);
+long subsecval;
+switch(mode) {
+   case 0: subsecval=((subseconds*100)/ ( currsong->samplerate()/ (currsong->physical_channels()/currsong->logical_channels()) )  ); break;
+   case 1: subsecval=(subseconds); break;
+   case 2: subsecval=((subseconds*30)/( currsong->samplerate()/ (currsong->physical_channels()/currsong->logical_channels()) )  ); ; break;
+   default: subsecval=0;
+}
+strsubsec=Convert::int2str(subsecval);
+subsec->value(strsubsec->c_str());
+delete strsubsec;} {}
+  }
+} 

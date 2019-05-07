@@ -1,0 +1,2 @@
+#!/bin/sh
+amidi --port=hw:1,0,0 --send-hex="F0 7F 7F 06 40 07 4F 05 60 7f 7f 7f 01 F7"

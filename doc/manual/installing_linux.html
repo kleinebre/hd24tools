@@ -1,0 +1,25 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head>
+<body class="page">
+<h2>Installing HD24tools (Linux)</h2>
+<p>Installation from .tgz file is similar to the installation on Windows.  You can extract the setup file from the downloaded .tar.gz or .tgz archive and then run it. By default, installation will be done in the ~/HD24tools/ directory. </p>
+<p>It should be noted that due to the relatively small number of Linux users, the Linux installer has not undergone a lot of testing. If things do not install smoothly, please contact the author for personal assistance in installing the tools. 
+</p>
+<p>As this is being written, a .deb package is in the making. If you run a Debian-based Linux distribution such as Ubuntu, you should be able to install this package by typing</p>
+<pre>
+sudo dpkg -install hd24tools_1.0.0beta-linux.deb</pre>
+<p>(substituting the correct version number/package name, of course).</p>
+<p>On Linux, drive detection will fail if the user does not have direct read/write access to the drive. This can normally be solved by running as root (not recommended) or by altering your /etc/fstab file to allow direct read access to common users. For instance, if your FST drive is usually on /dev/sdb then your fstab entry may look as follows:  
+</p><pre>
+/dev/sdb	none	auto	users,auto,devmode=0775	0	0 </pre>
+<p>You will also need to make sure that your regular user account is member of an access group that is allowed to read and write the device (on some Linux distros, this is group disk). </p>
+<p>HD24tools will run with reduced functionality if it cannot find the libsndfile, portaudio or JACK libraries (see Help->System info). If this is the case, you may be able to work around it by copying those libraries (or a symbolic link to them) in the directory where HD24tools is installed. HD24connect will look for files called <b>libsndfile.so.1</b>,  <b>libportaudio.so</b> and <b>libjack.so</b>. As of this release, HD24tools only supports portaudio version 19.</p>
+<p>The <b>libsndfile</b> library has a dependency on libFLAC.so.7 which may not be installed on your system. If you're running a Debian based distribution such as Ubuntu, you should be able to install this library with the following two commands*:
+<pre>
+wget http://http.us.debian.org/debian/pool/main/f/flac/libflac7_1.1.2-8_i386.deb
+sudo dpkg -i libflac7_1.1.2-8_i386.deb
+</pre><p>
+For other distributions, consult your favourite package search engine.</p>
+<i class="footnote">* You may need to substitute another version number or processor</i>
+</body></html>

@@ -1,0 +1,9 @@
+Installation complete
+
+HD24tools installation has been completed successfully.
+You may now run it from the installation path.
+
+Please find the HD24tools manual at
+http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/manual/
+
+Thank you for choosing HD24tools.

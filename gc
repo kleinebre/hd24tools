@@ -1,0 +1,8 @@
+#!/bin/sh
+# gc- Generate (code) Coverage files. 
+cd bin
+rm -f src
+ln -s ../src ./src
+for i in `ls src/lib/*.cpp` ; do gcov $i; done
+for i in `ls src/frontend/*.cpp` ; do gcov $i; done
+for i in `ls src/frontend/*.cxx` ; do gcov $i; done

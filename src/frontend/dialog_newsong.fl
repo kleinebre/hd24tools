@@ -1,0 +1,352 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+class dialog_newsong {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {char songname[65];} {public
+  }
+  decl {unsigned long songlength_in_wamples;} {public
+  }
+  decl {__uint32 samplerate;} {public
+  }
+  decl {__uint32 trackcount;} {public
+  }
+  decl {int mode;} {public
+  }
+  decl {int useasrange;} {public
+  }
+  decl {int locnum;} {}
+  decl {int subsecmax;} {}
+  Function {make_window()} {open
+  } {
+    Fl_Window {} {
+      label {New song} open
+      xywh {212 241 500 180} type Double color 52
+      code0 {buttonclicked=0; mode=2; songname[0]='\\0';}
+      code1 {subsecmax=29; samplerate=44100; trackcount=24;}
+      code2 {setuiloc(0);} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+strncpy(songname,currname->value(),64);
+songlength_in_wamples=getsonglen();
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {345 155 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+useasrange=0; 
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {420 155 70 20} labelsize 12
+      }
+      Fl_Input hr {
+        label {Length: }
+        callback {setuiloc(getsonglen());}
+        xywh {100 130 50 20} type Int labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input min {
+        label {:}
+        callback {setuiloc(getsonglen());}
+        xywh {160 130 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input sec {
+        label {:}
+        callback {setuiloc(getsonglen());}
+        xywh {215 130 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input subsec {
+        label {.}
+        callback {setuiloc(getsonglen());}
+        xywh {270 130 60 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(5);}
+      }
+      Fl_Button button_mode {
+        label Frames
+        callback {setplchan();
+
+mode=(mode+1)%3;
+switch(mode) {
+	case 0:
+	{
+		o->label("Sec/100"); 
+		subsecmax=99;
+		break;
+	}
+	case 1:
+	{		
+
+		if ((pchan /lchan)==2) {
+			o->label("2*Sams"); 		
+		} else { 
+			o->label("Samples"); 		
+		}
+		subsecmax=samplerate/(pchan/lchan);
+		break;
+	}
+	case 2: 
+	{
+		o->label("Frames"); 
+		subsecmax=29;
+		break;
+	}
+}
+setuiloc(songlength_in_wamples);}
+        xywh {270 110 60 20} labelsize 12 align 18
+      }
+      Fl_Box {} {
+        label Hr
+        xywh {100 113 50 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Min
+        xywh {160 113 45 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Sec
+        xywh {215 113 45 17} labelsize 12
+      }
+      Fl_Input currname {
+        label {Song name:}
+        callback {char filteredname[65];
+int x=strlen(o->value());
+if (x>64) { x=64; }
+int src=0;
+int filtered=0;
+for (int i=0;i<x;i++) {
+ 	if (
+ 	   (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='/') 
+ 	|| (o->value()[i]==':') 
+ 	|| (o->value()[i]=='*') 
+ 	|| (o->value()[i]=='?') 
+ 	|| (o->value()[i]=='"') 
+ 	|| (o->value()[i]=='<') 
+ 	|| (o->value()[i]=='>') 
+ 	|| (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='|'))
+ 	{
+ 		filtered=1;
+ 		continue; 	
+ 	}
+	filteredname[src]=o->value()[i];
+	src++;
+}
+filteredname[src]='\\0';
+if (filtered==1) {
+ 	int pos=o->position()-1;
+ 	if (pos<0) pos=0;
+	o->value(filteredname);
+	o->position(pos,pos);
+}}
+        xywh {100 35 390 20} labelsize 12 when 1 textsize 12
+        code0 {o->maximum_size(64);}
+        code1 {o->value("Song Name"); o->take_focus();}
+      }
+      Fl_Choice ratechoice {
+        label {Sample rate:} open
+        xywh {100 60 145 20} down_box BORDER_BOX labelsize 12 textsize 12
+        code0 {o->value(0);}
+      } {
+        MenuItem {} {
+          label {44100 Hz}
+          callback {samplerate=44100; setuiloc(getsonglen());}
+          xywh {35 35 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {48000 Hz}
+          callback {samplerate=48000;setuiloc(getsonglen());}
+          xywh {45 45 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {88200 Hz}
+          callback {samplerate=88200; setuiloc(getsonglen());
+if (numtracks->value()>7)
+{
+    numtracks->value(7);
+    trackcount=12;
+}}
+          xywh {55 55 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {96000 Hz}
+          callback {samplerate=96000; setuiloc(getsonglen());
+if (numtracks->value()>7)
+{
+    numtracks->value(7);
+    trackcount=12;
+}}
+          xywh {65 65 36 21} labelsize 12
+        }
+      }
+      Fl_Choice numtracks {
+        label {\# of Tracks:} open
+        xywh {100 85 145 20} down_box BORDER_BOX labelsize 12 textsize 12
+        code0 {o->value(10);}
+      } {
+        MenuItem {} {
+          label 1
+          callback {trackcount=1;}
+          xywh {45 45 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 2
+          callback {trackcount=2;}
+          xywh {55 55 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 3
+          callback {trackcount=3;}
+          xywh {65 65 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 4
+          callback {trackcount=4;}
+          xywh {75 75 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 6
+          callback {trackcount=6;}
+          xywh {85 85 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 8
+          callback {trackcount=8;}
+          xywh {95 95 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 9
+          callback {trackcount=9;}
+          xywh {105 105 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 12
+          callback {trackcount=12;}
+          xywh {105 105 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 16
+          callback {trackcount=16;
+if (samplerate>=88200)
+{
+    trackcount=12;
+    numtracks->value(7);
+}}
+          xywh {115 115 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 18
+          callback {trackcount=18;
+if (samplerate>=88200)
+{
+    trackcount=12;
+    numtracks->value(7);
+}}
+          xywh {125 125 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label 24
+          callback {trackcount=24;
+if (samplerate>=88200)
+{
+    trackcount=12;
+    numtracks->value(7);
+}}
+          xywh {135 135 36 21} labelsize 12
+        }
+      }
+      Fl_Box {} {
+        label {Please specify the parameters for the new song below:}
+        xywh {5 8 485 19} labelfont 1 labelsize 12 align 20
+      }
+    }
+  }
+  Function {setuiloc(__uint32 offset)} {open return_type void
+  } {
+    code {setplchan();
+unsigned int chmult=(pchan/lchan);
+unsigned long realrate=samplerate/chmult;
+
+string* strhr=Convert::int2str(hd24song::display_hours(offset,realrate));
+hr->value(strhr->c_str());
+delete strhr;
+
+string* strmin=Convert::int2str(hd24song::display_minutes(offset,realrate));
+min->value(strmin->c_str());
+delete strmin;
+
+string* strsec=Convert::int2str(hd24song::display_seconds(offset,realrate));
+sec->value(strsec->c_str());
+delete strsec;
+
+string* strsubsec;
+
+long subseconds=hd24song::display_subseconds(offset,realrate);
+long subsecval;
+setplchan();
+
+switch(mode) {
+   case 0: subsecval=((subseconds*100)/ realrate ); break;
+   case 1: subsecval=(subseconds); break;
+   case 2: subsecval=((subseconds*30)/realrate  ); break;
+   default: subsecval=0;
+}
+strsubsec=Convert::int2str(subsecval);
+subsec->value(strsubsec->c_str());
+delete strsubsec;} {}
+  }
+  Function {setplchan()} {open
+  } {
+    code {lchan = trackcount;
+if (this->samplerate>=88200) {
+	pchan=lchan*2;
+} else {
+	pchan=lchan;
+}} {}
+  }
+  decl {int pchan;} {}
+  decl {int lchan;} {}
+  Function {getsonglen()} {open return_type __uint32
+  } {
+    code {setplchan();
+unsigned int chmult=(pchan/lchan);
+unsigned long realrate=samplerate/chmult;
+
+long frames=0;
+switch(mode) {
+   case 0: frames=100; break;
+   case 1: frames=realrate; break;
+   case 2: frames=30; break;
+}
+
+__uint64 mylocpoint=((__uint64)3600* (__uint64)strtol( hr->value(),0,10) )
+	           +((__uint64)  60* (__uint64)strtol(min->value(),0,10) )
+	           +((__uint64)   1* (__uint64)strtol(sec->value(),0,10) )
+	           ;
+	
+mylocpoint=(__uint64)((__uint64)realrate*(__uint64)mylocpoint);
+
+mylocpoint+=(__uint64)(strtol(subsec->value(),0,10)*samplerate/(frames*chmult));
+
+if (mylocpoint>0xFFFFFFFF) {
+	mylocpoint=0xFFFFFFFF;	
+}	
+return (__uint32)mylocpoint;} {selected
+    }
+  }
+} 

@@ -1,0 +1,13 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h1>Cross-application audio</h1>
+<a name="intro"></a><h2>Introduction</h2>
+<p>In addition to regular audio playback, HD24connect currently supports audio playback through the JACK Audio Connection Kit. This toolkit, which is functionally similar to Propellerhead ReWire, allows routing audio streams between any applications that support it. In other words, HD24connect is capable of streaming audio directly from HD24 drives to any JACK enabled audio application.</p>
+<h3>Why JACK and not ReWire?</h3>
+<p>At this point in time, ReWire is not supported, as HD24tools is an open source product. The ReWire license effectively restricts the use of ReWire to proprietary, commercial vendors. However, JACK support is available on all supported HD24tools platforms, including Mac and Windows.</p>
+<h3>JACK is optional</h3>
+<p>Many JACK-enabled applications fail hard if JACK is not present. With JACK being relatively new to many Windows- and Mac users, HD24tools will only use JACK if it is detected to be present and running. If JACK is either not installed, or if it found but the JACK server is not running, HD24tools will instead send audio to the default audio output device of your system.</p>
+<h3>Making it work</h3>
+<p>Taking into consideration that JACK is usually an optional software package, the following pages will help you through the JACK setup, depending on the operating system that you run.</p>
+</body></html>

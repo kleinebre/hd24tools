@@ -1,0 +1,36 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Finding the HD24 device name (Mac)</h2>
+<p>To find the device name on your Mac, start up a terminal, then type</p>
+<p><pre>ls /dev/disk*</pre></p>
+<p>then press Enter.</p>
+<p>You should now see a list of disks, such as:</p>
+<p><pre>/dev/disk0
+/dev/disk0s1
+/dev/disk0s2
+/dev/disk1
+/dev/disk1s1
+/dev/disk2
+</pre></p>
+<p>How do you know which device is the HD24 drive? A few hints:</p>
+<p><ul>
+<li>It is usually not /dev/disk0 because this is
+your system drive.</li>
+<li>It is not any of the drives where the drive number
+is followed by s1, s2 or higher; this is because
+s1, s2 etc. indicate several partitions on the drive. 
+The HD24 does not support partitions, so any disk
+which is also followed by s1, s2 etc. is not an HD24
+drive. In the example above, <b>/dev/drive0</b> and <b>/dev/drive1</b>
+are not HD24 drives.</li>
+<li>Finally, it is most likely to be the drive name that
+was not listed before connecting the HD24 drive, but that
+suddenly shows up when you do connect the HD24 drive to
+your Mac.</li></ul></p>
+<p>In the above case, <b>/dev/disk2</b> is the most likely candidate.</p>
+<p>Under <b>File->Recovery->Select device...</b> you should
+now specify this device. In the dropdown box <b>Choose device</b>, either select the
+device name, or select <b>--Use other device--</b> and manually
+enter the device name of the HD24 drive.</p>
+</body></html>

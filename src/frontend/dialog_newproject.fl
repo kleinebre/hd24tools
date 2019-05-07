@@ -1,0 +1,86 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+class dialog_newproject {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {char projectname[65];} {public
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window {} {
+      label {New project} open
+      xywh {247 417 500 85} type Double color 52
+      code0 {buttonclicked=0;} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {
+for (int i=0;i<65;i++) {
+	projectname[i]=0;
+}
+strncpy(projectname,currname->value(),64);
+buttonclicked=1; //OK
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();} selected
+        xywh {345 60 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {420 60 70 20} labelsize 12
+      }
+      Fl_Input currname {
+        label {Project name:}
+        callback {char filteredname[65];
+int x=strlen(o->value());
+if (x>64) { x=64; }
+int src=0;
+int filtered=0;
+for (int i=0;i<x;i++) {
+ 	if (
+ 	   (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='/') 
+ 	|| (o->value()[i]==':') 
+ 	|| (o->value()[i]=='*') 
+ 	|| (o->value()[i]=='?') 
+ 	|| (o->value()[i]=='"') 
+ 	|| (o->value()[i]=='<') 
+ 	|| (o->value()[i]=='>') 
+ 	|| (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='|'))
+ 	{
+ 		filtered=1;
+ 		continue; 	
+ 	}
+	filteredname[src]=o->value()[i];
+	src++;
+}
+filteredname[src]='\\0';
+if (filtered==1) {
+ 	int pos=o->position()-1;
+ 	if (pos<0) pos=0;
+	o->value(filteredname);
+	o->position(pos,pos);
+}}
+        xywh {100 35 390 20} labelsize 12 when 1 textsize 12
+        code0 {o->maximum_size(64);}
+        code1 {o->value("Proj Name"); o->take_focus();}
+      }
+      Fl_Box {} {
+        label {Please specify the name for the new project below:}
+        xywh {5 8 485 19} labelfont 1 labelsize 12 align 20
+      }
+    }
+  }
+} 

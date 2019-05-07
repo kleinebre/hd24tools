@@ -1,0 +1,127 @@
+#!/usr/bin/perl -w --
+$|=1;  # disable output buffering
+
+use strict;
+use Switch;
+use Time::HiRes qw(usleep ualarm gettimeofday tv_interval);
+open (MTCSOURCE, "amidi --dump --port=hw:1,0,0|");
+my $set=0;
+my $hour=0;
+my $min=0;
+my $sec=0;
+my $frame=0;
+my $tmptmphour=0;
+my $tmptmpmin=0;
+my $tmptmpsec=0;
+my $tmptmpframe=0;
+my $tmphour=0;
+my $tmpmin=0;
+my $tmpsec=0;
+my $tmpframe=0;
+my $qframe=-1;
+my $settmp=0;
+my $t0=[gettimeofday()];
+my $t1;
+my $elapsed;
+while (<MTCSOURCE>) {
+	chomp($_);
+	if (/F0 7F (.*) 06 44 06 01 (.*) F7/) {
+		my @tc=split(' ',substr($_,21,14));
+		$hour=hex("0x".$tc[0]) & 31;
+		$min=hex("0x".$tc[1]);
+		$sec=hex("0x".$tc[2]);
+		$frame=hex("0x".$tc[3]);
+		$qframe=hex("0x".$tc[4]);
+			printf "%02d:%02d:%02d.%02d/%02d (LOCATE) \r",$hour,$min,$sec,$frame,$qframe;
+		next;
+	}
+	if (/F1 (.*)/) {
+		$t1=[gettimeofday()];
+		$elapsed=tv_interval($t0,$t1);
+		if ($elapsed>.1) {
+			$set=0;
+			$tmptmphour=0;
+			$tmptmpmin=0;
+			$tmptmpsec=0;
+			$tmptmpframe=0;
+			$settmp=0;
+			$qframe=-1;
+			$tmphour=0;
+			$tmpmin=0;
+			$tmpsec=0;
+			$tmpframe=0;
+			$hour=0;
+			$min=0;
+			$sec=0;
+			$frame=0;
+			
+		}
+		$t0=$t1;
+#		print $_." | ";
+		my $nibble=hex ("0x".substr($1,1,1));
+		my $cmd=substr($1,0,1);
+		if ($set ==0) {
+			if ($cmd ne "0") {
+				print "skip\n";
+				next;
+			}
+		}
+		$settmp=0;
+		switch (0+substr($1,0,1)) {
+			case 0 {
+				$tmptmpframe=($tmptmpframe & 0xf0)|$nibble;
+				$set|=1;
+				}
+			case 1 {
+				$tmptmpframe=($tmptmpframe & 0x0f)|($nibble*16);
+				$set|=2;	
+				$tmpframe=$tmptmpframe;
+				$settmp=1;
+				}
+			case 2 {
+				$set|=4;
+				$tmptmpsec=($tmptmpsec & 0xf0)|$nibble;
+				}
+			case 3 {
+				$set|=8;
+				$tmptmpsec=($tmptmpsec & 0x0f)|($nibble*16);
+				}
+				$tmpsec=$tmptmpsec;
+			case 4 {
+				$set|=16;
+				$tmptmpmin=($tmptmpmin & 0xf0)|$nibble;
+				}
+			case 5 {
+				$set|=32;
+				$tmptmpmin=($tmptmpmin & 0x0f)|($nibble*16);
+				$tmpmin=$tmptmpmin;
+				}
+			case 6 {
+				$set|=64;
+				$tmptmphour=($tmptmphour & 0xf0)|$nibble;
+				}
+			case 7 {
+				$set|=128;
+				$tmptmphour=($tmptmphour & 0x0f)|(($nibble*16)&1);
+				$tmphour=$tmptmphour;
+			}
+		}
+		$qframe++;
+		if ($qframe > 3) {
+			$qframe=0;
+			if ($settmp == 0) {
+				$tmpframe++;
+			}
+			$frame=$tmpframe;
+			$sec=$tmpsec;
+			$min=$tmpmin;
+			$hour=$tmphour;
+		}
+		if ($set==255) {
+			printf "%02d:%02d:%02d.%02d/%02d          \r",$hour,$min,$sec,$frame,$qframe;
+		} else {
+			printf "%02d:%02d:%02d.%02d/%02d (no lock)\r",$hour,$min,$sec,$frame,$qframe;
+		}
+	}
+}
+close (MTCSOURCE);

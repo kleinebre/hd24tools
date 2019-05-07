@@ -1,0 +1,21 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>'Invalid Format'/'Corrupt Super Block' for no obvious reason</h2>
+<p>This is probably the hairiest disaster scenario of them all, because the cause is not entirely clear. Possible causes include excessive vibration of the unit during recording; a bad contact; overheating of the HD24; or perhaps a bug in the HD24 firmware. Typically, this problem occurs during longer recordings. During recording everything seems fine, yet after the recording the HD24 recorder suddenly claims 'Invalid Format' and the Fireport software claims 'Corrupt Super Block', rendering the drive unreadable.*</p>
+<p>Also, when manually selecting the drive with HD24connect and NOT loading a header file, the name last recorded project may appear damaged (every other character in the name is messed up).</p>
+<h3>What happened? </h3>
+<p>It is still not entirely clear what causes this condition. For some reason, during recording, from a certain point on something went wrong in writing the data to disk. Every other byte of data written to disk was damaged from that point on. As the song info, superblock and project info are updated, these too are damaged. The last part of the audio of the last song that you recorded may also be damaged. It is likely that some if this audio can not be fully recovered, as from a certain point on, every 24-bit sample of the song has at least 1 or 2 incorrect bits.</p>
+<h3>How can you prevent this situation?</h3>
+<p>As it is not entirely clear yet what causes this situation, not a lot can be said about how to prevent it. However, here are some steps that may help:</p><p><ul><li>
+Typically this condition only occurs during longer recordings. This suggests that keeping your recordings short will help prevent this situation.</li>
+<li>As temperature may be an issue, it may help not to switch on the HD24 recorder before necessary. The side effects of some possible firmware bugs would also be suppressed by this.</li> 
+<li>If needed, prepare a disk with several songs so that during breaks you can easily start recording to a new song. Once a song is recorded, its audio will not be damaged. </li>
+<li>Bring several drives- should one disk give 'Invalid format' while switching songs, you will have another one to continue the session.</li>
+</ul></p>
+<h3>How can you recover audio from this situation?</h3>
+<p>In this scenario, you will have the best chance of recovery by first attempting the general recovery procedure without header file; then with the <b>unquickformat</b> header file, and finally using the <b>longliverec</b> header file. Most likely, the last part of the audio of the last recorded song is damaged.</p>
+<p>It is very unlikely that the damaged audio can be fully restored. However, some people have successfully restored audio to "good enough" quality using the HD24wavefix tool. Formerly a command-line program, this tool is now provided in the <b>File->Recovery->Wavefix</b> menu.
+</p>
+<p><i>* Note that this is different from the 'Invalid Format' error that occurs when using a new, initialized or non-HD24 drive.</i>
+</body></html>

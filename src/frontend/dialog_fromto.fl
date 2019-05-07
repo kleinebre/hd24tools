@@ -1,0 +1,50 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+class dialog_fromto {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {int choice_startloc;} {public
+  }
+  decl {int choice_endloc;} {public
+  }
+  Function {make_window(hd24song* currsong)} {open
+  } {
+    Fl_Window {} {
+      label {Set range} open selected
+      xywh {315 299 360 85} type Double color 52
+      code0 {buttonclicked=0;}
+      code1 {currsong=currsong;} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+choice_startloc=fromloc->value();
+choice_endloc=toloc->value();
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {210 55 70 25}
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {285 55 70 25}
+      }
+      Fl_Choice fromloc {
+        label {From location:} open
+        xywh {115 5 240 20} down_box BORDER_BOX labelsize 12 textsize 12
+      } {}
+      Fl_Choice toloc {
+        label {To location:} open
+        xywh {115 30 240 20} down_box BORDER_BOX labelsize 12 textsize 12
+      } {}
+    }
+  }
+} 

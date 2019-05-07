@@ -1,0 +1,2216 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#define MAXSAMRATE 48000} {public
+} 
+
+decl {\#define maxfilterunits 200} {public
+} 
+
+decl {\#define maxreverbunits 20} {public
+} 
+
+decl {\#define maxreverbseconds 1} {public
+} 
+
+decl {\#define eqperchan 4} {public
+} 
+
+decl {\#define Pi2 (2*3.1415926535897)} {public
+} 
+
+decl {\#include <config.h>} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+decl {\#include <vector>} {public
+} 
+
+decl {\#include <memutils.h>} {public
+} 
+
+decl {\#include <soundlibs.h>} {public
+} 
+
+decl {\#include <iostream>} {public
+} 
+
+decl {\#include <fstream>} {public
+} 
+
+decl {\#include <FL/FLTKstuff.H>} {public
+} 
+
+decl {\#include <FL/filename.H>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+decl {\#include <WidgetPDial.h>} {public
+} 
+
+decl {\#include <time.h>} {public
+} 
+
+decl {\#include <math.h>} {public
+} 
+
+decl {\#include <ui_hd24connect.h>} {public
+} 
+
+class stereosample {open
+} {
+  decl {float left;} {public
+  }
+  decl {float right;} {public
+  }
+} 
+
+decl {class MixerChannelControl;} {public
+} 
+
+decl {class MixerChannelUI;} {public
+} 
+
+decl {class MixerChannelData;} {public
+} 
+
+decl {class MasterChannelUI;} {public
+} 
+
+decl {class MasterChannelControl;} {public
+} 
+
+decl {class MixerControl;} {public
+} 
+
+decl {class MixerChannelUI;} {public
+} 
+
+class MixerLevelMeterData {} {
+  decl {\#define PEAKMODE_NOHOLD 0} {public
+  }
+  decl {\#define PEAKMODE_TEMPHOLD 1} {public
+  }
+  decl {\#define PEAKMODE_CONTHOLD 2} {public
+  }
+  decl {\#define PEAKMODE_MAXHOLD 33} {public
+  }
+  decl {int mode;} {public
+  }
+  decl {double dB;} {public
+  }
+  decl {double peakvalue; /* for peak hold */} {public
+  }
+  decl {double metervalue;} {public
+  }
+  decl {int holdtime;} {public
+  }
+  decl {int dBrange;} {public
+  }
+} 
+
+class MixerLevelMeterControl {} {
+  decl {MixerLevelMeterData* data;} {}
+  Function {MixerLevelMeterControl()} {open
+  } {
+    code {data=new MixerLevelMeterData;
+init();} {}
+  }
+  Function {~MixerLevelMeterControl()} {open
+  } {
+    code {delete data;} {}
+  }
+  Function {setvalue(double levelval)} {open
+  } {
+    code {data->dB=20*log10(levelval);
+return;
+
+// reset peaks if desired
+switch (data->mode) {
+	case PEAKMODE_NOHOLD: this->peakreset(); break;	
+	case PEAKMODE_TEMPHOLD: 		
+		if (data->holdtime>PEAKMODE_MAXHOLD) {
+			peakreset(); 
+		} else {
+			data->holdtime++;
+		}
+		break;	
+	case PEAKMODE_CONTHOLD:
+		break;
+	default:
+		data->mode=PEAKMODE_NOHOLD;
+		peakreset();
+		break;
+}
+
+if (levelval>data->metervalue) {
+	data->peakvalue=data->metervalue;
+	data->holdtime=0;
+}} {}
+  }
+  Function {peakmode(int p_peakmode)} {open return_type void
+  } {
+    code {data->mode=p_peakmode;
+peakreset();} {}
+  }
+  Function {peakreset()} {open return_type void
+  } {
+    code {data->peakvalue=0;
+data->holdtime=0;} {}
+  }
+  Function {init()} {open return_type void
+  } {
+    code {data->peakvalue=0;
+data->holdtime=0;
+
+data->dBrange=60;
+this->setvalue(0);
+return;} {}
+  }
+  Function {getpctvalue()} {open return_type float
+  } {
+    code {float pct=100-(100*(-(data->dB)/(data->dBrange)));
+
+if (pct<0) { pct=0; }
+if (pct>100) { pct=100; }
+
+return pct;} {}
+  }
+} 
+
+class MixerLevelMeterUI {: {public Fl_Group}
+} {
+  decl {MixerLevelMeterControl* control;} {public
+  }
+  Function {MixerLevelMeterUI(int a,int b,int c,int d,const char* e):Fl_Group(a,b,c,d,e)} {} {
+    code {init_ui();} {}
+  }
+  Function {MixerLevelMeterUI(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {} {
+    code {init_ui();} {}
+  }
+  Function {init_ui()} {open private
+  } {
+    code {this->control=new MixerLevelMeterControl();} {}
+  }
+  Function {draw()} {open
+  } {
+    code {float pct=(control->getpctvalue())/100; 
+
+int zro=y();
+int bot=zro+128;
+int myx=x();
+int top=bot-  ((int)( pct*128));
+
+	fl_color(fl_rgb_color(0,255,0));
+	fl_line(myx,top,myx,bot);
+	myx++;
+	fl_line(myx,top,myx,bot);
+	myx--;
+
+	fl_color(fl_rgb_color(0,0,0));
+	fl_line(myx,zro,myx,top);
+	myx++;
+	fl_line(myx,zro,myx,top);
+
+return;} {}
+  }
+  Function {~MixerLevelMeterUI()} {open
+  } {
+    code {delete control;} {}
+  }
+} 
+
+class MixerChannelData {open
+} {
+  decl {int bypass; /* 1 to bypass all mixing */} {public
+  }
+  decl {friend class MixerChannelUI;} {}
+  decl {friend class MixerChannelControl;} {}
+  decl {MixerChannelUI* parentui;} {}
+  decl {double trackpeak;} {public
+  }
+  decl {int enable_eq; /* overall eq settings */} {public
+  }
+  decl {int enable_pan; /* overall eq settings */} {public
+  }
+  decl {int eq_on[eqperchan];} {public
+  }
+  decl {double eq_gain[eqperchan];} {public
+  }
+  decl {double eq_freq[eqperchan];} {public
+  }
+  decl {double eq_Q[eqperchan];} {public
+  }
+  decl {double eq_type[eqperchan];} {public
+  }
+  decl {double fadermult;} {public
+  }
+  decl {double faderval;} {public
+  }
+  decl {double panvalue;} {public
+  }
+  decl {float* delaybuffer;} {}
+  decl {long delaybuffersize;} {public
+  }
+  decl {long delaybuffersam;} {public
+  }
+  decl {int solo;} {}
+  decl {int mute;} {}
+  decl {int ch_number;} {}
+  decl {char strchnum[4];} {}
+  decl {float* sample;} {public
+  }
+  decl {int mixmono;} {}
+  decl {MixerControl* parentmixercontrol;} {}
+  decl {__uint32 samplerate;} {public
+  }
+  decl {int selected;} {}
+  decl {int ringbufpos[maxreverbunits];} {}
+} 
+
+class MixerChannelControl {open
+} {
+  decl {friend class MixerChannelUI;} {}
+  decl {friend class MixerChannelData;} {}
+  decl {MixerChannelData* data;} {public
+  }
+  Function {init()} {open return_type void
+  } {
+    code {data->bypass=0;
+data->trackpeak=0;
+data->enable_eq=1;
+data->enable_pan=1;
+data->solo=0;
+data->mute=0;
+data->sample=(float *)memutils::mymalloc("MixerChannelControl::init()",24000,sizeof(float));
+data->eq_gain[0]=0;
+data->eq_gain[1]=0;
+data->eq_gain[2]=0;
+data->eq_gain[3]=0;
+data->eq_Q[0]=1;
+data->eq_Q[1]=1;
+data->eq_Q[2]=1;
+data->eq_Q[3]=1;
+data->eq_on[0]=1;
+data->eq_on[1]=1;
+data->eq_on[2]=1;
+data->eq_on[3]=1;
+data->eq_freq[0]=100;
+data->eq_freq[1]=600;
+data->eq_freq[2]=1600;
+data->eq_freq[3]=6000;
+data->samplerate=44100; // TODO: set to proper val
+data->faderval=90;
+data->fadermult=1;
+data->panvalue=0;
+
+\#ifdef REVERBMODULE
+data->delaybuffersize=maxreverbunits*maxreverbseconds*MAXSAMRATE;
+data->delaybuffer=(float *)memutils::mymalloc("MixerChannelControl::init()",data->delaybuffersize,sizeof(float));
+if (data->delaybuffer==NULL) {
+	fl_message("out of memory");
+}
+data->delaybuffersam=data->delaybuffersize;
+for (int i=0;i<data->delaybuffersize;i++)
+{
+	data->delaybuffer[i]=0;
+}
+data->ringbufpos[0]=881;
+data->ringbufpos[1]=883;
+data->ringbufpos[2]=887;
+data->ringbufpos[3]=907;
+data->ringbufpos[4]=911;
+data->ringbufpos[5]=919;
+data->ringbufpos[6]=929;
+data->ringbufpos[7]=937;
+data->ringbufpos[8]=941;
+data->ringbufpos[9]=947;
+data->ringbufpos[10]=953;
+data->ringbufpos[11]=967;
+data->ringbufpos[12]=971;
+data->ringbufpos[13]=977;
+data->ringbufpos[14]=983;
+data->ringbufpos[15]=991;
+data->ringbufpos[16]=997;
+data->ringbufpos[17]=1009;
+data->ringbufpos[18]=1013;
+data->ringbufpos[19]=1019;
+\#endif
+
+return;} {}
+  }
+  Function {MixerChannelControl()} {open
+  } {
+    code {data=new MixerChannelData();
+init();} {}
+  }
+  Function {~MixerChannelControl()} {open
+  } {
+    code {memutils::myfree("~MixerChannelControl",data->sample);
+data->sample=NULL;
+memutils::myfree("~MixerChannelControl",data->delaybuffer);
+data->delaybuffer=NULL;
+delete data;
+data=NULL;} {}
+  }
+  Function {fadervalue(const double p_val)} {} {
+    code {double lin;
+if (p_val == 0) {
+	lin=0;
+} else {
+	lin=pow(10,(p_val-90)/60);
+}
+data->fadermult=lin;
+data->faderval=p_val;
+data->parentui->fader->value(p_val);
+data->parentui->redraw();} {}
+  }
+  Function {fadervalue()} {open return_type double
+  } {
+    code {return data->faderval;} {}
+  }
+  Function {updatemeters()} {open return_type void
+  } {
+    code {// update and redraw meterlevels object
+this->parentui()->mixled->control->setvalue(data->trackpeak);
+this->parentui()->mixled->redraw();
+// then, reset peak value
+trackpeak(0);} {}
+  }
+  Function {solo(int p_val)} {open return_type void
+  } {
+    code {data->solo=p_val;
+data->parentui->mixsolo->value(p_val);
+data->parentui->mixsolo->damage();
+data->parentui->mixsolo->redraw();
+if (p_val==1)
+{
+this->parentmixercontrol()->selectedchannel(this->channel_number()-1);
+}} {}
+  }
+  Function {mute(int p_val)} {open return_type void
+  } {
+    code {data->mute=p_val;
+data->parentui->mixmute->value(p_val);
+data->parentui->mixmute->damage();
+data->parentui->mixmute->redraw();
+//if (ui!=NULL) {
+//	ui->readmixer();
+//}} {}
+  }
+  Function {solo()} {open return_type int
+  } {
+    code {return data->solo;} {}
+  }
+  Function {mute()} {open return_type int
+  } {
+    code {return data->mute;} {}
+  }
+  Function {issolo()} {open return_type int
+  } {
+    code {return data->solo;} {}
+  }
+  Function {ismute()} {open return_type int
+  } {
+    code {return data->mute;} {}
+  }
+  Function {getfadermult()} {open return_type double
+  } {
+    code {return data->fadermult;} {}
+  }
+  Function {trackpeak()} {open return_type double
+  } {
+    code {return data->trackpeak;} {}
+  }
+  Function {trackpeak(double peakval)} {open return_type void
+  } {
+    code {data->trackpeak=peakval;} {}
+  }
+  Function {channel_number(int ch)} {open return_type void
+  } {
+    code {data->ch_number=ch;
+snprintf(data->strchnum,3,"%d",ch);
+data->parentui->mixmute->label(data->strchnum);} {}
+  }
+  Function {channel_number()} {open return_type int
+  } {
+    code {return data->ch_number;} {}
+  }
+  Function {parentmixercontrol(MixerControl* p_parentmixercontrol)} {open return_type void
+  } {
+    code {data->parentmixercontrol=p_parentmixercontrol;} {}
+  }
+  Function {parentui(MixerChannelUI* p_parentui)} {open return_type void
+  } {
+    code {data->parentui=p_parentui;} {}
+  }
+  Function {parentui()} {open return_type {MixerChannelUI*}
+  } {
+    code {return data->parentui;} {}
+  }
+  Function {parentmixercontrol()} {open return_type {MixerControl*}
+  } {
+    code {return data->parentmixercontrol;} {}
+  }
+  Function {panvalue(const double p_val)} {open
+  } {
+    code {data->panvalue=p_val;
+data->parentui->mixpan->value(p_val);
+data->parentui->mixpan->damage();
+data->parentui->mixpan->redraw();} {}
+  }
+  Function {panvalue()} {open return_type double
+  } {
+    code {return data->panvalue;} {}
+  }
+  Function {sample(int framenum,float samval)} {open
+  } {
+    code {if (data==NULL) return;
+if ((data->sample)==NULL) return;
+data->sample[framenum]=samval;
+/*float q=1;
+if (samval<0) {
+	q=-1;
+}
+if ((samval*q) > data->trackpeak) {
+	data->trackpeak=samval*q;
+}*/} {}
+  }
+  Function {sample(int framenum)} {return_type float
+  } {
+    code {return data->sample[framenum];} {}
+  }
+  Function {getsample(stereosample* sam,int framenum)} {open return_type void
+  } {
+    code {float monosam=data->sample[framenum];
+
+if (data->bypass==1)
+{
+	/* Bypass all mixer functions, just return the sample */
+	sam->left=monosam/2; 
+	sam->right=monosam/2;
+	return;
+}
+
+float panval;
+if (data->enable_eq==1) {
+	int Q=1;
+	// FilterCell(unsigned long Unit, double Input, double Frequency, double Q, double Gain, unsigned long Type)
+	if (eq_on(0)==1 && (eq_gain(0)!=0)) monosam=FilterCell(0,monosam,eq_freq(0),Q,eq_gain(0),7);
+	if (eq_on(1)==1 && (eq_gain(1)!=0)) monosam=FilterCell(1,monosam,eq_freq(1),Q,eq_gain(1),7);
+	if (eq_on(2)==1 && (eq_gain(2)!=0)) monosam=FilterCell(2,monosam,eq_freq(2),Q,eq_gain(2),7);
+	if (eq_on(3)==1 && (eq_gain(3)!=0)) monosam=FilterCell(3,monosam,eq_freq(3),Q,eq_gain(3),7);		   	
+}   	  
+	
+monosam*=getfadermult();
+   	
+sam->left=monosam;
+sam->right=monosam;
+
+if (data->enable_pan==1)   		
+{
+   	panval=panvalue();
+} else {
+	panval=0;
+}
+
+float pctright=(panval+127)/254;
+float pctleft=1-pctright;
+sam->left*=pctleft;
+sam->right*=pctright;   	
+
+float subsamval=fabs(monosam);
+if (subsamval > trackpeak()) {
+    trackpeak(subsamval);
+}
+
+return;} {}
+  }
+  Function {channelselect(int select)} {return_type void
+  } {
+    code {data->selected=select;
+parentui()->mixchsel->value(select);
+parentui()->mixchsel->redraw();} {}
+  }
+  Function {FilterCell(unsigned long Unit, double Input, double Frequency, double Q, double Gain, unsigned long Type)} {return_type double
+  } {
+    code {__uint32 SampleRate=data->samplerate;
+
+/* --------------------------------------------------------------- */
+   double Output,S,omega,A,sn,cs,alpha,beta,temp1,temp2,temp3,temp4;
+   Output=Input;
+
+/* -- check if frequency, Q, gain or type has changed.. and, if so, update coefficients */
+   if ( ( Frequency != filter_f[Unit] ) || ( Gain != filter_g[Unit] ) || ( Q != filter_q[Unit] ) || ( Type != filter_t[Unit] ) ) {
+      filter_f[Unit] = Frequency; filter_q[Unit] = Q; filter_g[Unit] = Gain; filter_t[Unit] = Type; /* remember last frequency, q, gain and type */
+      switch (Type) {
+         case 0:                                               /* no filtering */
+            filter_b0[Unit] = pow( 10.0, Gain / 20.0 );               /* convert from dB to linear */
+            break;
+         case 1:                                               /* lowpass */
+            Gain = pow( 10.0, Gain / 20.0 );                   /* convert from dB to linear */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            alpha = sn / ( 2.0 * Q );
+            filter_a0[Unit] = 1.0 / ( 1.0 + alpha );
+            filter_a1[Unit] = ( -2.0 * cs ) * filter_a0[Unit];
+            filter_a2[Unit] = ( 1.0 - alpha ) * filter_a0[Unit];
+            filter_b1[Unit] = ( 1.0 - cs ) * filter_a0[Unit] * Gain;
+            filter_b0[Unit] = filter_b1[Unit] * 0.5;
+            break;
+         case 2:                                               /* highpass */
+            Gain = pow( 10.0, Gain / 20.0 );                   /* convert from dB to linear */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            alpha = sn / ( 2.0 * Q );
+            filter_a0[Unit] = 1.0 / ( 1.0 + alpha );
+            filter_a1[Unit] = ( -2.0 * cs ) * filter_a0[Unit];
+            filter_a2[Unit] = ( 1.0 - alpha ) * filter_a0[Unit];
+            filter_b1[Unit] = -( 1.0 + cs ) * filter_a0[Unit] * Gain;
+            filter_b0[Unit] = -filter_b1[Unit] * 0.5;
+            break;
+         case 3:                                               /* bandpass */
+            Gain = pow( 10.0, Gain / 20.0 );                   /* convert from dB to linear */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            alpha = sn / ( 2.0 * Q );
+            filter_a0[Unit] = 1.0 / ( 1.0 + alpha );
+            filter_a1[Unit] = ( -2.0 * cs ) * filter_a0[Unit];
+            filter_a2[Unit] = ( 1.0 - alpha ) * filter_a0[Unit];
+            filter_b0[Unit] = alpha * filter_a0[Unit] * Gain;
+            break;
+         case 4:                                               /* notch */
+            Gain = pow( 10.0, Gain / 20.0 );                   /* convert from dB to linear */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            alpha = sn / ( 2.0 * Q );
+            filter_a0[Unit] = 1.0 / ( 1.0 + alpha );
+            filter_a1[Unit] = ( -2.0 * cs ) * filter_a0[Unit];
+            filter_a2[Unit] = ( 1.0 - alpha ) * filter_a0[Unit];
+            filter_b0[Unit] = filter_a0[Unit] * Gain;
+            filter_b1[Unit] = filter_a1[Unit] * Gain;
+            break;
+         case 5:                                               /* lowshelf */
+            /* "shelf slope" 1.0 = max slope, because neither Q nor bandwidth is used in */
+            /* those filters (note: true only for lowshelf and highshelf, not peaking). */
+            S = 1.0; /* used only by lowshelf and highshelf */
+            A = pow( 10.0 , ( Gain / 40.0 ) );                 /* Gain is expressed in dB */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            temp1 = A + 1.0; temp2 = A - 1.0; temp3 = temp1 * cs; temp4 = temp2 * cs;
+            beta = sn * sqrt( ( A * A + 1.0 ) / S - temp2 * temp2 );
+            filter_a0[Unit] = 1.0 / ( temp1 + temp4 + beta );
+            filter_a1[Unit] = ( -2.0 * ( temp2 + temp3 ) ) * filter_a0[Unit];
+            filter_a2[Unit] = ( temp1 + temp4 - beta ) * filter_a0[Unit];
+            filter_b0[Unit] = ( A * ( temp1 - temp4 + beta ) ) * filter_a0[Unit];
+            filter_b1[Unit] = ( 2.0 * A * ( temp2 - temp3 ) ) * filter_a0[Unit];
+            filter_b2[Unit] = ( A * ( temp1 - temp4 - beta ) ) * filter_a0[Unit];
+            break;
+         case 6:                                               /* highshelf */
+            /* "shelf slope" 1.0 = max slope, because neither Q nor bandwidth is used in */
+            /* those filters (note: true only for lowshelf and highshelf, not peaking). */
+            S = 1.0; /* used only by lowshelf and highshelf */
+            A = pow( 10.0, ( Gain / 40.0 ) );                  /* Gain is expressed in dB */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            temp1 = A + 1.0; temp2 = A - 1.0; temp3 = temp1 * cs; temp4 = temp2 * cs;
+            beta = sn * sqrt( ( A * A + 1.0 ) / S - temp2 * temp2 );
+            filter_a0[Unit] = 1.0 / ( temp1 - temp4 + beta );
+            filter_a1[Unit] = ( 2.0 * ( temp2 - temp3 ) ) * filter_a0[Unit];
+            filter_a2[Unit] = ( temp1 - temp4 - beta ) * filter_a0[Unit];
+            filter_b0[Unit] = ( A * ( temp1 + temp4 + beta ) ) * filter_a0[Unit];
+            filter_b1[Unit] = ( -2.0 * A * ( temp2 + temp3 ) ) * filter_a0[Unit];
+            filter_b2[Unit] = ( A * ( temp1 + temp4 - beta ) ) * filter_a0[Unit];
+            break;
+         case 7:                                               /* peaking */
+            A = pow( 10.0, ( Gain / 40.0 ) );                  /* Gain is expressed in dB */
+            omega = ( Pi2 * Frequency ) / SampleRate;
+            sn = sin( omega ); cs = cos( omega );
+            alpha = sn / ( 2.0 * Q );
+            temp1 = alpha * A;
+            temp2 = alpha / A;
+            filter_a0[Unit] = 1.0 / ( 1.0 + temp2 );
+            filter_a1[Unit] = ( -2.0 * cs ) * filter_a0[Unit];
+            filter_a2[Unit] = ( 1.0 - temp2 ) * filter_a0[Unit];
+            filter_b0[Unit] = ( 1.0 + temp1 ) * filter_a0[Unit];
+            filter_b2[Unit] = ( 1.0 - temp1 ) * filter_a0[Unit];
+            break;
+      }
+   }
+/* -- filter loop: if you don't change the parameters of the filter dynamically, ~only this code will be executed. */
+   switch (Type) {
+      case 0:                                                  /* no filtering */
+         Output = filter_b0[Unit]*Input;
+         break;
+      case 1:                                                  /* lowpass */
+      case 2:                                                  /* highpass */
+         Output = filter_b0[Unit]*Input 
+         	+ filter_b1[Unit]*filter_i1[Unit] 
+         	+ filter_b0[Unit]*filter_i2[Unit] 
+         	- filter_a1[Unit]*filter_o1[Unit] 
+         	- filter_a2[Unit]*filter_o2[Unit];
+         break;
+      case 3:                                                  /* bandpass */
+         Output = filter_b0[Unit]*Input 
+         	- filter_b0[Unit]*filter_i2[Unit] 
+         	- filter_a1[Unit]*filter_o1[Unit] 
+         	- filter_a2[Unit]*filter_o2[Unit];
+         break;
+      case 4:                                                  /* notch */
+         Output = filter_b0[Unit]*Input 
+         	+ filter_b1[Unit]*filter_i1[Unit] 
+         	+ filter_b0[Unit]*filter_i2[Unit] 
+         	- filter_a1[Unit]*filter_o1[Unit] 
+         	- filter_a2[Unit]*filter_o2[Unit];
+         break;
+      case 5:                                                  /* low shelving */
+      case 6:                                                  /* high shelving */
+         Output = filter_b0[Unit]*Input 
+         	+ filter_b1[Unit]*filter_i1[Unit] 
+         	+ filter_b2[Unit]*filter_i2[Unit] 
+         	- filter_a1[Unit]*filter_o1[Unit] 
+         	- filter_a2[Unit]*filter_o2[Unit];
+         break;
+      case 7:                                                  /* peaking */
+         Output = filter_b0[Unit]*Input 
+         	+ filter_a1[Unit]*filter_i1[Unit] 
+         	+ filter_b2[Unit]*filter_i2[Unit] 
+         	- filter_a1[Unit]*filter_o1[Unit] 
+         	- filter_a2[Unit]*filter_o2[Unit];
+         break;
+   }
+   filter_o2[Unit]=filter_o1[Unit]; 
+   filter_o1[Unit]=Output; 
+   filter_i2[Unit]=filter_i1[Unit]; 
+   filter_i1[Unit]=Input; /* update variables for recursion */
+
+   return(Output);} {}
+  }
+  Function {eq_gain(int whicheq,double gain)} {open return_type void
+  } {
+    code {if (whicheq>4) return;
+if (whicheq<0) return;
+data->eq_gain[whicheq]=gain;
+
+
+WidgetPDial* gainwidget=NULL;
+Fl_Output* dispwidget=NULL;
+switch (whicheq) {
+	case 0: 
+	{
+		gainwidget=parentmixercontrol()->parentui()->gain1; 
+		dispwidget=parentmixercontrol()->parentui()->dispgain1; 
+		break;
+	}
+	case 1: 
+	{
+		gainwidget=parentmixercontrol()->parentui()->gain2; 
+		dispwidget=parentmixercontrol()->parentui()->dispgain2; 		
+		break;
+	}
+	case 2: 
+	{
+		gainwidget=parentmixercontrol()->parentui()->gain3; 
+		dispwidget=parentmixercontrol()->parentui()->dispgain3; 		
+		break;	
+	}
+	case 3: 
+	{
+		gainwidget=parentmixercontrol()->parentui()->gain4; 
+		dispwidget=parentmixercontrol()->parentui()->dispgain4; 		
+		break;	
+	}
+}
+if (dispwidget!=NULL)
+{
+	string* sval=Convert::int64tostr((__sint64)gain); 
+	dispwidget->value(sval->c_str()); 
+	delete sval;
+	dispwidget->redraw();
+}
+if (gainwidget!=NULL)
+{	
+	gainwidget->value(gain);
+	gainwidget->redraw();
+}} {}
+  }
+  Function {eq_gain(int whicheq)} {open return_type double
+  } {
+    code {if (whicheq>4) return 0;
+if (whicheq<0) return 0;
+return data->eq_gain[whicheq];} {}
+  }
+  Function {eq_freq(int whicheq,double freq)} {open return_type void
+  } {
+    code {if (whicheq>4) return;
+if (whicheq<0) return;
+data->eq_freq[whicheq]=freq;
+WidgetPDial* freqwidget=NULL;
+Fl_Output* dispwidget=NULL;
+switch (whicheq) {
+	case 0: 
+	{
+		freqwidget=parentmixercontrol()->parentui()->freq1; 
+		dispwidget=parentmixercontrol()->parentui()->dispfreq1; 
+		break;
+	}
+	case 1: 
+	{
+		freqwidget=parentmixercontrol()->parentui()->freq2; 
+		dispwidget=parentmixercontrol()->parentui()->dispfreq2; 		
+		break;
+	}
+	case 2: 
+	{
+		freqwidget=parentmixercontrol()->parentui()->freq3; 
+		dispwidget=parentmixercontrol()->parentui()->dispfreq3; 		
+		break;	
+	}
+	case 3: 
+	{
+		freqwidget=parentmixercontrol()->parentui()->freq4; 
+		dispwidget=parentmixercontrol()->parentui()->dispfreq4; 		
+		break;	
+	}
+}
+if (dispwidget!=NULL)
+{
+	string* sval=Convert::int64tostr((__sint64)freq); 
+	dispwidget->value(sval->c_str()); 
+	delete sval;
+	dispwidget->redraw();
+}
+if (freqwidget!=NULL)
+{	
+	freqwidget->value(freq);
+	freqwidget->redraw();
+}} {}
+  }
+  Function {eq_freq(int whicheq)} {return_type double
+  } {
+    code {if (whicheq>4) return 0;
+if (whicheq<0) return 0;
+return data->eq_freq[whicheq];} {}
+  }
+  Function {eq_on(int whicheq,int onoff)} {return_type void
+  } {
+    code {if (whicheq>4) return;
+if (whicheq<0) return;
+data->eq_on[whicheq]=onoff;
+
+switch (whicheq) {
+	case 0: parentmixercontrol()->parentui()->eqon1->value(onoff); break;
+	case 1: parentmixercontrol()->parentui()->eqon2->value(onoff); break;
+	case 2: parentmixercontrol()->parentui()->eqon3->value(onoff); break;	
+	case 3: parentmixercontrol()->parentui()->eqon4->value(onoff); break;	
+}
+parentmixercontrol()->parentui()->eqon1->redraw();
+parentmixercontrol()->parentui()->eqon2->redraw();
+parentmixercontrol()->parentui()->eqon3->redraw();
+parentmixercontrol()->parentui()->eqon4->redraw();} {}
+  }
+  Function {eq_on(int whicheq)} {return_type int
+  } {
+    code {if (whicheq>4) return 0;
+if (whicheq<0) return 0;
+return data->eq_on[whicheq];} {}
+  }
+  Function {eq_Q(int whicheq,double Q)} {return_type void
+  } {
+    code {if (whicheq>4) return;
+if (whicheq<0) return;
+data->eq_Q[whicheq]=Q;
+
+//switch (whicheq) {
+//	case 0: parentmixercontrol()->parentui()->Q1->value(freq); break;
+//	case 1: parentmixercontrol()->parentui()->Q2->value(freq); break;
+//	case 2: parentmixercontrol()->parentui()->Q3->value(freq); break;	
+//	case 3: parentmixercontrol()->parentui()->Q4->value(freq); break;	
+//}
+//parentmixercontrol()->parentui()->freq1->redraw();
+//parentmixercontrol()->parentui()->freq2->redraw();
+//parentmixercontrol()->parentui()->freq3->redraw();
+//parentmixercontrol()->parentui()->freq4->redraw();} {}
+  }
+  Function {eq_Q(int whicheq)} {return_type double
+  } {
+    code {if (whicheq>4) return 0;
+if (whicheq<0) return 0;
+return data->eq_Q[whicheq];} {}
+  }
+  decl {double filter_i1[eqperchan]; /* temporary variables */} {}
+  decl {double filter_i2[eqperchan];} {}
+  decl {double filter_o1[eqperchan];} {}
+  decl {double filter_o2[eqperchan];} {}
+  decl {double filter_a0[eqperchan]; /*coefficients */} {}
+  decl {double filter_a1[eqperchan];} {}
+  decl {double filter_a2[eqperchan];} {}
+  decl {double filter_b0[eqperchan]; /*coefficients */} {}
+  decl {double filter_b1[eqperchan];} {}
+  decl {double filter_b2[eqperchan];} {}
+  decl {double filter_f[eqperchan]; /* last freq used */} {}
+  decl {double filter_q[eqperchan]; /* last Q used */} {}
+  decl {double filter_g[eqperchan]; /* last gain used */} {}
+  decl {unsigned long filter_t[eqperchan]; /* last T used */} {}
+  Function {pan_enabled(int yesno)} {open return_type void
+  } {
+    code {data->enable_pan=yesno;} {}
+  }
+  Function {pan_enabled()} {open return_type int
+  } {
+    code {return data->enable_pan;} {}
+  }
+  Function {eq_enabled(int yesno)} {return_type void
+  } {
+    code {data->enable_eq=yesno;} {}
+  }
+  Function {eq_enabled()} {open return_type int
+  } {
+    code {return data->enable_eq;} {}
+  }
+  Function {bypass(int yesno)} {open return_type void
+  } {
+    code {data->bypass=yesno;} {}
+  }
+  Function {bypass()} {open return_type int
+  } {
+    code {return data->bypass;} {}
+  }
+  Function {samplerate(__uint32 p_samplerate)} {open return_type void
+  } {
+    code {data->samplerate=p_samplerate;} {}
+  }
+  Function {samplerate()} {open return_type __uint32
+  } {
+    code {return data->samplerate;} {}
+  }
+} 
+
+class MixerChannelUI {open : {public Fl_Group}
+} {
+  decl {MixerChannelControl* control;} {public
+  }
+  Function {MixerChannelUI(int a,int b,int c,int d,const char* e):Fl_Group(a,b,c,d,e)} {open
+  } {
+    code {init_ui();} {}
+  }
+  Function {MixerChannelUI(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {init_ui();} {}
+  }
+  Function {init_ui()} {open private
+  } {
+    code {this->control=new MixerChannelControl();
+this->control->parentui(this);
+make_window();} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window channelstrip {open
+      xywh {698 377 20 235} type Double
+      code0 {o->position(this->x(),this->y());}
+      class Fl_Group visible
+    } {
+      Fl_Group resources {open
+        xywh {80 62 150 98} hide deactivate
+      } {
+        Fl_Button button_mute_up {
+          tooltip Play image {images/button_mute.gif} xywh {80 62 5 13} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_mute_dn {
+          tooltip Play image {images/button_mute_dn.gif} xywh {85 62 35 13} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_solo_up {
+          tooltip Play image {images/button_solo.gif} xywh {80 62 5 13} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_solo_dn {
+          tooltip Play image {images/button_solo_dn.gif} xywh {85 62 45 13} labelsize 11 align 16 deactivate
+        }
+      }
+      Fl_Button mixmute {
+        label 1
+        callback {//mute(0,o->value());
+this->control->mute(o->value());}
+        tooltip Mute xywh {0 65 20 15} selection_color 1 labelfont 1 labelsize 10 align 2
+        code0 {o->up_image(button_mute_up->image()); o->down_image(button_mute_dn->image());}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mixsolo {
+        callback {this->control->solo(o->value());}
+        tooltip Solo xywh {0 45 20 15} selection_color 2
+        code0 {o->up_image(button_solo_up->image()); o->down_image(button_solo_dn->image());}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Dial mixpan {
+        callback {control->panvalue(o->value());}
+        xywh {0 25 20 20} minimum -127 maximum 127 step 1
+        class WidgetPDial
+      }
+      Fl_Round_Button mixchsel {
+        callback {this->control->parentmixercontrol()->selectedchannel(this->control->channel_number()-1);}
+        xywh {0 0 15 20} down_box ROUND_DOWN_BOX align 2
+      }
+      Fl_Group mixled {open
+        xywh {18 93 4 132}
+        class MixerLevelMeterUI
+      } {}
+      Fl_Slider fader {
+        callback {control->fadervalue(o->value());}
+        image {images/fader.gif} xywh {0 92 18 128} type {Vert Knob} color 8 labelfont 1 labelsize 10 align 0 minimum 127 maximum 0 step 1 value 90
+        code0 {o->clear_visible_focus();}
+      }
+    }
+  }
+  Function {~MixerChannelUI()} {open
+  } {
+    code {delete control;} {}
+  }
+} 
+
+class MasterChannelData {open
+} {
+  decl {friend class MasterChannelUI;} {}
+  decl {friend class MasterChannelControl;} {}
+  decl {MasterChannelUI* parentui;} {}
+  decl {double trackpeak[2];} {public
+  }
+  decl {int eq_on[eqperchan];} {public
+  }
+  decl {double eq_gain[eqperchan];} {public
+  }
+  decl {double eq_freq[eqperchan];} {public
+  }
+  decl {double eq_Q[eqperchan];} {public
+  }
+  decl {double eq_type[eqperchan];} {public
+  }
+  decl {double fadermult[2];} {public
+  }
+  decl {double fadervalue;} {public
+  }
+  decl {double panvalue;} {public
+  }
+  decl {float* delaybuffer;} {}
+  decl {long delaybuffersize;} {public
+  }
+  decl {long delaybuffersam;} {public
+  }
+  decl {int solo;} {}
+  decl {int mute;} {}
+  decl {int ch_number;} {}
+  decl {char strchnum[4];} {}
+  decl {float* sample;} {public
+  }
+  decl {int mixmono;} {}
+} 
+
+class MasterChannelControl {open
+} {
+  decl {friend class MasterChannelUI;} {}
+  Function {init()} {open return_type void
+  } {
+    code {data->solo=0;
+data->mute=0;
+data->mixmono=0;
+data->sample=(float *)memutils::mymalloc("MasterChannelControl::init()",24000,sizeof(float));
+data->trackpeak[0]=0;
+data->trackpeak[1]=0;
+data->fadermult[0]=1;
+data->fadermult[1]=1;
+data->panvalue=0;
+data->fadervalue=90;
+return;} {}
+  }
+  decl {MasterChannelData* data;} {}
+  Function {MasterChannelControl()} {open
+  } {
+    code {data=new MasterChannelData;
+init();} {}
+  }
+  Function {~MasterChannelControl()} {open
+  } {
+    code {memutils::myfree("~MasterChannelControl",data->sample);
+delete data;} {}
+  }
+  Function {fadervalue(const double p_val)} {open
+  } {
+    code {double lin;
+if (p_val == 0) {
+	lin=0;
+} else {
+	lin=pow(10,(p_val-90)/60);
+}
+data->fadermult[0]=lin;
+data->fadermult[1]=lin;
+data->fadervalue=p_val;
+data->parentui->redraw();
+//faderarray[channel]=lin;
+//mixmute[channel]->draw();
+//mixfader[channel]->draw();
+//mixled[channel]->draw();
+//masterled[0]->draw();
+//masterled[1]->draw();
+//this->redraw();*/} {}
+  }
+  Function {fadervalue()} {open return_type double
+  } {
+    code {return data->fadervalue;} {}
+  }
+  Function {updatemeters()} {open return_type void
+  } {
+    code {// update and redraw meterlevels object
+this->parentui()->mixledleft->control->setvalue(data->trackpeak[0]);
+this->parentui()->mixledright->control->setvalue(data->trackpeak[1]);
+
+this->parentui()->mixledleft->redraw();
+this->parentui()->mixledright->redraw();
+// then, reset peak value
+trackpeak(0,0);
+trackpeak(1,0);} {}
+  }
+  Function {trackpeak(int lr)} {open return_type double
+  } {
+    code {return data->trackpeak[lr];} {}
+  }
+  Function {trackpeak(int lr,double peakval)} {open return_type void
+  } {
+    code {data->trackpeak[lr]=peakval;} {}
+  }
+  Function {parentui(MasterChannelUI* p_parentui)} {open return_type void
+  } {
+    code {data->parentui=p_parentui;} {}
+  }
+  Function {parentui()} {open return_type {MasterChannelUI*}
+  } {
+    code {return data->parentui;} {}
+  }
+  Function {sample(int framenum,float samval)} {open
+  } {
+    code {data->sample[framenum]=samval;
+/*float q=1;
+if (samval<0) {
+	q=-1;
+}
+if ((samval*q) > data->trackpeak) {
+	data->trackpeak=samval*q;
+}*/} {}
+  }
+  Function {sample(int framenum)} {open return_type float
+  } {
+    code {return data->sample[framenum];} {}
+  }
+  Function {getfadermult(int lr)} {open return_type double
+  } {
+    code {return data->fadermult[lr];} {}
+  }
+  Function {mixmono(int inval)} {open return_type void
+  } {
+    code {data->mixmono=inval;
+parentui()->mix_mono->value(inval);
+parentui()->mix_mono->redraw();} {}
+  }
+  Function {mixmono()} {open return_type int
+  } {
+    code {return data->mixmono;} {}
+  }
+} 
+
+class MasterChannelUI {open : {public Fl_Group}
+} {
+  decl {MasterChannelControl* control;} {public
+  }
+  Function {MasterChannelUI(int a,int b,int c,int d,const char* e):Fl_Group(a,b,c,d,e)} {open
+  } {
+    code {init_ui();} {}
+  }
+  Function {MasterChannelUI(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {init_ui();} {}
+  }
+  Function {init_ui()} {open private
+  } {
+    code {this->control=new MasterChannelControl();
+this->control->parentui(this);
+make_window();} {}
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window channelstrip {open
+      xywh {889 373 30 235} type Double
+      code0 {o->position(this->x(),this->y());}
+      class Fl_Group visible
+    } {
+      Fl_Group mixledleft {open
+        xywh {2 92 4 132}
+        class MixerLevelMeterUI
+      } {}
+      Fl_Group mixledright {open
+        xywh {24 92 4 132}
+        class MixerLevelMeterUI
+      } {}
+      Fl_Slider fader {
+        callback {control->fadervalue(o->value());}
+        image {images/fader.gif} xywh {6 92 18 128} type {Vert Knob} color 8 labelfont 1 labelsize 10 align 0 minimum 127 maximum 0 step 1 value 90
+        code0 {o->clear_visible_focus();}
+      }
+      Fl_Button mix_mono {
+        label MONO
+        callback {control->mixmono(o->value());}
+        xywh {0 68 30 15} type Toggle selection_color 3 labelsize 8
+        code0 {o->clear_visible_focus();}
+      }
+    }
+  }
+  Function {~MasterChannelUI()} {open
+  } {
+    code {delete control;} {}
+  }
+} 
+
+class MixerData {open
+} {
+  decl {MixerUI* parentui;} {}
+  decl {friend class MixerControl;} {}
+  decl {int eqon;} {}
+  decl {float* mixermasterout;} {public
+  }
+  decl {double trackpeak[2];} {public
+  }
+  decl {double fadermult[2];} {public
+  }
+  decl {__uint32 samplerate;} {public
+  }
+  decl {int selectedchannel;} {public
+  }
+  decl {double fadervalue;} {public
+  }
+  decl {__uint32 delaybuffersam;} {public
+  }
+  decl {int bypass;} {}
+} 
+
+class MixerControl {open
+} {
+  decl {friend class MixerUI;} {}
+  decl {MixerData* data;} {}
+  Function {mix(int frames) /* <----------------------------------*/} {open
+  } {
+    code {int solo=0;
+int trackon[24]; // 0=mute, 1=normal, 2=solo
+MixerChannelControl* trackctl[24];
+for (int tracknum=0;tracknum<24;tracknum++) {
+	trackctl[tracknum]=parentui()->mixerchannel[tracknum]->control;
+	trackon[tracknum]=1; // normal
+	MixerChannelControl* track=trackctl[tracknum];	
+	if (track->issolo()!=0) {
+		solo=1;
+		trackon[tracknum]++;
+	}
+	if (track->ismute()!=0) {
+		trackon[tracknum]--;	
+	}
+	track->eq_enabled(data->eqon);
+	track->pan_enabled(1-(parentui()->fader_master->control->mixmono()));
+	track->bypass(data->bypass);
+}
+
+stereosample sam;
+for (int i=0;i<frames;i++) {
+   float outleft=0;
+   float outright=0;
+   
+ 
+   for (int j=0;j<24 /* tracks */;j++) {
+   	if (!(trackon[j]>solo)) continue;
+	MixerChannelControl* track=trackctl[j];
+
+   	track->getsample(&sam,i);
+	
+   	outleft+=sam.left;
+	outright+=sam.right;	
+   }   
+   outleft*=parentui()->fader_master->control->getfadermult(0);
+   outright*=parentui()->fader_master->control->getfadermult(1);
+
+   /* clipping */
+   if (outleft>1) {
+   	outleft=1; }
+   else {
+   	if (outleft<-1) outleft=-1;
+   }
+   if (outright>1) {
+   	outright=1;
+   } else {
+   	if (outright<-1) outright=-1;
+   }
+   
+
+   if (fabs(outleft) > parentui()->fader_master->control->trackpeak(0)) {
+   	parentui()->fader_master->control->trackpeak(0,fabs(outleft));
+   }
+   if (fabs(outright) > parentui()->fader_master->control->trackpeak(1)) {
+   	parentui()->fader_master->control->trackpeak(1,fabs(outright));
+   }
+   
+   /* / tape saturation emulation
+   if (parentui()->tapesaton->value()==1)
+   {
+   	int tapewidth=100;
+   	float myleft=0;
+   	float myright=0;
+   	for (int tapepos=0;tapepos<tapewidth;tapepos++)
+   	{
+	   	float maxleft=.3+( ((rand()%32767)-16384)/(16384*5) );
+	   	float maxright=.3+( ((rand()%32767)-16384)/(16384*5) );
+	   	if (outleft>maxleft) {
+	   	    myleft+=maxleft;
+	   	} else {
+	   	    myleft+=outleft;
+	   	}
+	   	if (outright>maxright) {
+	   	    myright+=maxright;
+	   	} else {
+	   	    myright+=outright;
+	   	}
+	}
+	outleft=myleft/tapewidth;
+	outright=myright/tapewidth;	
+   } */
+   data->mixermasterout[i*25+0]=outleft;   
+   data->mixermasterout[i*25+1]=outright;
+}} {}
+  }
+  Function {init()} {open return_type void
+  } {
+    code {data->eqon=1;
+data->mixermasterout=(float *)memutils::mymalloc("MixerControl::init()",512000,sizeof(float));
+data->parentui=NULL;
+data->selectedchannel=0;
+data->bypass=1;
+
+return;} {}
+  }
+  Function {MixerControl()} {} {
+    code {data=new MixerData();
+data->parentui=NULL;
+data->samplerate=0;
+init();} {}
+  }
+  Function {~MixerControl()} {} {
+    code {memutils::myfree("~MixerControl",data->mixermasterout);
+   // clean up delaybuffer data too if appropriate
+delete data;} {}
+  }
+  Function {parentui(MixerUI* p_parentui)} {return_type void
+  } {
+    code {data->parentui=p_parentui;} {}
+  }
+  Function {parentui()} {return_type {MixerUI*}
+  } {
+    code {return data->parentui;} {}
+  }
+  Function {fadervalue(const double p_val)} {} {
+    code {double lin;
+if (p_val == 0) {
+	lin=0;
+} else {
+	lin=pow(10,(p_val-90)/60);
+}
+data->fadermult[0]=lin;
+data->fadermult[1]=lin;
+data->fadervalue=p_val;
+//faderarray[channel]=lin;
+//mixmute[channel]->draw();
+//mixfader[channel]->draw();
+//mixled[channel]->draw();
+//masterled[0]->draw();
+//masterled[1]->draw();
+parentui()->fader_master->fader->value(p_val);
+parentui()->fader_master->redraw(); //this->redraw();*/} {}
+  }
+  Function {fadervalue()} {return_type double
+  } {
+    code {return data->fadervalue;} {}
+  }
+  Function {trackpeak(int lr)} {return_type double
+  } {
+    code {return data->trackpeak[lr];} {}
+  }
+  Function {trackpeak(int lr,double peakval)} {return_type void
+  } {
+    code {data->trackpeak[lr]=peakval;} {}
+  }
+  Function {masterout(int tracknum,int framenum)} {return_type float
+  } {
+    code {return data->mixermasterout[framenum*25+tracknum];} {}
+  }
+  Function {lin2dB(double lin)} {return_type double
+  } {
+    code {return log10(lin)*20.0;} {}
+  }
+  Function {dB2lin(double dB)} {return_type double
+  } {
+    code {return pow(10.0,dB/20.0);} {}
+  }
+  Function {selectedchannel(int channel_base0)} {return_type void
+  } {
+    code {data->selectedchannel=channel_base0;
+for (int i=0;i<24;i++) {
+	if (channel_base0!=i) {
+		this->parentui()->mixerchannel[i]->control->channelselect(0);
+	} else {
+		this->parentui()->mixerchannel[i]->control->channelselect(1);
+	}
+}
+MixerChannelControl* mixcontrol=this->parentui()->mixerchannel[channel_base0]->control;
+
+// reloading controls with their own value causes a redraw.
+mixcontrol->eq_gain(0,mixcontrol->eq_gain(0));
+mixcontrol->eq_gain(1,mixcontrol->eq_gain(1));
+mixcontrol->eq_gain(2,mixcontrol->eq_gain(2));
+mixcontrol->eq_gain(3,mixcontrol->eq_gain(3));
+
+mixcontrol->eq_freq(0,mixcontrol->eq_freq(0));
+mixcontrol->eq_freq(1,mixcontrol->eq_freq(1));
+mixcontrol->eq_freq(2,mixcontrol->eq_freq(2));
+mixcontrol->eq_freq(3,mixcontrol->eq_freq(3));
+
+mixcontrol->eq_on(0,mixcontrol->eq_on(0));
+mixcontrol->eq_on(1,mixcontrol->eq_on(1));
+mixcontrol->eq_on(2,mixcontrol->eq_on(2));
+mixcontrol->eq_on(3,mixcontrol->eq_on(3));} {}
+  }
+  Function {selectedchannel()} {return_type int
+  } {
+    code {return data->selectedchannel;} {}
+  }
+  Function {savemix(string* strfile)} {return_type {string*}
+  } {
+    code {fstream to_out(strfile->c_str(),ios::out);
+if (to_out==NULL) {
+	string *error=new string("");
+	*error+="Cannot open mix file for writing.";
+	return error;
+}
+
+for (int i=0;i<24;i++) {
+	MixerChannelControl* track=parentui()->mixerchannel[i]->control;
+	to_out << "[Track="<<i+1<<"]" <<endl;	
+	to_out << "solo=" << track->solo() << endl;	
+	to_out << "mute=" << track->mute() << endl;	
+	to_out << "fader=" << track->fadervalue() << endl;		
+	to_out << "pan=" << track->panvalue() << endl;
+	
+	for (int j=0;j<eqperchan;j++) {
+		to_out << "eq_on[" << j << "]=" << track->eq_on(j) << endl;
+		to_out << "eq_freq[" << j << "]=" << track->eq_freq(j) << endl;
+		to_out << "eq_gain[" << j << "]=" << track->eq_gain(j) << endl;
+		to_out << "eq_Q[" << j << "]=" << track->eq_Q(j) << endl;
+
+	}
+}
+to_out << "[Master]" << endl;
+to_out << "eqon=" << eq_on() << endl;
+to_out << "mono=" << parentui()->fader_master->control->mixmono() << endl;
+to_out << "fader=" << parentui()->fader_master->control->fadervalue()<< endl;
+
+to_out.flush();
+to_out.close(); 
+return NULL;} {}
+  }
+  Function {savetrackmix(string* strfile,int base0track)} {return_type {string*}
+  } {
+    code {fstream to_out(strfile->c_str(),ios::out);
+if (to_out==NULL) {
+	string *error=new string("");
+	*error+="Cannot open mix file for writing.";
+	return error;
+}
+
+int i=base0track;
+
+	MixerChannelControl* track=parentui()->mixerchannel[i]->control;
+	to_out << "[Track="<<i+1<<"]" <<endl;	
+	to_out << "solo=" << track->solo() << endl;	
+	to_out << "mute=" << track->mute() << endl;	
+	to_out << "fader=" << track->fadervalue() << endl;		
+	to_out << "pan=" << track->panvalue() << endl;
+	
+	for (int j=0;j<eqperchan;j++) {
+		to_out << "eq_on[" << j << "]=" << track->eq_on(j) << endl;
+		to_out << "eq_freq[" << j << "]=" << track->eq_freq(j) << endl;
+		to_out << "eq_gain[" << j << "]=" << track->eq_gain(j) << endl;
+		to_out << "eq_Q[" << j << "]=" << track->eq_Q(j) << endl;
+
+	}
+
+to_out.flush();
+to_out.close(); 
+return NULL;} {}
+  }
+  Function {loadmix(string* strfile)} {open return_type {string*}
+  } {
+    code {fstream from_in(strfile->c_str(),ios::in);
+if (from_in==NULL) {
+	string *error=new string("");
+	*error+="Cannot open mix file for reading.";
+	return error;
+}
+string line;
+int savechan=selectedchannel();
+bool master=false;
+while (!(from_in.eof())) 
+{
+	getline(from_in,line);
+	if (line=="") continue;
+	if (line.substr(0,7)=="[Track=") {
+		master=false;
+		int ch=Convert::str2long(line.substr(7,2));
+		this->selectedchannel(ch-1);
+		continue;
+	}
+	MixerChannelControl* track=parentui()->mixerchannel[selectedchannel()]->control;
+	if (line.substr(0,8)=="[Master]") {
+		master=true;
+		continue;
+	}
+	if (master) {
+		if (line.substr(0,5)=="mono=") {
+			parentui()->fader_master->control->mixmono(Convert::str2long(line.substr(5,1)));
+			continue;
+		}	
+		if (line.substr(0,5)=="eqon=") {
+			this->eq_on(Convert::str2long(line.substr(5,1)));		
+			continue;
+		}			
+	}
+	if (line.substr(0,5)=="solo=") {
+//		mixsolo[this->selectedchannel]->value(Convert::str2long(line.substr(5,1)));
+		track->solo(Convert::str2long(line.substr(5,1)));
+		continue;
+	}
+	if (line.substr(0,5)=="mute=") {
+//		mixmute[this->selectedchannel]->value(Convert::str2long(line.substr(5,1)));
+		track->mute(Convert::str2long(line.substr(5,1)));
+		continue;
+	}
+	if (line.substr(0,4)=="pan=") {
+		track->panvalue(Convert::str2dbl(line.substr(4,10)));
+		continue;
+	}	
+	if ((line.substr(0,8)=="eq_freq[")
+		&&(line.substr(9,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(8,1));
+		double freq=Convert::str2dbl(line.substr(11,10));
+		track->eq_freq(whicheq,freq);
+		continue;
+	
+	}
+	if ((line.substr(0,8)=="eq_gain[")
+		&&(line.substr(9,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(8,1));
+		double gain=Convert::str2dbl(line.substr(11,10));
+		track->eq_gain(whicheq,gain);
+		continue;
+	
+	}
+	if ((line.substr(0,5)=="eq_Q[")
+		&&(line.substr(6,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(5,1));
+		double Q=Convert::str2dbl(line.substr(8,10));
+		track->eq_Q(whicheq,Q);
+		continue;	
+	}
+	if ((line.substr(0,6)=="eq_on[")
+		&&(line.substr(7,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(6,1));
+		int onoff=Convert::str2long(line.substr(9,10));
+		track->eq_on(whicheq,onoff);
+		continue;	
+	}	
+	if (line.substr(0,6)=="fader=") {
+		if (master) {
+		   this->fadervalue(Convert::str2dbl(line.substr(6,10)));		
+		} 
+		else
+		{			
+		   track->fadervalue(Convert::str2dbl(line.substr(6,10)));
+
+		}
+
+		continue;
+	}
+	
+	// Unknown setting. Will be ignored.
+}
+this->selectedchannel(savechan);
+from_in.close();
+
+return NULL;} {selected
+    }
+  }
+  Function {loadtrackmix(string* strfile,int base0track)} {open return_type {string*}
+  } {
+    code {fstream from_in(strfile->c_str(),ios::in);
+if (from_in==NULL) {
+	string *error=new string("");
+	*error+="Cannot open mix file for writing.";
+	return error;
+}
+string line;
+int savechan=base0track;
+while (!(from_in.eof())) 
+{
+	getline(from_in,line);
+	if (line=="") continue;
+	if (line.substr(0,7)=="[Track=") {
+		continue;
+	}
+	MixerChannelControl* track=parentui()->mixerchannel[selectedchannel()]->control;
+	if (line.substr(0,5)=="solo=") {
+//		mixsolo[this->selectedchannel]->value(Convert::str2long(line.substr(5,1)));
+		track->solo(Convert::str2long(line.substr(5,1)));
+		continue;
+	}
+	if (line.substr(0,5)=="mute=") {
+//		mixmute[this->selectedchannel]->value(Convert::str2long(line.substr(5,1)));
+		track->mute(Convert::str2long(line.substr(5,1)));
+		continue;
+	}
+	if (line.substr(0,4)=="pan=") {
+		track->panvalue(Convert::str2dbl(line.substr(4,10)));
+		continue;
+	}	
+	if ((line.substr(0,8)=="eq_freq[")
+		&&(line.substr(9,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(8,1));
+		double freq=Convert::str2dbl(line.substr(11,10));
+		track->eq_freq(whicheq,freq);
+		continue;
+	
+	}
+	if ((line.substr(0,8)=="eq_gain[")
+		&&(line.substr(9,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(8,1));
+		double gain=Convert::str2dbl(line.substr(11,10));
+		track->eq_gain(whicheq,gain);
+		continue;
+	
+	}
+	if ((line.substr(0,5)=="eq_Q[")
+		&&(line.substr(6,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(5,1));
+		double Q=Convert::str2dbl(line.substr(8,10));
+		track->eq_Q(whicheq,Q);
+		continue;	
+	}
+	if ((line.substr(0,6)=="eq_on[")
+		&&(line.substr(7,2)=="]="))
+	{
+		int whicheq=Convert::str2long(line.substr(6,1));
+		int onoff=Convert::str2long(line.substr(9,10));
+		track->eq_on(whicheq,onoff);
+		continue;	
+	}	
+	if (line.substr(0,6)=="fader=") {
+		track->fadervalue(Convert::str2dbl(line.substr(6,10)));
+		continue;
+	}
+	
+}
+this->selectedchannel(savechan);
+from_in.close();
+
+return NULL;} {}
+  }
+  Function {updatemeters()} {open
+  } {
+    code {MixerUI* pui=this->parentui();
+if (pui==NULL) return;
+for (int tracknum=0;tracknum<24;tracknum++) {
+	pui->mixerchannel[tracknum]->control->updatemeters();
+}
+// update and redraw meterlevels object
+pui->fader_master->control->updatemeters();} {}
+  }
+  Function {samplerate(__uint32 p_samplerate)} {open return_type void
+  } {
+    code {data->samplerate=p_samplerate;
+
+MixerUI* pui=this->parentui();
+if (pui==NULL) return;
+for (int tracknum=0;tracknum<24;tracknum++) {
+	pui->mixerchannel[tracknum]->control->samplerate(p_samplerate);
+}} {}
+  }
+  Function {samplerate()} {open return_type __uint32
+  } {
+    code {return data->samplerate;} {}
+  }
+  Function {eq_on(int onoff)} {return_type void
+  } {
+    code {data->eqon=onoff;
+parentui()->eqon->value(onoff);
+parentui()->eqon->redraw();} {}
+  }
+  Function {eq_on()} {open return_type int
+  } {
+    code {return data->eqon;} {}
+  }
+  Function {bypass()} {return_type int
+  } {
+    code {return data->bypass;} {}
+  }
+  Function {bypass(int onoff)} {return_type void
+  } {
+    code {data->bypass=onoff;
+parentui()->bypass->value(onoff);
+parentui()->bypass->redraw();} {}
+  }
+} 
+
+class MixerUI {open : {public Fl_Group}
+} {
+  decl {MixerControl* control;} {public
+  }
+  decl {MixerChannelUI* mixerchannel[24];} {public
+  }
+  decl {/* ===MIXER UI stuff ===================================================== */} {}
+  decl {HD24UserInterface* ui;} {}
+  decl {Fl_Window* window} {}
+  Function {make_window() /*<-----------------------------------*/} {open
+  } {
+    Fl_Window mixgroup {open
+      xywh {41 257 605 460} type Double
+      code0 {o->position(this->x(),this->y());}
+      class Fl_Group visible
+    } {
+      Fl_Group resources {open
+        xywh {70 52 150 98} hide deactivate
+      } {
+        Fl_Button button_small_up {
+          tooltip arm image {images/button_small.gif} xywh {75 52 145 13} deactivate
+        }
+        Fl_Button button_small_dn {
+          tooltip arm image {images/button_small_dn.gif} xywh {70 52 5 13} deactivate
+        }
+      }
+      Fl_Group mixergroup {open
+        xywh {-9 0 643 463}
+        code0 {init_gui();}
+      } {
+        Fl_Box {} {
+          xywh {-9 354 625 109} box BORDER_BOX
+        }
+        Fl_Box {} {
+          label S
+          tooltip Solo xywh {5 269 10 14} color 1 selection_color 1 labelfont 1 labelsize 12
+        }
+        Fl_Box {} {
+          label M
+          tooltip Mute xywh {5 286 10 14} color 1 selection_color 1 labelfont 1 labelsize 12
+        }
+        Fl_Group channelgroup {open
+          xywh {0 210 584 250} deactivate
+        } {
+          Fl_Group mixerchannel1 {open
+            xywh {17 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[0]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel2 {open
+            xywh {37 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[1]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel3 {open
+            xywh {57 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[2]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel4 {open
+            xywh {77 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[3]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel5 {open
+            xywh {97 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[4]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel6 {open
+            xywh {117 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[5]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel7 {open
+            xywh {137 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[6]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel8 {open
+            xywh {157 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[7]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel9 {open
+            xywh {177 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[8]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel10 {open
+            xywh {197 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[9]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel11 {open
+            xywh {217 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[10]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel12 {open
+            xywh {237 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[11]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel13 {open
+            xywh {257 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[12]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel14 {open
+            xywh {277 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[13]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel15 {open
+            xywh {297 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[14]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel16 {open
+            xywh {317 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[15]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel17 {open
+            xywh {337 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[16]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel18 {open
+            xywh {357 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[17]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel19 {open
+            xywh {377 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[18]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel20 {open
+            xywh {397 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[19]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel21 {open
+            xywh {417 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[20]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel22 {open
+            xywh {437 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[21]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel23 {open
+            xywh {457 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[22]=o;}
+            class MixerChannelUI
+          } {}
+          Fl_Group mixerchannel24 {open
+            xywh {477 221 20 231} box BORDER_BOX color 7
+            code0 {mixerchannel[23]=o;}
+            class MixerChannelUI
+          } {}
+        }
+        Fl_Tabs {} {open
+          xywh {10 25 435 195}
+        } {
+          Fl_Group eqgroup {
+            label EQ open
+            xywh {10 45 435 175} labelfont 1 labelsize 10 deactivate
+          } {
+            Fl_Dial gain1 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_gain(0,o->value());}
+              xywh {20 159 30 30} minimum -20 maximum 20 step 10
+              class WidgetPDial
+            }
+            Fl_Dial gain2 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_gain(1,o->value());}
+              xywh {65 159 30 30} minimum -20 maximum 20 step 10
+              class WidgetPDial
+            }
+            Fl_Dial gain3 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_gain(2,o->value());}
+              xywh {110 159 30 30} minimum -20 maximum 20 step 10
+              class WidgetPDial
+            }
+            Fl_Dial gain4 {
+              label GAIN
+              callback {mixerchannel[control->selectedchannel()]->control->eq_gain(3,o->value());}
+              xywh {155 159 30 30} labelfont 1 labelsize 12 align 8 minimum -20 maximum 20 step 10
+              class WidgetPDial
+            }
+            Fl_Dial freq1 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_freq(0,o->value());}
+              xywh {20 125 30 30} minimum 20 maximum 200 step 10 value 100
+              class WidgetPDial
+            }
+            Fl_Dial freq2 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_freq(1,o->value());}
+              xywh {65 125 30 30} minimum 150 maximum 1000 step 20 value 600
+              class WidgetPDial
+            }
+            Fl_Dial freq3 {
+              callback {mixerchannel[control->selectedchannel()]->control->eq_freq(2,o->value());}
+              xywh {110 125 30 30} minimum 800 maximum 3000 step 10 value 1600
+              class WidgetPDial
+            }
+            Fl_Dial freq4 {
+              label FREQ
+              callback {mixerchannel[control->selectedchannel()]->control->eq_freq(3,o->value());}
+              xywh {155 125 30 30} labelfont 1 labelsize 12 align 8 minimum 3000 maximum 12000 step 1 value 6000
+              class WidgetPDial
+            }
+            Fl_Check_Button eqon1 {
+              label { Low}
+              callback {mixerchannel[control->selectedchannel()]->control->eq_on(0,o->value());}
+              xywh {15 95 20 15} down_box DOWN_BOX value 1 labelsize 12 align 5
+            }
+            Fl_Check_Button eqon2 {
+              label {Lo/Mid}
+              callback {mixerchannel[control->selectedchannel()]->control->eq_on(1,o->value());}
+              xywh {60 95 20 15} down_box DOWN_BOX value 1 labelsize 12 align 5
+            }
+            Fl_Check_Button eqon3 {
+              label {Hi/Mid}
+              callback {mixerchannel[control->selectedchannel()]->control->eq_on(2,o->value());}
+              xywh {105 95 20 15} down_box DOWN_BOX value 1 labelsize 12 align 5
+            }
+            Fl_Check_Button eqon4 {
+              label High
+              callback {mixerchannel[control->selectedchannel()]->control->eq_on(3,o->value());}
+              xywh {150 95 20 15} down_box DOWN_BOX value 1 labelsize 12 align 5
+            }
+            Fl_Check_Button eqon {
+              label {Enable equalizer (all channels)}
+              callback {control->eq_on(o->value());}
+              xywh {15 50 205 20} down_box DOWN_BOX value 1 labelsize 12
+            }
+            Fl_Check_Button reverbon {
+              label {Reverb (not yet available)}
+              callback {//mixerchannel[control->selectedchannel()]->control->reverb_on(o->value());}
+              xywh {240 95 175 15} down_box DOWN_BOX value 1 labelsize 12 deactivate
+            }
+            Fl_Check_Button tapesaton {
+              label {Tape emulation}
+              callback {//mixerchannel[control->selectedchannel()]->control->reverb_on(o->value());}
+              xywh {240 80 175 15} down_box DOWN_BOX value 1 labelsize 12 deactivate
+            }
+            Fl_Output dispgain1 {
+              xywh {15 190 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispgain2 {
+              xywh {60 190 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispgain3 {
+              xywh {105 190 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispgain4 {
+              xywh {150 190 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispfreq1 {
+              xywh {15 109 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispfreq2 {
+              xywh {60 109 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispfreq3 {
+              xywh {105 109 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+            Fl_Output dispfreq4 {
+              xywh {150 109 40 15} box FLAT_BOX color 53 labelsize 10 align 0 textsize 10
+            }
+          }
+          Fl_Tabs {} {
+            label AUX
+            xywh {10 45 330 175} labelfont 1 labelsize 10 hide
+          } {}
+        }
+        Fl_Button bypass {
+          label {Bypass Mixer}
+          callback {control->bypass(o->value());
+
+switch (o->value())
+{
+	case 0:
+		eqgroup->activate();
+		channelgroup->activate();		
+	break;
+	case 1:
+		eqgroup->deactivate();
+		channelgroup->deactivate();
+	break;
+
+}}
+          tooltip Solo xywh {10 0 90 20} type Toggle value 1 selection_color 1 labelsize 12
+        }
+        Fl_Group fader_master {open
+          xywh {574 221 20 231} box BORDER_BOX color 7
+          class MasterChannelUI
+        } {}
+      }
+    }
+  }
+  Function {MixerUI(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {control=new MixerControl();
+control->parentui(this);
+this->window=(Fl_Window*)(this->make_window());} {}
+  }
+  Function {~MixerUI()} {open
+  } {
+    code {delete control;} {}
+  }
+  Function {init_gui()} {open
+  } {
+    code {int starty=(mixerchannel[0]->y());
+int startx=(mixerchannel[0]->x());
+fader_master->clear_visible_focus();
+for (int i=1;i<=24;i++) 
+{
+   if (i==1) {
+   	mixerchannel[i-1]->control->channelselect(1); 
+   }
+   mixerchannel[i-1]->position(startx+((i-1)*23),starty);
+//   mixerchannel[i-1]->size(mixerchannel[0]->w(),mixerchannel[0]->h());
+   mixerchannel[i-1]->clear_visible_focus();
+   mixerchannel[i-1]->control->channel_number(i);
+
+   mixerchannel[i-1]->control->parentmixercontrol(this->control);
+   
+   // set values on freq/gain displays:
+   mixerchannel[i-1]->control->eq_freq(0,mixerchannel[i-1]->control->eq_freq(0));
+   mixerchannel[i-1]->control->eq_freq(1,mixerchannel[i-1]->control->eq_freq(1));
+   mixerchannel[i-1]->control->eq_freq(2,mixerchannel[i-1]->control->eq_freq(2));
+   mixerchannel[i-1]->control->eq_freq(3,mixerchannel[i-1]->control->eq_freq(3));
+
+   mixerchannel[i-1]->control->eq_gain(0,mixerchannel[i-1]->control->eq_gain(0));
+   mixerchannel[i-1]->control->eq_gain(1,mixerchannel[i-1]->control->eq_gain(1));
+   mixerchannel[i-1]->control->eq_gain(2,mixerchannel[i-1]->control->eq_gain(2));
+   mixerchannel[i-1]->control->eq_gain(3,mixerchannel[i-1]->control->eq_gain(3));
+
+
+//   eq_freq[(i-1)*eqperchan+0]=100;
+//   eq_freq[(i-1)*eqperchan+1]=600;
+//   eq_freq[(i-1)*eqperchan+2]=1600;
+//   eq_freq[(i-1)*eqperchan+3]=6000;
+//   eq_on[(i-1)*eqperchan+0]=eqon1->value();
+//   eq_on[(i-1)*eqperchan+1]=eqon2->value();
+//   eq_on[(i-1)*eqperchan+2]=eqon3->value();
+//   eq_on[(i-1)*eqperchan+3]=eqon4->value();         
+//   for (int j=0;j<4;j++) {
+//   	eq_gain[(i-1)*eqperchan+j]=0;
+//   	
+// 	eq_Q[(i-1)*eqperchan+j]=1;
+//	eq_type[(i-1)*eqperchan+j]=7;
+//   }
+   mixerchannel[i-1]->clear_visible_focus();
+//   mixsolo[i-1]->position(8+(startx)+((i-1)*23),mixsolo[i-1]->y());
+//   mixsolo[i-1]->size(mixsolo[0]->w(),mixsolo[0]->h());
+//   mixsolo[i-1]->up_image(mixsolo[0]->up_image());
+//   mixsolo[i-1]->down_image(mixsolo[0]->down_image());
+
+//   mixmute[i-1]->position(mixsolo[i-1]->x(),mixmute[i-1]->y());
+//   mixmute[i-1]->size(mixmute[0]->w(),mixmute[0]->h());
+//   mixmute[i-1]->up_image(mixmute[0]->up_image());
+//   mixmute[i-1]->down_image(mixmute[0]->down_image());
+
+//   mixfader[i-1]->position(mixsolo[i-1]->x(),mixfader[i-1]->y());
+//   mixfader[i-1]->size(mixfader[0]->w(),mixfader[0]->h());
+
+//   mixchsel[i-1]->position(mixsolo[i-1]->x(),mixchsel[i-1]->y());
+//   mixpan[i-1]->position(mixsolo[i-1]->x(),mixpan[i-1]->y());
+//   mixled[i-1]->position(mixfader[i-1]->x()+17,mixfader[0]->y());
+   mixerchannel[i-1]->control->fadervalue(90);
+}
+
+//masterled[0]->position(fader_master->x()-2,fader_master->y());
+//masterled[1]->position(fader_master->x()+17,fader_master->y());
+fader_master->control->fadervalue(90);
+//this->selectedchannel(0);} {}
+  }
+  Function {set_ui(HD24UserInterface* p_ui)} {open return_type void
+  } {
+    code {this->ui=p_ui;} {}
+  }
+  Function {loadfromfile()} {open return_type void
+  } {
+    code {string* mixdir=hd24utils::getlastdir("mixdir");
+
+Fl_Native_File_Chooser chooser;
+chooser.directory(mixdir->c_str());
+delete mixdir;
+
+chooser.title("Select a mix to load\\0");
+chooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
+chooser.filter("Mixer settings\\t*.{mix}\\0");
+//chooser.preview(0);
+switch (chooser.show()) {
+	case -1: break; //error
+	case 1: break; //cancel
+	default:
+		if (chooser.filename()) {
+			string* cfilename=new string(chooser.filename());
+		
+			string* fpath=new string("");
+			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
+			hd24utils::setlastdir("mixdir",fpath->c_str());
+			control->loadmix(cfilename);
+			delete fpath;
+			delete cfilename;
+		}
+		break;
+}} {}
+  }
+  Function {savetofile()} {open return_type void
+  } {
+    code {string* mixdir=new string("");
+*mixdir+=*(hd24utils::getlastdir("mixdir"));
+
+Fl_Native_File_Chooser chooser;
+chooser.filter("Mix files\\t*.mix");
+chooser.title("Save mixer settings to file");
+chooser.directory(mixdir->c_str());
+chooser.options(Fl_Native_File_Chooser::NEW_FOLDER);
+chooser.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
+
+switch (chooser.show()) {
+	case -1: break; //error
+	case 1: break; //cancel
+	default:
+		// save header to chooser.filename()
+
+		bool bFileexists=false;
+		if (bFileexists) {
+			bool choice=ui->confirm(
+				"A file with this name already exists. Do you wish to overwrite it?"
+				);			
+			if (!(choice)) return;
+		}
+		string* strfile=new string(chooser.filename());
+		string* fpath=new string("");
+		*fpath+=strfile->substr(0,strlen(strfile->c_str())-strlen(fl_filename_name(strfile->c_str())));
+		hd24utils::setlastdir("mixdir",fpath->c_str());
+
+		string* anyerrors=control->savemix(strfile);
+
+		delete strfile;
+		delete fpath;
+		if (anyerrors==NULL) {
+			fl_message("Mix file saved successfully.");
+		} else {	
+			delete anyerrors;
+			fl_message("Could not write mix file. Access denied? Disk full?");	
+		}
+		break;
+}
+delete mixdir;} {}
+  }
+  Function {loadtrackmixfromfile()} {open return_type void
+  } {
+    code {string* mixdir=hd24utils::getlastdir("mixdir");
+
+Fl_Native_File_Chooser chooser;
+chooser.directory(mixdir->c_str());
+delete mixdir;
+
+chooser.title("Select a mix to load\\0");
+chooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
+chooser.filter("Mixer settings\\t*.{mix}\\0");
+//chooser.preview(0);
+switch (chooser.show()) {
+	case -1: break; //error
+	case 1: break; //cancel
+	default:
+		if (chooser.filename()) {
+			string* cfilename=new string(chooser.filename());
+		
+			string* fpath=new string("");
+			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
+			hd24utils::setlastdir("mixdir",fpath->c_str());
+			control->loadtrackmix(cfilename,control->selectedchannel());				
+			delete fpath;
+			delete cfilename;			
+		}
+		break;
+}} {}
+  }
+  Function {savetrackmixtofile()} {open return_type void
+  } {
+    code {string* mixdir=new string("");
+*mixdir+=*(hd24utils::getlastdir("mixdir"));
+
+Fl_Native_File_Chooser chooser;
+chooser.filter("Mix files\\t*.mix");
+chooser.title("Save mixer settings to file");
+chooser.directory(mixdir->c_str());
+chooser.options(Fl_Native_File_Chooser::NEW_FOLDER);
+chooser.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
+
+switch (chooser.show()) {
+	case -1: break; //error
+	case 1: break; //cancel
+	default:
+		// save header to chooser.filename()
+
+		bool bFileexists=false;
+		if (bFileexists) {
+			bool choice=ui->confirm(
+				"A file with this name already exists. Do you wish to overwrite it?"
+				);			
+			if (!(choice)) return;
+		}
+		string* strfile=new string(chooser.filename());
+		string* fpath=new string("");
+		*fpath+=strfile->substr(0,strlen(strfile->c_str())-strlen(fl_filename_name(strfile->c_str())));
+		hd24utils::setlastdir("mixdir",fpath->c_str());
+
+		string* anyerrors=control->savetrackmix(strfile,control->selectedchannel());
+
+		delete strfile;
+		if (anyerrors==NULL) {
+			fl_message("Mix file saved successfully.");
+		} else {	
+			delete anyerrors;
+			fl_message("Could not write mix file. Access denied? Disk full?");	
+		}
+		delete fpath;
+		break;
+}
+delete mixdir;} {}
+  }
+} 

@@ -1,0 +1,17 @@
+Please read the following license agreement carefully.
+
+HD24tools End User License Agreement
+
+This program is SHAREWARE. You are hereby granted
+permission to download and use this software free of
+charge, as well as to give away UNALTERED copies of it.
+
+This program is provided in the hope that it
+will be useful, but comes with ABSOLUTELY NO WARRANTY.
+
+If you find this program useful, please make a donation
+to the author. For details, see
+http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/
+
+This software is not endorsed by, nor affiliated with
+Alesis/Numark.

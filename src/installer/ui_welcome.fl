@@ -1,0 +1,66 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {using namespace std;} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+class UI_Welcome {open
+} {
+  decl {string currscreen;} {public
+  }
+  Function {make_window(char* p_currscreen)} {open
+  } {
+    Fl_Window {} {
+      label {HD24tools HD24VERSION - Setup Wizard} open
+      xywh {308 186 590 350} type Double color 7
+      code0 {currscreen=p_currscreen;} visible
+    } {
+      Fl_Box {} {
+        image {welcome.png} xywh {0 -137 165 487}
+      }
+      Fl_Box {} {
+        label {Welcome to the setup wizard for}
+        xywh {165 -3 440 33} labelfont 1 labelsize 16
+      }
+      Fl_Box {} {
+        label {HD24tools version HD24VERSION}
+        xywh {165 22 440 31} labelfont 1 labelsize 16
+      }
+      Fl_Group {} {open
+        xywh {-5 315 620 35} box BORDER_BOX color 53 selection_color 47
+      } {
+        Fl_Button {} {
+          label {&Next >}
+          callback {currscreen="next";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {415 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label Cancel
+          callback {currscreen="cancel";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {505 320 85 25} color 53 labelsize 12
+        }
+      }
+      Fl_Box {} {
+        label {This Setup Wizard will install HD24tools version HD24VERSION
+on your computer.
+
+Attention: You may need to run this wizard as administrator/
+superuser/root. 
+
+Before continuing, please close all running programs.
+
+
+WARNING: This program is protected by copyright law.} selected
+        xywh {185 77 390 173} labelsize 12 align 21
+      }
+    }
+  }
+} 

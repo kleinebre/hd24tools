@@ -1,0 +1,63 @@
+"Smart" drive images
+====================
+Automated testing with regular drive dumps has a few drawbacks.
+- Drive images get very large. 
+  As a result, creating/restoring them is a rather slow process.
+- Drive images can never be larger than the drive on which they are hosted.
+  As a result of this and the above, tests typically will only cover small
+  drive images.
+
+By omitting sectors that are not in use, drive image files could be made
+to be much smaller than the drives they represent. 
+
+Design choices:
+- Sectors of the drive images line up with sectors of the file for
+best performance.
+- No compression.
+- 2TB (2^32 sectors) is the maximum size supported.
+- The drive whole drive is viewed as a set of clusters. Each cluster
+is a large number of sectors.
+- Max. drive size is specified when the drive image is created.
+The file representing the drive will grow as more clusters are used; 
+it will never shrink. A drive in which all clusters are used is thus
+represented by a file larger than that drive.
+- All clusters have the same size. For HD24-specific applications, 
+this means audio blocks won't line up exactly with clusters. 
+Although this will result in a slight performance hit, the code will
+be significantly more straightforward and the "smart drive image" code
+will be generic enough to use for other purposes too. The "smart drive
+image" code itself won't need to have any information about the file system
+that it's wrapped around.
+
+Recommendations:
+- Use 2MB clusters as this gives a good balance between overhead and
+space savings.
+
+The suggested format for these images is:
+
+sector 0 (invisible after mounting):
+
+8 byte virt drive signature SMARTIMG
+16 byte (128 bit) drive id (UUID) (optional; 0 if not used)
+32 bit cluster size in 512-byte sectors, e.g. 4096 (2^12) gives clusters 
+   with a size of 2MB each for a max. of 2^20 entries for 2 TB drives;
+   with each entry being 4 bytes, this means we'll need ((2^20)*4)/512)
+   =8192 sectors (4 megabytes) for the drive block usage table.
+32 bit number of last allowed sector (=tot drive size in sectors-1).
+32 bit start sector of virtual drive inside image 
+
+sector 1 (invisible after mounting)
+length: up to 8192 sectors (4 megabytes; for multi-channel uncompressed 
+pro audio, this overhead is in the realm of "neglectable")
+
+Cluster allocation table, size=drivesize/clustersize 32-bit entries.
+The value for the entry is a 32-bit sector number. For cluster 0,
+the sector number within the virtual drive image is specified and
+space will always be reserved for that when creating the virtual drive
+image; this is because typically the first cluster points to sector 0
+and we don't want "0" to mean "not in use" for that cluster.
+For any other cluster number, 0 means "not in use" and writing
+to that cluster will both cause the drive image to grow and set the
+cluster entry to the sector number within the drive image where the
+block starts.
+

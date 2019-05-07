@@ -1,0 +1,7 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>A few words about drive layout</h2>
+<p>Like all file systems, the HD24 drive consists of a system area and a data area. The data area contains data, which for the HD24 recorder means audio; the system area (which we will also call the drive header) contains information about how and where on disk that audio is stored. Important parts of the system area are the superblock (which like most file systems contains information about the drive parameters), the project list and the song list.</p><p>Although audio data itself is not immune to trouble, little can go wrong with its structure. Because of this, when the drive is left in an inconsistent state, this will usually mean an inconsistency in the structure of the system area (or drive header). If this is the case, by restoring the consistency of the drive header, the drive will be readable again.
+</p>
+</body></html>

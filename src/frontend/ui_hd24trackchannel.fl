@@ -1,0 +1,322 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <config.h>} {public
+} 
+
+decl {\#include <FL/FLTKstuff.H>} {public
+} 
+
+decl {\#include <ui_hd24connect.h>} {public
+} 
+
+class HD24TrackChannel {open : {public Fl_Group}
+} {
+  decl {\#define PEAKMODE_NOHOLD 0} {public
+  }
+  decl {\#define PEAKMODE_TEMPHOLD 1} {public
+  }
+  decl {\#define PEAKMODE_CONTHOLD 2} {public
+  }
+  decl {\#define PEAKMODE_MAXHOLD 33} {public
+  }
+  decl {int mode;} {}
+  decl {int maxledslit; /* for peak hold */} {public
+  }
+  decl {int holdtime;} {public
+  }
+  decl {RecorderUI* ui;} {selected
+  }
+  decl {Fl_Box* levelled[10];} {public
+  }
+  decl {Fl_Window* win;} {}
+  decl {unsigned int channel;} {}
+  Function {make_window()} {open
+  } {
+    Fl_Window ledchannel {open
+      xywh {20 74 20 120} type Double color 0 labelcolor 7
+      code0 {o->position(parent()->x(),parent()->y());}
+      class Fl_Group visible
+    } {
+      Fl_Box tracknum {
+        label 1
+        xywh {3 76 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 10 labelcolor 6 align 2
+      }
+      Fl_Box led1 {
+        xywh {3 76 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[0]=led1;}
+      }
+      Fl_Box recled {
+        xywh {3 96 12 6} box FLAT_BOX color 1 labelfont 1 labelsize 10 labelcolor 1 align 2 hide
+      }
+      Fl_Box inputled {
+        xywh {3 104 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+      }
+      Fl_Box led2 {
+        xywh {3 68 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[1]=led2;}
+      }
+      Fl_Box led3 {
+        xywh {3 60 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[2]=led3;}
+      }
+      Fl_Box led4 {
+        xywh {3 52 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[3]=led4;}
+      }
+      Fl_Box led5 {
+        xywh {3 44 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[4]=led5;}
+      }
+      Fl_Box led6 {
+        xywh {3 36 12 6} box FLAT_BOX color 6 labelfont 1 labelsize 10 labelcolor 6 align 2 hide
+        code0 {levelled[5]=led6;}
+      }
+      Fl_Box led7 {
+        xywh {3 28 12 6} box FLAT_BOX color 93 labelfont 1 labelsize 10 labelcolor 93 align 2 hide
+        code0 {levelled[6]=led7;}
+      }
+      Fl_Box led8 {
+        xywh {3 20 12 6} box FLAT_BOX color 93 labelfont 1 labelsize 10 labelcolor 93 align 2 hide
+        code0 {levelled[7]=led8;}
+      }
+      Fl_Box led9 {
+        xywh {3 12 12 6} box FLAT_BOX color 93 labelfont 1 labelsize 10 labelcolor 93 align 2 hide
+        code0 {levelled[8]=led9;}
+      }
+      Fl_Box led10 {
+        xywh {3 4 12 6} box FLAT_BOX color 1 labelfont 1 labelsize 10 labelcolor 1 align 2 hide
+        code0 {levelled[9]=led10;}
+      }
+    }
+  }
+  Function {setval(float levelval)} {open
+  } {
+    code {int lednum=0;
+double myval=(double)levelval;
+
+// reset peaks if desired
+switch (mode) {
+	case PEAKMODE_NOHOLD: this->peakreset(); break;	
+	case PEAKMODE_TEMPHOLD: 		
+		if (this->holdtime>PEAKMODE_MAXHOLD) {
+			peakreset(); 
+		} else {
+			this->holdtime++;
+		}
+		break;	
+	case PEAKMODE_CONTHOLD:
+		break;
+	default:
+		this->mode=PEAKMODE_NOHOLD;
+		peakreset();
+		break;
+}
+
+int ledslit=0;
+
+if (myval>= ledlimit[lednum]) { ledslit=1; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=2; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=3; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=4; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=5; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=6; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=7; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=8; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=9; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+if (myval>= ledlimit[lednum]) { ledslit=10; this->levelled[lednum++]->show(); } else { this->levelled[lednum++]->hide(); }
+
+if (ledslit >this->maxledslit  ) {
+	this->maxledslit=ledslit;
+	this->holdtime=0;
+} else {
+	if ((this->maxledslit)>0) {
+		this->levelled[maxledslit-1]->show();
+	}
+}
+
+checkblink();} {}
+  }
+  Function {init_window()} {open return_type void
+  } {
+    code {this->mode=PEAKMODE_NOHOLD;
+this->win=(Fl_Window*)make_window();
+this->ui=NULL;
+this->channel=0;
+this->maxledslit=0;
+this->holdtime=0;
+this->ledlimit[0]=(double)pow(10,(double)((double)-30/(double)10)); // -30 dB
+this->ledlimit[1]=(double)pow(10,(double)((double)-24/(double)10)); // -24 dB
+this->ledlimit[2]=(double)pow(10,(double)((double)-18/(double)10)); 
+this->ledlimit[3]=(double)pow(10,(double)((double)-12/(double)10)); //...
+this->ledlimit[4]=(double)pow(10,(double)((double)-7.5/(double)10));
+this->ledlimit[5]=(double)pow(10,(double)((double)-4.5/(double)10));
+this->ledlimit[6]=(double)pow(10,(double)((double)-3/(double)10)); 
+this->ledlimit[7]=(double)pow(10,(double)((double)-1.5/(double)10));
+this->ledlimit[8]=(double)pow(10,(double)((double)-.5/(double)10)); 
+this->ledlimit[9]=(double)pow(10,(double)((double)0/(double)10)); // -0 dB
+
+this->setval(0);
+
+return;} {}
+  }
+  Function {HD24TrackChannel(int a,int b,int c,int d,const char* e):Fl_Group(a,b,c,d,e)} {open
+  } {
+    code {init_window();} {}
+  }
+  Function {HD24TrackChannel(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {init_window();} {}
+  }
+  Function {setchnum(__uint32 i)} {open
+  } {
+    code {/* As copy_label does not work on older versions of fltk,
+   the label now persists within the object but outside this
+   function. This solves the problem that is nowadays addressed
+   by copy_label, but without requiring an up-to-date version
+   of FLTK (1.1.6 or later). */
+channel=i;
+snprintf(&labeltext[0],8,"%ld",i);
+this->tracknum->label(labeltext);} {}
+  }
+  Function {setui(RecorderUI* p_ui)} {open
+  } {
+    code {this->ui=p_ui;} {}
+  }
+  Function {checkblink()} {open
+  } {
+    code {if (ui==NULL) return;
+/*
+TODO: Make available
+if (ui->currenthd24==NULL) return;
+*/
+if (channel==0) return;
+
+
+bool showinputled=false;
+/*
+if (ui->currenthd24->isallinput()) {
+	if (ui->control->song()==NULL) {
+		// no song, show all input leds
+		showinputled=true;
+	} else {
+		// song selected, only show as many 
+		// input leds as channels in the song
+		if (channel<=ui->control->song()->logical_channels()) {
+			showinputled=ui->control->song()->istrackmonitoringinput(channel);			
+		}		
+	}
+} else {
+*/
+	if (ui->control->song()!=NULL) {
+			showinputled=ui->control->song()->istrackmonitoringinput(channel);			
+	}
+/*
+}
+*/
+
+if (ui->control->song()!=NULL) {
+if (ui->control->song()->logical_channels()<channel) {
+   this->recled->hide();
+} else {
+	if (ui->control->song()->trackarmed(channel)) {
+		if (ui->blinkcounter<8) {
+		   this->recled->hide();  
+		} else {
+		   this->recled->show(); 
+		}
+	} else {
+		this->recled->hide(); 
+	}
+}
+}
+if (showinputled) {
+	this->inputled->show();
+} else {
+	this->inputled->hide();  
+}
+
+return;} {}
+  }
+  decl {double ledlimit[10];} {}
+  Function {peakreset()} {return_type void
+  } {
+    code {maxledslit=0;
+holdtime=0;} {}
+  }
+  Function {peakmode(int p_peakmode)} {return_type void
+  } {
+    code {this->mode=p_peakmode;
+peakreset();} {}
+  }
+  decl {char labeltext[10];} {}
+} 
+
+class TrackInfo {: {public Fl_Group}
+} {
+  Function {make_window()} {} {
+    Fl_Window ledchannel {
+      xywh {5 69 20 120} type Double color 0 labelcolor 7 align 16 hide
+      code0 {o->position(parent()->x(),parent()->y());}
+      class Fl_Group
+    } {
+      Fl_Box led1 {
+        label {-60}
+        xywh {3 76 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box recled {
+        label REC
+        xywh {3 96 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 1 align 16
+      }
+      Fl_Box inputled {
+        label INP
+        xywh {3 104 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box led2 {
+        label {-48}
+        xywh {3 68 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box led3 {
+        label {-36}
+        xywh {3 60 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box led4 {
+        label {-24}
+        xywh {3 52 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box led5 {
+        label {-15}
+        xywh {3 44 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 1 align 16
+      }
+      Fl_Box led6 {
+        label {-9}
+        xywh {3 36 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 6 align 16
+      }
+      Fl_Box led7 {
+        label {-6}
+        xywh {3 28 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 93 align 16
+      }
+      Fl_Box led8 {
+        label {-3}
+        xywh {3 20 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 93 align 16
+      }
+      Fl_Box led9 {
+        label {-1}
+        xywh {3 12 12 6} box FLAT_BOX color 0 labelfont 1 labelsize 9 labelcolor 93 align 16
+      }
+      Fl_Box led10 {
+        label CLIP
+        xywh {0 4 22 6} box FLAT_BOX color 0 labelfont 1 labelsize 8 labelcolor 1 align 16
+      }
+    }
+  }
+  Function {TrackInfo(int a,int b,int c,int d,const char* e):Fl_Group(a,b,c,d,e)} {open
+  } {
+    code {make_window();} {}
+  }
+  Function {TrackInfo(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {make_window();} {}
+  }
+} 

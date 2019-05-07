@@ -1,0 +1,1 @@
+g++ listformats.c -I /local/include -L /local/lib -l portaudio -o listformats

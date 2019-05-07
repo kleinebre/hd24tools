@@ -1,0 +1,8 @@
+This installer will install HD24tools on your computer.
+
+Attention: You may need to run this wizard as administrator/
+superuser/root. 
+
+Before continuing, please close all running programs.
+
+WARNING: This program is protected by copyright law.

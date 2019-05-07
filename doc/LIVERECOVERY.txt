@@ -1,0 +1,25 @@
+Figuring out on which sector the next recording should start
+(or where a crashed live recording starts)
+============================================================
+1. Find the start offset of the drive usage table, e.g. 0xa00
+2. Find the suspected start offset of the live recording
+   in said table. This is the offset of the first 32-bit word
+   that is 0.
+   For instance the found offset is 0xe74
+3. This means the recording starts on cluster 
+   0xe74-0xa00=0x474
+4. The superblock states the number of audio blocks per cluster,
+   offset 0x14. For the sake of this example, lets assume 9
+   audio blocks per cluster. The size of each audio block is on
+   offset 0x10, usually 0x480.
+5. The first audio sector is mentioned on the superblock on
+   offset 0x7e. In most cases it is 0x1397f6.
+6. Each byte in the drive usage table represents 8 clusters.
+7. The audio should then start on
+   0x1397f6 + (0x480*9*8*(0xe74-0xa00)) = sector 0x5b667f6.
+
+---------------
+The other way around- calculating offset from sector number:
+(0x02e427f6 - 0x1397f6) / 0x480 / clusters /8 + 0xa00
+
+

@@ -1,0 +1,17 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Troubleshooting JACK</h2>
+<p>Under certain circumstances, JACK may not work as expected. Here are a few tips to help you troubleshoot JACK operation.</p>
+<h3>Is JACK available?</h3>
+<p>Under menu <b>Help -> System Info</b> you will be able to see if JACK has actually been loaded by HD24connect. If HD24connect says <b>Loaded</b>, it means it found JACK and is using it. If HD24connect cannot find JACK, make sure the JACK module is in the search path of HD24connect.</p>
+<p><ul><li>For Windows users, it is recommended that the DLL file of JACK is placed in the same folder as HD24connect. It must be called <b>libjack.dll</b>.</li>
+<li>For Mac users, the .dylib file of JACK needs to be placed in the application bundle under HD24connect.app/Contents/MacOS/. It must be called <b>libjack.dylib</b></li>
+<li>For Linux users, the jack shared object <b>libjack.so</b> (or similar) needs to be placed in the startup directory of HD24connect and must have the name <b>libjack.so</b>.</li></ul></p>
+<p>Note that instead of placing the JACK library in the folder of HD24connect, the system search path can also be used; <b>c:\windows\system32</b>
+ or <b>/usr/local/lib/</b> would be good locations as well. If you choose to do this, beware of overwriting existing files.</p>
+<h3>Is the JACK server running?</h3>
+<p>If the JACK server is not running, JACK audio will not be available, and HD24connect will play back audio through the default system audio output device instead.</p>
+<h3>If there is no sound</h3>
+<p>If JACK is running, HD24connect detects it but yet there is no sound, check if audio is being routed out of HD24connect to an audio output device, or to a program that in turn outputs audio to an audio output device.</p>
+</body></html>

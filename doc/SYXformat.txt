@@ -1,0 +1,22 @@
+SYX file format
+===============
+The SYX file format packs every 7 8-bit bytes of a binary file 
+into 8 7-bit bytes, which allows for a MIDI compatible file.
+These files can be converted to true binary files using the
+hd24syx2bin utility.
+
+Once converted, the format seems to be as follows:
+
+byte 0x00-0x07: string 'HD24CODE'
+byte 0x08-0x0b: unknown (checksum?)
+byte 0x0c-0x0f: version number string (e.g. "1.20")
+byte 0x10-0x13: 32-bit word, value 0
+byte 0x14-0x1b: Release date string (MM/DD/YY)
+byte 0x1c-0x1f: 32-bit word, value 0
+byte 0x20-0x27: Build time (hh:mm:ss)
+byte 0x28-0x2b: 32-bit word, value 0
+byte 0x2c-0x2f: binary file length in byte.
+                for version 1.20, file length is
+		712736 so bytes 0x2c-0x2f are
+		0xae020 or 0x00, 0x0a, 0xe0, 0x20
+

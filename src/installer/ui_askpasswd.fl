@@ -1,0 +1,78 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {using namespace std;} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+class UI_Askpasswd {open
+} {
+  decl {string currscreen;} {public
+  }
+  decl {char* instdir;} {public
+  }
+  Function {make_window(char* p_currscreen,char* p_instdir)} {open
+  } {
+    Fl_Window {} {
+      label {HD24tools HD24VERSION - Setup Wizard} open selected
+      xywh {1246 284 590 350} type Double color 7
+      code0 {currscreen=p_currscreen;}
+      code1 {instdir=p_instdir;} visible
+    } {
+      Fl_Box {} {
+        image {welcome.png} xywh {0 -137 165 487}
+      }
+      Fl_Button {} {
+        label {&Browse...}
+        xywh {505 191 80 20} color 53 labelsize 12
+      }
+      Fl_Box {} {
+        label {Please enter your password}
+        xywh {175 -3 320 33} labelfont 1 labelsize 16 align 20
+      }
+      Fl_Group {} {open
+        xywh {-5 315 620 35} box BORDER_BOX color 53 selection_color 47
+      } {
+        Fl_Button button_next {
+          label {&Next >}
+          callback {currscreen="next";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {415 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label Cancel
+          callback {currscreen="cancel";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {505 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label {< &Back}
+          callback {currscreen="back";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {330 320 85 25} color 53 labelsize 12
+        }
+      }
+      Fl_Output password {
+        xywh {175 191 325 20} labelsize 12 align 5 textsize 11
+      }
+      Fl_Box {} {
+        label {The setup wizard needs administrator privileges to allow
+writing to the folder where some HD24tools components
+need to be installed.
+
+Please enter your password to allow the setup wizard
+to access this folder.
+
+Alternatively, if you are an experienced user, you can
+temporarily enable write access to the library directory.}
+        xywh {175 38 405 149} labelsize 12 align 21
+      }
+    }
+  }
+} 

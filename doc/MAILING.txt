@@ -1,0 +1,28 @@
+Subject: HD24tools 0.9.0beta for Win32 released
+Hello, 
+  
+HD24tools version 0.9.0beta has been made available for 
+the following platforms:
+
+- Linux (i386)
+- Windows (All versions)
+
+Mac releases are expected to be released soon.
+
+The most important new features in this release are
+- Preliminary write support
+- New tabbed GUI
+- Several usability enhancements
+
+The release notes for this and previous release notes can be viewed on
+http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/RELEASE.txt
+
+As always, the release can be downloaded from:
+http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/download.html
+  
+Should you encounter any problems with this release, 
+please let me know. 
+ 
+Best, 
+Marc 
+

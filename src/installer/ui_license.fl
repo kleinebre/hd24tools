@@ -1,0 +1,80 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {using namespace std;} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+class UI_License {open
+} {
+  decl {string currscreen;} {public
+  }
+  Function {make_window(char* p_currscreen)} {open
+  } {
+    Fl_Window {} {
+      label {HD24tools HD24VERSION - Setup Wizard} open selected
+      xywh {1302 140 590 350} type Double color 7
+      code0 {currscreen=p_currscreen;} visible
+    } {
+      Fl_Box {} {
+        image {welcome.png} xywh {0 -137 165 487}
+      }
+      Fl_Box {} {
+        label {License Agreement}
+        xywh {175 -3 435 33} labelfont 1 labelsize 16 align 20
+      }
+      Fl_Group agreedisagree {open
+        xywh {170 265 395 45}
+      } {
+        Fl_Round_Button agree {
+          label {I accept the terms in the license agreement}
+          callback {agree->value(1);
+disagree->value(0);
+button_next->activate();}
+          xywh {175 275 385 15} down_box ROUND_DOWN_BOX labelsize 12
+        }
+        Fl_Round_Button disagree {
+          label {I do not accept the terms in the license agreement}
+          callback {agree->value(0);
+disagree->value(1);
+button_next->deactivate();}
+          xywh {175 290 385 20} down_box ROUND_DOWN_BOX value 1 labelsize 12
+        }
+      }
+      Fl_Group {} {open
+        xywh {-5 315 620 35} box BORDER_BOX color 53 selection_color 47
+      } {
+        Fl_Button button_next {
+          label {&Next >}
+          callback {currscreen="next";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {415 320 85 25} color 53 labelsize 12
+          code0 {o->deactivate();}
+        }
+        Fl_Button {} {
+          label Cancel
+          callback {currscreen="cancel";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {505 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label {< &Back}
+          callback {currscreen="back";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {330 320 85 25} color 53 labelsize 12
+        }
+      }
+      Fl_Output {} {
+        label {Please read the following license agreement carefully.}
+        xywh {175 45 405 220} type Multiline labelsize 12 align 5 textsize 11
+        code0 {o->value("HD24tools End User License Agreement\\n\\nThis program is SHAREWARE. You are hereby granted\\npermission to download and use this software free of\\ncharge, as well as to give away UNALTERED copies of it.\\n\\nThis program is provided in the hope that it\\nwill be useful, but comes with ABSOLUTELY NO WARRANTY.\\n\\nIf you find this program useful, please make a donation\\nto the author. For details, see\\nhttp://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/\\n\\nThis software is not endorsed not affiliated by Alesis.");}
+      }
+    }
+  }
+} 

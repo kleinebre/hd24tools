@@ -1,0 +1,11 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Finding the HD24 device name (Windows)</h2>
+<p>To find out the physical drive number of the hd24 disk, you will need to open up the administrative tools on your computer. The easy way is to go to Control Panel -> Admin Tools -> Computer Management. (If you can not find this, you can search for it in Start -> Help)
+In Computer Management, expand the "Storage" section and go to disk management. This will typically show an image such as the following:</p>
+<p><img src="drivenumber_windows.gif"></p>
+<p>The drive marked as "Unknown" is the ADAT drive. (If you have multiple fireports, make sure you have only 1 connected at the time that you want to figure out the drive number). So, in the above example, the drive number is 4.
+If there is no "Unknown" drive, write down what drives there are and disconnect the ADAT drive, then repeat the procedure. The ADAT drive is the drive that has disappeared from the list.</p>
+<p>Once you find the drive number, the device name to use with HD24tools is <b>//./PHYSICALDRIVE#</b> (replacing # with the drive number). In HD24connect, this device name can either be selected from the dropdown list in menu <b>File->Recovery->Select device...</b> or manually entered in the field below it when you choose <b>Other device</b>.</p>
+</body></html>

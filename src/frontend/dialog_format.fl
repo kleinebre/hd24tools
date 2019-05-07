@@ -1,0 +1,132 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <hd24devicenamegenerator.h>} {public
+} 
+
+decl {\#include <vector>} {public
+} 
+
+class dialog_format {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {int choice_startloc;} {public
+  }
+  decl {hd24fs* currfs;} {public
+  }
+  decl {int devnums[10000];} {}
+  decl {string* devicename;} {public
+  }
+  decl {string* volumelabel;} {public
+  }
+  Function {fill_devices()} {open return_type void
+  } {
+    code {hd24devicenamegenerator* dng=new hd24devicenamegenerator();
+
+__uint32 totnames=dng->getnumberofnames();
+device->add("--Format current device--",0,NULL,(void*)this);
+int n=0;
+for (__uint32 i=0;i<totnames;i++)
+{
+   string* devname=dng->getdevicename(i);
+   if (currfs->isexistingdevice(devname)) 
+   {
+   	string* devtype=currfs->drivetype(devname);
+        *devname+=" ("+*devtype+")";
+        delete devtype;
+        devtype=NULL;
+	device->add(devname->c_str(),0,NULL,(void*)this);
+	n++;
+	devnums[n]=i;	   
+   }
+   delete(devname);
+}
+device->value(0);} {}
+  }
+  Function {make_window(hd24fs* p_currfs)} {open
+  } {
+    Fl_Window {} {
+      label {Choose device to quick-format} open
+      xywh {480 452 590 110} type Double color 52 labelsize 12
+      code0 {buttonclicked=0;}
+      code1 {currfs=p_currfs;}
+      code2 {currdev->value(currfs->getdevicename()->c_str());} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+if (device->value()==0) {
+   devicename=new string(currfs->getdevicename()->c_str());
+} else {
+   hd24devicenamegenerator* dng=new hd24devicenamegenerator();
+   devicename=dng->getdevicename((__uint32)devnums[device->value()]);
+   delete dng;
+}
+volumelabel=new string(newdrivelabel->value());
+//choice_startloc=fromloc->value();
+//choice_endloc=toloc->value();
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();} selected
+        xywh {430 80 70 25} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {505 80 70 25} labelsize 12
+      }
+      Fl_Choice device {
+        label {Device to format:} open
+        xywh {115 30 460 20} down_box BORDER_BOX labelsize 12 textsize 12
+        code0 {fill_devices();}
+      } {}
+      Fl_Output currdev {
+        label {Current device:}
+        xywh {115 5 455 20} box FLAT_BOX color 53 labelsize 12 textsize 12
+      }
+      Fl_Input newdrivelabel {
+        label {Volume label:}
+        callback {char filteredname[65];
+int x=strlen(o->value());
+if (x>64) { x=64; }
+int src=0;
+int filtered=0;
+for (int i=0;i<x;i++) {
+ 	if (
+ 	   (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='/') 
+ 	|| (o->value()[i]==':') 
+ 	|| (o->value()[i]=='*') 
+ 	|| (o->value()[i]=='?') 
+ 	|| (o->value()[i]=='"') 
+ 	|| (o->value()[i]=='<') 
+ 	|| (o->value()[i]=='>') 
+ 	|| (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='|'))
+ 	{
+ 		filtered=1;
+ 		continue; 	
+ 	}
+	filteredname[src]=o->value()[i];
+	src++;
+}
+filteredname[src]='\\0';
+if (filtered==1) {
+ 	int pos=o->position()-1;
+ 	if (pos<0) pos=0;
+	o->value(filteredname);
+	o->position(pos,pos);
+}}
+        xywh {115 55 460 20} labelsize 12 textsize 12
+        code0 {o->maximum_size(64);}
+        code1 {o->value("Drive Name");}
+      }
+    }
+  }
+} 

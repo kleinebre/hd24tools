@@ -1,0 +1,46 @@
+COMPILING HD24TOOLS
+
+Instructions for Linux (preferably Debian/Ubuntu based):
+
+Get the source code from svn on sourceforge.net
+(instructions are on sourceforge.net/projects/hd24tools/develop)
+
+sudo apt-get install fluid
+sudo apt-get install libjack-dev libxft-dev libxinerama-dev portaudio19-dev libportaudio2 libportaudiocpp0 libsndfile1-dev
+sudo apt-get install libxpm-dev
+sudo apt-get install libpng-dev libjpeg-dev
+
+NOTE: error "‘PaStreamCallback’ has not been declared" means you've installed portaudio 18 instead of portaudio 19.
+
+Note: You may still need to install libflac.
+
+make clean
+./configure
+make
+
+mkdir ~/HD24tools
+cp hd24connect ~/HD24tools/
+cp hd24hexview ~/HD24tools/
+cp hd24info ~/HD24tools/
+cp hd24towav ~/HD24tools/
+cp hd24wavefix ~/HD24tools/
+ln -s /usr/lib/libsndfile.so.1 ~/HD24tools/
+ln -s /usr/lib/libportaudio.so ~/HD24tools/
+ln -s /usr/lib/libjack.so ~/HD24tools/
+
+For HD24tools to detect the drives (when being run as normal user),
+normal users need to have sufficient permissions to work with the
+drive device.
+
+To find out which drive device it is, run HD24connect as root,
+and select File->Recovery->Select device...
+
+This will show you the current device, which is the device
+that needs its permissions set.
+
+You can probably gain device permissions by adding your
+regular user to the proper group (typically the group called "disk"), 
+making your user the
+owner of the device or by setting the device permissions
+in /etc/fstab.
+

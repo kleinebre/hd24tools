@@ -1,0 +1,475 @@
+HD24Connect revision history and roadmap
+========================================
+
+Implemented features are set in the past tense. A version is complete when all
+planned versions are implemented. Until then, sub-versions are used, e.g.
+0.3.1 already may have some (but not all) 0.4 features.
+
+This document ends with suggested features, but is in reverse chronological
+order otherwise, and as such starts with features planned for the next 
+release.
+
+Current status is somewhere in the middle, search for the text 
+'CURRENTLY IN PROGRESS' to find out what is being done right now.
+
+Version 1.1.0 => CURRENTLY IN PROGRESS
+
+- Added some unit tests to perform automated, scripted testing
+- Added frequency/gain display to mixer
+- Performed code cleanup:
+	- Moved recorder, mixer and HD24->PC file transfers
+          to their own modules
+	- permit various interfaces (X, Cocoa, Curses, etc)
+	- possibly permit recording macros?
+        - permit multi-window interface (show transport/time/mixer
+          simultaneously) and allow resizing those windows
+- Implement batch transports
+- Implement realtime recording 
+- Auto-detect feedback loops!
+- Change to multi-window interface to allow viewing multiple tabs at once
+  (for example both recorder and mixer at same time)
+- Implement MIDI control/control surfaces
+	- Control other MIDI devices with HD24tools
+	- Control HD24tools with other MIDI devices
+- Implement LADSPA support for mixer FX
+	- Add default GUI for common effects, allow them
+          to be controlled through control surfaces.
+- Implement keyboardless operation 
+- Add wave viewer for easier selection of export range
+- Add functionality to allow changing song naming convention for export
+- Simultaneous dual drive support. Benefits:
+  * allow copying songs between drives 
+  * copying songs/projects from/to drive images
+- Add drive images that are found in drive image dir to
+  drive image dropdown to make it easier to switch between
+  real and virtual drives
+- Implement functionality to signal falling out of record 
+  mode if needed (when drive is full, etc)
+- Create an interesting demo drive image to
+  allow people to play around with it
+  (low prio: people can download examples from raw-tracks.com
+  at a $5 fee)
+
+Version 1.0.0 => Will remain in alpha
+
+- Made source code available to the general public
+- Added recovery feature to deal with a specific class of
+  'unexpected end of song' error on fragmented drives
+- Added block checksum calculation to library
+- Implemented saving of changed project name/song name to disk
+- Added code for cluster allocation
+- Added code for converting orphan clusters to allocation entries
+- Compiling framework was changed to allow smoother Mac compiles
+- Added mixer tab with save/load mixer settings functionality
+- Finished up restructuring of mixer to make it work again
+- Added save functionality to allow renaming drive
+- Made detection of corrupted drives smoother to prevent need for
+  http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/drivenumber.html
+- Added Check for 'forbidden characters' in filenames
+  \ / : * ? " < > |
+  (HD24 accepts these but can have unpredictable effects on
+  OS side)
+- Added allocating functionality to allow lengthening songs
+  automatically during transfer
+- Altered layout of drive catalog to fit longer song names
+  and to have a bit larger margin on the left for printing
+- Added functionality to allow 1-click toggle between 
+  sample rates of 44.1 <=> 48 kHz and 88.2 <=> 96 kHz
+  (toggling between lower/higher sample rates is not possible
+   without conversion as higher sample rates use 2 recording
+   tracks per channel).
+- Added dialog for simpler 'headerless' live recording recovery
+- Implemented initial headerless live recovery scheme
+- Made headerless live recording recovery read-only
+- Added functionality to create empty drive images
+- Created dialog for setting song parameters
+- Implemented Mixer JACK support
+- Implemented framework for smarter library loading.
+  This should allow Mac (and even Windows) users to have
+  JACK functionality, and will no longer require Mac
+  users to startup HD24connect by running an AppleScript.
+- ... and made library smart loading even smarter by letting
+  it look in the program directory first, the PATH dir next, 
+  and all usual library directories next. This should result
+  in library loading that Just Works in most cases and
+  will allow JACK support on all platforms.
+- Wrote documentation explaining how to build HD24tools
+  from source (Linux, 64-bit Athlon)
+- Added functionality to create projects
+- Added functionality to create songs (incl. superblock 
+  song count update)
+- Made sure changes in song/drive/project names also reflect 
+  properly in FST 1.00 drives
+- Added functionality to automatically pre-record silence
+  in songs on creating them
+- Added functionality to update song usage list after 
+  song creation
+- Automatically select song as 'default' after creation
+- Implemented reload of drive list/catalog/project list/song list 
+  after major write operations
+- User interface settings reloaded as appropriate after writing
+  to drive
+- Added options dialog to allow (among other things) specifying
+  a filename pattern for file transfers to PC
+- Made write-protect checkbox work
+- Added drive format functionality
+- Added functionality to delete songs
+- Added functionality to delete projects
+- Made 'bypass' button for mixer work
+- Added timeout-style messages to alpha display
+- Implemented functionality to display song information
+  on alpha display
+- Implemented functionality for sorting songs inside a project.
+  This allows easily reordering songs by renaming them.
+- Implemented SMPTE timecode striping- for now limited to
+  30fps nondrop starting at 00:00:00.00. 
+  May not work on sample rates other than 48kHz. In fact, 
+  it may not work at all.
+- Made sure superblock is updated with number of free clusters
+  after song transfer to HD24 drive/creation of new song
+- Implemented write-protect to prevent writing to drives when
+  working with header files.
+- Implemented functionality to reduce number of sectors read
+  when transferring fewer tracks. The expected performance 
+  win is not very big as the number of drive seeks is about 
+  the same, but the weight of the added logic is minimal. 
+  Perhaps on some systems the difference is noticable. YMMV.
+- Implemented .wav writing without libsndfile. If it is missing, 
+  you'll still be able to transfer such files to your computer.
+- Made sure write functionality is disabled for drives found
+  not to be valid HD24 drives (due to corruption, or perhaps
+  they're simply OS drives which we DEFINITELY don't want to
+  overwrite)
+- Implemented locate point saving to HD24 drive
+- Implemented locate point saving/loading to/from file
+- Implemented (preliminary) transfer-time mixing of tracks
+- Made sure song/project are made default after selecting them
+- Fixed a non critical bug where closing the program during 
+  playback caused a crash.
+
+TODO: Bugs to fix:
+
+- After quickformat of a drive, catalog and related screens are
+  not updated.
+
+TO DO: Testing and packaging:
+
+- Fixme: update all of drive info page on refresh
+  (What's missing?)
+- Make sure that 'new folder' button works properly on 
+  all platforms! (Fixed on Windows, TO DO on mac)
+- Distribute Mac version as Universal Binary
+- Finally get .aif, .sd2 and .dig/.sd to work properly!
+- Check all FIXME and TODO comments in code
+- Get 16-bit export to work (low priority)
+- Documentation
+
+Version 0.9.0
+
+- Implemented tabbed interface
+- Added functionality to export drive images
+- Added time stamp to catalog
+- Added drive catalog display to drive inforrmation
+- Changed default time display to 30 frames per second instead of 1/100 sec
+
+- Added the 'Recorder' with various new features
+- Proper solo/mute buttons instead of solo/mute by channel selection
+- Track arm buttons
+- 24-channel display faithfully emulating what the HD24 would show
+- Peak modes: No peak hold, momentary peak hold, continuous peak hold
+- Added locate slider to rapidly jump to any point in the song
+- Added punch in/out locate points
+- Added visual clue to transport controls showing that clicking 'set' 
+  can set locate points
+- Added input monitoring (mainly Linux)
+- Added dropdown to map stereo inputs to channel pairs in various ways
+- Fancy 7-segment LED display
+- Equally fancy info display
+- Fancy, bigger graphical buttons with LED for transport control
+- Fixed a clipping bug in portaudio playback (playback only)
+
+- Added signal detection to track selection in transfer tab
+- Added dropdown to allow a flexible custom size limit for exported files
+- Added dropdown to stamp songs with a different sample rate
+
+- Added tab for transfer back to HD24
+- Added functionality that permits selecting many files at once
+- Added functionality to automatically spread multi-track files
+  across several HD24 tracks
+- Added functionality to automatically mix multi-track files to mono
+- Added functionality to allow erasing tracks
+- Added functionality to allow moving tracks (including track action)
+  up or down
+- Added functionality to clear filenames from tracks
+- Added functionality to overwrite existing audio with audio from a file.
+  Many file formats are supported (subject to what is supported by
+  libsndfile).
+- SD2 file format support (does this work now?)
+- Create new folder from file browse dialog (does this work now?)
+
+
+Version 0.8.2
+
+- Hardened the software in some places to be more crash-resistant 
+  in handling corrupt drives
+- Some compatibility enhancements
+- Fixed a bug in the calculation of the total number of bytes to export,
+  which caused the auto-split popup not to be displayed in some cases.
+
+Version 0.8.1
+
+- Fixed bug that caused auto-split popup to always appear for long recordings,
+  even if only a small fragment was being exported.
+  
+Version 0.8.0
+
+- Printing disk contents on paper and file
+- Entirely replaced export engine for faster exports
+- Created OS native installers.
+- Allow transferring multiple songs at once (song choice 'All Songs')
+- Added possibility to export to stereo and multi-track files.
+
+Version 0.7
+
+- This never-released version adds high samplerate support.
+
+Version 0.6.2
+
+- Fixed a bug that caused the Windows version to lock up when loading a header file
+- Initial release for MacOS/X 10.4
+
+Version 0.6.1
+
+- Fixed a bug in the drive name generation in Windows
+
+Version 0.6
+
+- Initial Macintosh OS/X port. Still flaky due to interesting behavior of packages that HD24connect depends on.
+- Relabeled button "Transfer to PC" as "Transfer to Mac" for OS/X version.
+- Fixed bug that cleared surface of cancel button during transfers.
+- Added warning dialog to improve user friendliness when no HD24 drive is detected on program startup
+- Added menu option 'File/Detect HD24 drives' to allow re-scanning for drives after program startup.
+- Project directory browser now uses OS native file dialog.
+- Added menu option to allow creating header files from within hd24connect
+- Removed portaudio dependency (this has no visible impact).
+- Added Estimated Time of Arrival in transfers
+- Removed dependency on command line options to enable recovery features
+- Added application (desktop) icon for Windows
+- Allow exporting to more different file formats (currently WAV and AIFF)
+- Altered file naming for export
+- Cleaned up code that deals with drive name generation
+- Version control is now in place, allowing multiple people to work 
+  on the project at the same time (Welcome, Randy!)
+
+Version 0.5
+
+- Added --force feature to allow using hd24 disks with invalid MBR.
+- Added --header feature which allows to use a fixed header file along with
+  a corrupt disk. This permits us to recover audio without need to modify
+  data on the corrupted disk. 
+- Added portaudio playback. For the Windows version this means that audio
+  preview is now supported, while under Linux the Jack Audio Connection Kit 
+  is no longer required for audio preview.
+- Fixed a bug in Linux audio preview. This minor bug affected exactly 
+  1 user (me).
+- Added dialog to allow renaming drives, projects and songs (in memory only)
+- Altered project handling to more easily allow in-memory edits of projects
+
+Version 0.4
+
+- Fixed a minor bug with the file write caching.
+- Added a button to allow the user to interrupt a transfer.
+- Fixed flakyness in audio playback
+- Added dialog to allow manually setting locate points
+- Fix bug which causes windows version not to display song names
+- Added feature to allow setting loop start/end during playback
+- Implemented export to wav (for now, instead of raw) using libsndfile
+- Implemented basic loop mode for audio playback. 
+
+Version 0.3
+
+- Added file write caching to speed up export under Windows. 
+- Added direct playing under Linux (still flaky)
+- Altered library to resolve issue with STL string memory leaks
+
+Version 0.2
+
+- Added support for locate points. 
+- Added backwards export.
+- Initial windows version.
+
+Version 0.1
+
+- First workable version.
+
+HD24hexview revision history and roadmap
+========================================
+
+Future
+
+- Verify/Fix any remaining issues with 4 GB limit on Windows
+- Correctly determine drive size
+- Allow multi-sector paste (from file).
+
+Version 1.4beta
+
+- Replaced code for windows drive size detection.
+
+Version 1.3beta
+
+- Added expert mode as safety switch to prevent accidentally writing to disk.
+- In expert mode, added a big fat warning for writing to the default boot 
+  disk (/dev/hda or \\.\PHYSICALDRIVE0) and a (not so big & fat, but still)
+  warning for writing to other devices.
+
+Version 1.2beta
+
+- Added d-<hex> feature to dump sector <hex> counting from end of disk
+  This allows dumping the last sector from disk without having to figure
+  out the number of sectors based on brand and model of the disk.
+  Unfortunately, this does not work properly yet for Windows devices.
+
+Version 1.1beta
+
+- Fixed a bug in windows version that required output file to already exist
+  before writing
+- Added single-sector checksum (no multi-sector checksum yet)
+
+Version 1.0beta
+
+- Implemented compare
+- Implemented write offset
+
+Version 0.3
+
+- Implemented edit and write back of sectors
+- Implemented single-sector paste
+- Ported to Windows
+- Resolved a 4 GB issue with windows version
+- Allowed using files as devices
+
+Version 0.2
+
+- Implemented support for setting blocks
+- Resolved 4 gigabyte limitation for linux
+- Implemented scan
+- Implemented write to file
+
+Version 0.1
+- Implemented code to autodetect HD24 disks
+- Implemented feature to navigate disks with +/-/o
+
+========================================================
+Version x.x
+
+Spare ideas/suggested future features:
+
+- Allow exporting audio based on a 'guide track'. If a nonempty audio track has been exported, after which the disk has gotten corrupted, this audio track can be used to find back the other tracks without allocation information.
+	
+	Will not be implemented anytime soon; this scenario is too
+	rare. Also, should recovery be needed, other ways exist to do so.
+
+- Allow the program to use installed audio encoders to
+  encode to mp3/flac/etc
+
+- Time line/draggable export locators
+
+	Proposed is a graphical display to allow 
+	visually setting locate points for export.
+	Alternatively, a 'scrub editor' style display would be
+	workable.
+	While interesting, it would be rather time consuming
+	to build such a time line. For now, a draggable slider
+	is made available to ease the pain a bit.
+
+- Check available drive size before export
+
+	I'm not sure if I already implemented this. Obviously,
+	it is a required feature.
+
+- Allow transferring multiple projects at once 
+  (project choice 'All projects')
+
+	Will probably be implemented at some point, but
+	custom song naming convention is then required first.
+
+- Allow automatic deletion of files when transfer is interrupted
+
+- Normalizing audio as it is being exported
+
+	This will require analyzing the entire export range
+	prior to export (possibly more, if the export is a
+	single song of an entire live performance; it is likely
+	that we'd want to normalize the whole performance 
+	equally.
+
+- Allow exporting to different bit depths
+- MIDI control (both controlling HD24tools via MIDI or
+  let HD24tools control HD24 recorder via MIDI).
+  
+	The benefit of allowing HD24tools control via MIDI
+	is that frequently requested functionality that the
+	HD24 does not support is a possibility; for instance,
+	the HD24 does not allow selecting songs via MIDI,
+	whereas such implementation in HD24tools would be
+	a fairly simple matter once it is MIDI enabled.
+	Someone also mentioned that possibily a recording
+        log could be kept by HD24tools when connected to
+        a HD24 via MIDI by simply keeping track of record
+        events. Unfortunately the HD24 does not send MIDI
+        for track record enable, even though it supports
+        track arming via MIDI (the good news is that some
+        MIDI functionality is supported even though the
+        HD24 itself does not send out MIDI for those actions).
+
+- Storing metadata on HD24 drives
+
+	There are some possibilities for this. One way is
+	to create a song contaning (for instance) a FAT
+	file system, and using some unused space in the
+	song entries to allow entries in that FAT file
+	system to uniquely point to them; this would allow
+	storing song-unique info (such as track data, etc)
+	in that file system.
+
+- Locate points in directory listing
+
+	This would make the catalog file a fair bit longer.
+	As such it would have to be an option that could
+	be turned on/off.
+
+- Virtual BRC application
+
+	This would be limited to whatever MMC supports.
+
+- Copying projects
+- Batch transfer
+- One click drive backup
+
+	These all come down to the same thing: find a 
+        way to not require user intervention while
+        transferring large amounts of data.
+	Perhaps a 2-click drive backup (with the possibility
+        to edit the batch before export) is more useful than
+        a 1-click backup.
+	The main benefit (not having to wait actively while
+	audio is being transferred) is the same.
+
+- Calculate approx. occupied drive space per song, and add
+  to catalog.
+
+- Display currently selected song/project on other tabs as
+  well 
+	- current song is now displayed on alpha display.
+
+- Allow different UIs (proposed is command line interface,
+  non-X interface, Cocoa interface, ...)
+
+- Control surface support, to allow using MIDI-enabled
+  consoles to control the HD24tools mixer/recorder
+
+- Add Vista tip to manual (regarding admin account for write
+  support)
+  Also add this info:
+  http://tech.groups.yahoo.com/group/hd24/message/12102
+

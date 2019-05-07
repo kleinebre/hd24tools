@@ -1,0 +1,209 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+class dialog_setlocate {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {unsigned long locpoint;} {public
+  }
+  decl {int mode;} {public
+  }
+  decl {int useasrange;} {public
+  }
+  decl {hd24song* currsong;} {}
+  decl {int locnum;} {}
+  decl {int subsecmax;} {}
+  Function {make_window(hd24song* p_currsong,int p_locnum)} {open
+  } {
+    Fl_Window {} {
+      label {Edit locate point} open
+      xywh {160 247 385 100} type Double color 52
+      code0 {currsong=p_currsong; buttonclicked=0; mode=2; locnum=p_locnum;}
+      code1 {locpoint=currsong->getlocatepos(locnum); locname->value(currsong->getlocatename(locnum)->c_str());}
+      code2 {setuiloc(currsong->getlocatepos(locnum)); subsecmax=29;}
+      code3 {if ((locnum!=1) && (locnum!=2)) { setasrange->hide(); }; if (locnum==1) { setasrange->label("Set as start of export range"); }  if (locnum==2) { setasrange->label("Set as end of export range"); }} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+char dest[10];
+strncpy(&dest[0],locname->value(),8);
+dest[9]='\\0';
+string* newname=new string(dest);
+currsong->setlocatename(locnum,*newname);
+currsong->setlocatepos(locnum,locpoint);
+useasrange=setasrange->value();
+delete newname;
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {235 75 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+useasrange=0; 
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {310 75 70 20} labelsize 12
+      }
+      Fl_Input hr {
+        label {New locate point:}
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(3600*realrate*(currsong->display_hours(locpoint)));
+locpoint+=(unsigned long)(3600*realrate*(strtol(hr->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {150 45 50 20} type Int labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input min {
+        label {:}
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(60*realrate*(currsong->display_minutes(locpoint)));
+locpoint+=(unsigned long)(60*realrate*(strtol(min->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {210 45 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input sec {
+        label {:}
+        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+locpoint-=(unsigned long)(realrate*(currsong->display_seconds(locpoint)));
+locpoint+=(unsigned long)(realrate*(strtol(sec->value(),0,10)));
+setuiloc(locpoint);}
+        xywh {265 45 45 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(2);}
+      }
+      Fl_Input subsec {
+        label {.}
+        callback {if (strtol(subsec->value(),0,10)>subsecmax) {
+    string* strmax=Convert::int2str(subsecmax);
+    subsec->value(strmax->c_str());
+    delete strmax;
+    
+}
+
+unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+unsigned long realrate=currsong->samplerate()/chmult;
+
+long subseconds=currsong->display_subseconds(locpoint);
+
+locpoint-=subseconds;
+
+long frames=0;
+switch(mode) {
+   case 0: frames=100; break;
+   case 1: frames=realrate; break;
+   case 2: frames=30; break;
+}
+locpoint+=(unsigned long)(strtol(subsec->value(),0,10)*currsong->samplerate()/(frames*chmult));
+setuiloc(locpoint);}
+        xywh {320 45 60 20} type Int labelfont 1 labelsize 12 textsize 12
+        code0 {o->maximum_size(5);}
+      }
+      Fl_Button button_mode {
+        label Frames
+        callback {mode=(mode+1)%3;
+switch(mode) {
+	case 0:
+	{
+		o->label("Sec/100"); 
+		subsecmax=99;
+		break;
+	}
+	case 1:
+	{		
+
+		if ((currsong->physical_channels()/currsong->logical_channels())==2) {
+			o->label("2*Sams"); 		
+		} else { 
+			o->label("Samples"); 		
+		}
+		subsecmax=currsong->samplerate()/(currsong->physical_channels()/currsong->logical_channels());
+		break;
+	}
+	case 2: 
+	{
+		o->label("Frames"); 
+		subsecmax=29;
+		break;
+	}
+}
+setuiloc(locpoint);}
+        xywh {320 25 60 20} labelsize 12 align 18
+      }
+      Fl_Input locname {
+        label {Location Name:}
+        callback {char templabel[10];
+strncpy(&templabel[0],o->value(),8);
+templabel[8]='\\0';
+o->value(templabel);}
+        xywh {150 5 115 20} labelsize 12 textsize 12
+        code0 {o->maximum_size(8);}
+      }
+      Fl_Check_Button setasrange {
+        label {Set as start of export range}
+        xywh {25 75 205 20} down_box DOWN_BOX value 1 labelsize 12
+      }
+      Fl_Box {} {
+        label Hr
+        xywh {150 28 50 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Min
+        xywh {210 28 45 17} labelsize 12
+      }
+      Fl_Box {} {
+        label Sec
+        xywh {265 28 45 17} labelsize 12
+      }
+    }
+  }
+  Function {setuiloc(unsigned long offset)} {open return_type void
+  } {
+    code {unsigned long maxoffset=currsong->getlocatepos(25);
+if (offset>maxoffset) {
+	offset=maxoffset;
+	locpoint=offset;
+}
+string* strhr=Convert::int2str(currsong->display_hours(offset));
+hr->value(strhr->c_str());
+delete strhr;
+
+string* strmin=Convert::int2str(currsong->display_minutes(offset));
+min->value(strmin->c_str());
+delete strmin;
+
+string* strsec=Convert::int2str(currsong->display_seconds(offset));
+sec->value(strsec->c_str());
+delete strsec;
+
+string* strsubsec;
+
+long subseconds=currsong->display_subseconds(offset);
+long subsecval;
+switch(mode) {
+   case 0: subsecval=((subseconds*100)/ ( currsong->samplerate()/ (currsong->physical_channels()/currsong->logical_channels()) )  ); break;
+   case 1: subsecval=(subseconds); break;
+   case 2: subsecval=((subseconds*30)/( currsong->samplerate()/ (currsong->physical_channels()/currsong->logical_channels()) )  ); ; break;
+   default: subsecval=0;
+}
+strsubsec=Convert::int2str(subsecval);
+subsec->value(strsubsec->c_str());
+delete strsubsec;} {selected
+    }
+  }
+} 

@@ -1,0 +1,3917 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+header_name {.h} 
+code_name {.cxx}
+decl {\#define MAXSAMRATE 48000} {public
+} 
+
+decl {\#define AUDIOLIB_PORTAUDIO 1} {public
+} 
+
+decl {\#define AUDIOLIB_JACK 2} {public
+} 
+
+decl {\#define AUDIOLIB_SNDFILE 3} {public
+} 
+
+decl {\#define Pi2 (2*3.1415926535897)} {public
+} 
+
+decl {\#include <config.h>} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+decl {\#include <vector>} {public
+} 
+
+decl {\#include <soundlibs.h>} {public
+} 
+
+decl {\#include <iostream>} {public
+} 
+
+decl {\#include <fstream>} {public
+} 
+
+decl {\#include <FL/FLTKstuff.H>} {public
+} 
+
+decl {\#include <FL/filename.H>} {public
+} 
+
+decl {\#include <convertlib.h>} {public
+} 
+
+decl {\#include <time.h>} {public
+} 
+
+decl {\#include <math.h>} {public
+} 
+
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <ui_hd24connect.h>} {public
+} 
+
+decl {\#include <ui_mixer.h>} {public
+} 
+
+decl {class MixerControl;} {public
+} 
+
+decl {\#include <sharedlibs.h>} {public
+} 
+
+decl {class RecorderChannelData;} {public
+} 
+
+decl {class RecorderChannelControl;} {public
+} 
+
+decl {class RecorderChannelUI;} {public
+} 
+
+decl {class RecorderData;} {public
+} 
+
+decl {class RecorderControl;} {public
+} 
+
+decl {class RecorderUI;} {public
+} 
+
+class ScrubWheel {: {public Fl_Roller}
+} {
+  decl {int myval;} {}
+  decl {RecorderUI* ui;} {}
+  decl {int lastx;} {}
+  Function {handle(int e)} {open return_type int
+  } {
+    code {/*char *fltk_eventnames[] =
+{
+  "FL_NO_EVENT",
+  "FL_PUSH",
+  "FL_RELEASE",
+  "FL_ENTER",
+  "FL_LEAVE",
+  "FL_DRAG",
+  "FL_FOCUS",
+  "FL_UNFOCUS",
+  "FL_KEYDOWN",
+  "FL_KEYUP",
+  "FL_CLOSE",
+  "FL_MOVE",
+  "FL_SHORTCUT",
+  "FL_DEACTIVATE",
+  "FL_ACTIVATE",
+  "FL_HIDE",
+  "FL_SHOW",
+  "FL_PASTE",
+  "FL_SELECTIONCLEAR",
+  "FL_MOUSEWHEEL",
+  "FL_DND_ENTER",
+  "FL_DND_DRAG",
+  "FL_DND_LEAVE",
+  "FL_DND_RELEASE",
+};
+
+*/
+if (e==FL_DRAG) {
+	myval=Fl::event_x()-lastx;
+	RecorderControl::button_scrub_call(myval,this->ui->control);
+}
+lastx=Fl::event_x();
+return 1;} {}
+  }
+  Function {ScrubWheel(int a,int b,int c,int d,const char* e):Fl_Roller(a,b,c,d,e)} {open
+  } {
+    code {myval=0;} {}
+  }
+  Function {draw()} {open
+  } {
+    code {//draw goes here
+return Fl_Roller::draw();} {}
+  }
+  Function {value()} {open return_type int
+  } {
+    code {return this->myval;} {}
+  }
+  Function {value(int newval)} {open return_type int
+  } {
+    code {int oldval=this->myval;
+this->myval=newval; // not very useful but whatever
+return oldval;} {}
+  }
+  Function {setui(RecorderUI* p_ui)} {open
+  } {
+    code {this->ui=p_ui;} {}
+  }
+} 
+
+class AudioSystem {open
+} {
+  decl {\#define AUDIOSYS_FORMAT_FLOAT32 1} {public
+  }
+  decl {\#define AUDIOSYS_FORMAT_INT16 2} {public
+  }
+  decl {AudioStorage* tape;} {}
+  decl {__uint32 samrate;} {public
+  }
+  decl {__uint32 paSamFormat;} {public
+  }
+  decl {bool closingdown;} {public
+  }
+  decl {MixerControl* mixercontrol;} {}
+  decl {RecorderControl* recorder;} {}
+  decl {PortAudioWrapper* portaudio;} {public
+  }
+  decl {SoundFileWrapper* soundfile;} {public
+  }
+  decl {JackWrapper* libjack;} {}
+  decl {PaStreamParameters* inputParameters;} {}
+  decl {PaStreamParameters* outputParameters;} {}
+  decl {PaStream* portaudiostream;} {}
+  decl {jack_client_t *jackclient;} {}
+  decl {__uint32 jackrate;} {}
+  decl {__uint32 portaudiooffset;} {public
+  }
+  decl {int as_initialized;} {}
+  decl {int portaudio_initialized;} {}
+  decl {int jack_initialized;} {}
+  decl {int as_looppos;} {}
+  decl {bool as_mustloop;} {}
+  decl {bool as_muststop;} {}
+  decl {jack_port_t *output_port[24];} {}
+  decl {jack_port_t *output_master[2];} {}
+  decl {jack_port_t *input_port[24];} {}
+  decl {long* mtsample;} {}
+  decl {bool havestreamtime;} {}
+  decl {__sint64 streamtime;} {public
+  }
+  Function {AudioSystem(RecorderControl* rec)} {open
+  } {
+    code {\#if (RECORDERDEBUG==1)
+cout << "AudioSystem::AudioSystem()" << endl;
+\#endif
+initvars(rec);} {}
+  }
+  Function {initvars(RecorderControl* rec)} {open return_type void
+  } {
+    code {this->tape=NULL;
+this->samrate=0;
+this->closingdown=false;
+this->mixercontrol=NULL;
+this->recorder=rec;
+this->portaudio=NULL;
+this->soundfile=NULL;
+this->libjack=NULL;
+this->jackclient=NULL;
+this->portaudiostream=NULL;
+this->portaudio_initialized=0;
+this->as_initialized=false;
+this->jack_initialized=false;
+this->as_looppos=0;
+this->streamtime=0;
+this->as_mustloop=false;
+this->as_muststop=false;
+this->inputParameters=NULL;
+this->outputParameters=NULL;
+this->inputParameters=new PaStreamParameters;
+this->outputParameters=new PaStreamParameters;
+this->mtsample=NULL;
+for (int i=0;i<24;i++) {
+   this->output_port[i]=NULL;
+   this->input_port[i]=NULL;
+}
+this->output_master[0]=NULL;
+this->output_master[1]=NULL;
+this->havestreamtime=false;
+// Set output format to float32 by default.
+// If float32 does not seem supported,
+// audio system will fallback to 16 bit integer
+
+this->paSamFormat=AUDIOSYS_FORMAT_FLOAT32;} {}
+  }
+  Function {currentlocation(__uint32 newpos)} {open return_type void
+  } {
+    code {if (tape==NULL) return;
+tape->currentlocation(newpos);} {}
+  }
+  Function {currentlocation()} {return_type __uint32
+  } {
+    code {if (tape==NULL) return 0;
+return tape->currentlocation();} {}
+  }
+  Function {jack_process(jack_nframes_t nframes, void *arg)} {open private return_type {static int}
+  } {
+    code {\#ifndef LIBJACK
+\#if (RECORDERDEBUG==1)
+cout << "no libjack" << endl;
+\#endif
+\#endif
+
+\#ifdef LIBJACK
+
+RecorderControl* recordercontrol=(RecorderControl*)arg;
+
+if (recordercontrol==NULL) {
+\#if (RECORDERDEBUG==1)
+	cout << "no control" << endl;
+\#endif
+	return 0;
+}
+AudioSystem* audio=recordercontrol->audio;
+if (audio==NULL)
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no audiosys" << endl;
+\#endif
+	return 0;
+}
+if ((audio->libjack)==NULL)
+{
+\#if (RECORDERDEBUG==1)
+cout << "no libjack" << endl;
+\#endif
+	return 0;
+}
+
+if (!(audio->libjack->libloaded)) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no jacklib" << endl;
+\#endif
+	return 0;
+}
+
+RecorderControl* mythis=recordercontrol;
+//RecorderUI* mythis=recordercontrol; //(RecorderUI*)arg;
+//AudioSystem* audio=mythis->control->audio;
+
+
+jack_client_t* currjackclient=audio->jackclient;
+if (currjackclient==NULL) return 0;
+MixerControl* mixer=audio->mixer();
+if (mixer==NULL) return 0;
+jack_position_t current;
+jack_transport_state_t transport_state=audio->libjack->jack_transport_query(currjackclient,&current);
+
+hd24song* mysong=(hd24song*)audio->tape;
+if (mysong==NULL) return 0; /* nothing to do! */
+
+hd24fs* myfs=mysong->fs();
+
+__sint64 frame_time = (__sint64)(audio->libjack->jack_get_current_transport_frame(currjackclient));
+
+MixerChannelControl* mixerchannel[24];
+
+	
+for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+{
+	mixerchannel[tracknum]=mixer->parentui()->mixerchannel[tracknum]->control;
+}
+	
+unsigned int i;
+__sint64 intsamval=0;
+mysong->golocatepos(frame_time);
+int jumpedloop=0;
+if (transport_state!=JackTransportStopped) 
+{
+	__sint64 frpos=frame_time;
+	__sint64 posoffset=0;
+	for (i=0;i<nframes;i++) 
+	{
+		if ( mythis->loopmode()==1 ) 
+		{
+			posoffset++;
+			if ((frpos+i)==(__sint64)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND))) 
+			{
+				frpos=mysong->getlocatepos(hd24song::LOCATEPOS_LOOPSTART);
+				mysong->golocatepos(frpos);
+				posoffset=0;
+				jumpedloop=1;
+			}
+		}
+
+		mysong->getmultitracksample(
+			(long*)((&audio->mtsample[i*25])),
+			hd24song::READMODE_REALTIME
+		);
+	}
+	if (jumpedloop==1) 
+	{
+		audio->hd24_transport_locate((__sint64)(frpos+posoffset));
+	}
+}
+
+for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+{
+	jack_default_audio_sample_t *out = 
+	(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_port[tracknum], nframes));
+	jack_default_audio_sample_t *in = 
+	(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->input_port[tracknum], nframes));
+	for (i=0;i<nframes;i++) 
+	{
+		if (transport_state!=JackTransportStopped) {
+ 			long* xb=(long*)(&(audio->mtsample[i*25+tracknum]));
+			intsamval=xb[0];
+			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));			
+			if (intsamval>=(1<<23)) {
+				intsamval-=(1<<24);
+			}
+			double samval=(intsamval/(double)0x800000);
+			out[i]=samval; // send pre-fader, pre-mixer channel output to JACK
+		} else {			
+			out[i]=0;
+		}
+		
+		mixerchannel[tracknum]->sample(i,out[i]);
+				
+		// ... except if we are monitoring input, in which case regular reading etc is
+		// still going on, but we will just copy the incoming signal to the output:
+		// (with the possible exception of tracks being recorded but that's for later)
+		if (myfs->isallinput()) {
+			out[i]=in[i];
+		}
+
+                if (fabs(out[i]) > mythis->data->trackpeak[i]) {
+			mythis->data->trackpeak[tracknum]=fabs(out[i]);
+		}
+	}
+}
+mixer->mix(nframes);
+jack_default_audio_sample_t *masterL = 
+(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_master[0], nframes));
+jack_default_audio_sample_t *masterR = 
+(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_master[1], nframes));
+if ((masterL!=NULL)&&(masterR!=NULL)) {	
+	for (i=0;i<nframes;i++) 
+	{
+		masterL[i] = mixer->masterout(0,i); // left 
+		masterR[i] = mixer->masterout(1,i); // right	
+	}
+}
+\#endif
+
+return 0;} {}
+  }
+  Function {jack_shutdown(void *arg)} {private return_type {static void}
+  } {
+    code {\#ifdef LIBJACK
+AudioSystem* audio=(AudioSystem*)arg;
+if (audio->jackclient==NULL) {
+    return;
+}
+if (audio->mtsample!=NULL) {
+	memutils::myfree("jack_shutdown",audio->mtsample);
+	audio->mtsample=NULL;
+}
+audio->jackclient=NULL;
+return;
+\#endif} {}
+  }
+  Function {jackinit()} {open private return_type void
+  } {
+    code {if (portaudio_initialized==1) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "not initializing jack because portaudio is active" << endl;
+\#endif
+	return;
+}
+if (!(libjack->libloaded)) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "not initializing jack because its lib is not loaded" << endl;
+\#endif
+	return;
+}
+if (this->closingdown) {
+    if (jackclient!=NULL)
+    {
+        jack_shutdown(this);
+    }
+    jackclient=NULL;
+    return;
+}
+\#ifdef LIBJACK
+//button_setlocate->value(0);
+//highlight_setbuttons(0); // value of setlocate button
+//mustdisplaytimer=true;
+if (jackclient==NULL) {
+	jackclient = libjack->jack_client_new("HD24connect");
+
+	if (jackclient == NULL) {
+		// error: jack open failed.
+\#if (RECORDERDEBUG==1)
+		cout << "error: jack open failed." << endl;
+\#endif		
+		return;
+	}
+	mtsample=(long *)memutils::mymalloc("jackinit",512000,1);
+	
+	libjack->jack_set_process_callback (
+		jackclient,
+		(int (*)(jack_nframes_t, void*))jack_process, 
+		recorder); // was: this (=audiosystem)
+	libjack->jack_on_shutdown (jackclient, jack_shutdown, this);
+	jackrate=libjack->jack_get_sample_rate (jackclient);
+	int i;
+	for (i=1;i<=MAXCHANNELS;i++) {
+		string portnameout="output";
+		string portnamein="input";
+		
+		string* tracknum=Convert::int2str(i);
+		portnameout+=*tracknum;
+		portnamein+=*tracknum;
+		delete(tracknum);
+
+		output_port[i-1]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+		input_port[i-1]=libjack->jack_port_register (jackclient, portnamein.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+	}
+	string portnameout="master_out_L";
+	output_master[0]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+	portnameout="master_out_R";
+	output_master[1]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);	
+	if (libjack->jack_activate(jackclient)) {
+\#if (RECORDERDEBUG==1)
+		cout << "cannot activate jack client" << endl;
+\#endif
+	};
+}
+\#endif} {}
+  }
+  Function {isjackinitialized()} {open private return_type bool
+  } {
+    code {if (this->jackclient!=NULL)
+{
+	return true;
+}
+return false;} {}
+  }
+  Function {portaudioinit()} {open private return_type void
+  } {
+    code {\#ifndef LIBPORTAUDIO
+return;
+\#endif
+\#ifdef LIBPORTAUDIO
+//if (currsong==NULL) return;
+//\#if (RECORDERDEBUG==1) 
+//cout << "Init portaudio" << endl; 
+//\#endif
+//mustdisplaytimer=true;
+PaError err;
+err=(*(portaudio->Pa_Initialize))();
+if (err!=paNoError) { 
+        this->portaudiostream=NULL;
+	(*(portaudio->Pa_Terminate))(); return; 
+\#if (RECORDERDEBUG==1) 
+cout << "Error during init portaudio" << endl; 
+\#endif
+}
+this->mustloop(false);
+this->as_looppos=0;
+this->portaudio_initialized=1;
+this->as_initialized=1;
+\#endif} {}
+  }
+  Function {isportaudioinitialized()} {open private return_type bool
+  } {
+    code {if (!(portaudio->libloaded)) {
+return false;
+}
+if (portaudiostream!=NULL) {
+	return true;
+}
+if (portaudio_initialized!=0) {
+	return true;
+}
+return false;} {}
+  }
+  Function {paTestCallback(const void *inputBuffer, void *outputBuffer, __uint32 nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  } {
+    code {return 0;} {}
+  }
+  Function {portaudio_process(const void *inputBuffer, void *outputBuffer, __uint32 nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  } {
+    code {RecorderControl* recordercontrol=(RecorderControl*)userData;
+
+if (recordercontrol==NULL) {
+\#if (RECORDERDEBUG==1)
+	cout << "no control" << endl;
+\#endif
+	return 0;
+}
+AudioSystem* audio=recordercontrol->audio;
+if (audio==NULL)
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no audiosys" << endl;
+\#endif
+	return 0;
+}
+if (audio->portaudio==NULL)
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no portaudio" << endl;
+\#endif
+	return 0;
+}
+if (!(audio->portaudio->libloaded)) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no palib" << endl;
+\#endif
+	return 0;
+}
+if (!audio->havestreamtime)
+{
+	audio->streamtime=0;
+        audio->havestreamtime=true;
+}
+
+float samleft=0;
+float samright=0;
+
+//hd24fs* myfs=mythis->currenthd24;
+
+PaStream* curr_pa_stream=audio->portaudiostream;
+
+if (curr_pa_stream==NULL)
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no stream" << endl;
+\#endif
+	return 0; // paContinue;
+}
+if ((audio->mtsample)==NULL) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no sample" << endl;
+\#endif
+	return 0; // paContinue;
+
+}
+
+// TODO: connect audio system to mixer
+MixerControl* mixer=audio->mixer();
+if (mixer==NULL) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no mixer" << endl;
+\#endif
+	return 0; // paContinue;
+}
+
+if (audio->mustloop()) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "must loop" << endl;
+\#endif
+	return 0; // paContinue;
+}
+
+hd24song* mysong=recordercontrol->song();
+if (mysong == NULL) 
+{
+\#if (RECORDERDEBUG==1)
+	cout << "no song" << endl;
+\#endif
+	return 0;//nothing to do!
+}
+
+unsigned int tottracks=(unsigned int)mysong->logical_channels();
+
+/* frame time indicates how long the stream has been playing
+   and is reset to 0 after pressing stop/play.
+   To compensate for this, we must add our portaudio-offset,
+   the offset of the songcursor when we pressed 'play'.
+   We then record the absolute stream time in pa_streamtime. */
+__sint64 frame_time = audio->streamtime; 
+frame_time+=audio->portaudiooffset; 
+//audio->streamtime=frame_time;
+audio->streamtime+=nframes;
+MixerChannelControl* mixerchannel[24];
+
+unsigned int i;
+__sint64 intsamval=0;
+bool hispeed=false;
+if (mysong->physical_channels()!=mysong->logical_channels())
+{
+	hispeed=true;
+}
+mysong->golocatepos(frame_time);
+int loopmode=recordercontrol->loopmode();
+int jumpedloop=0;
+
+	__sint64 frpos=frame_time;
+	__sint64 posoffset=0;
+	for (i=0;i<nframes;i++) 
+	{
+		if ( loopmode==1 ) 
+		{
+			posoffset++;
+			if ((frpos+i)==(__sint64)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND))) 
+			{
+				frpos=mysong->getlocatepos(hd24song::LOCATEPOS_LOOPSTART);
+				mysong->golocatepos(frpos);
+				posoffset=0;
+				jumpedloop=1;
+			}
+		}
+
+		mysong->getmultitracksample(
+			(long*)((&audio->mtsample[i*25])),
+			hd24song::READMODE_REALTIME
+		);
+		// if sample rate is high speed, skip next sample.
+		if (hispeed) 
+		{
+			mysong->getmultitracksample(
+				(long*)((&audio->mtsample[i*25])),
+				hd24song::READMODE_REALTIME
+			);		
+		}
+	}
+	if (jumpedloop==1) 
+	{
+		audio->as_looppos=frpos+posoffset;
+		audio->mustloop(true);
+	} else {
+		if (mysong->endofsong())
+		{
+			audio->muststop(true);
+		}
+	}
+	
+
+	
+	for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+	{
+		mixerchannel[tracknum]=mixer->parentui()->mixerchannel[tracknum]->control;	
+	}
+	
+	for (unsigned int tracknum=0;tracknum<tottracks;tracknum++) 
+	{
+		recordercontrol->data->trackpeak[tracknum]=0;
+	}
+	
+
+	for (i=0;i<nframes;i++) 
+	{
+		double samvaltot=0;
+		if (inputBuffer!=NULL) {
+			samleft=((float*)inputBuffer)[i*2];
+			samright=((float*)inputBuffer)[i*2+1];
+		} else {
+			samleft=0;
+			samright=0;
+		}
+		// depending on input mode, mix these to mono, set right to be equal to 
+		// left, swap them or set left to be equal to right.
+		float subsamval;
+		for (unsigned int tracknum=0;tracknum<tottracks;tracknum++) 
+		{
+ 			long* xb=(long*)(&(audio->mtsample[i*25+tracknum]));
+			intsamval=xb[0];
+			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));			
+			if (intsamval>=(1<<23)) {
+				intsamval-=(1<<24);
+			}
+			
+
+			if (mysong->istrackmonitoringinput(tracknum+1)) 
+			{				
+				subsamval=((tracknum%2)==0)?(samleft):(samright);
+			} 
+			else 
+			{
+				subsamval=(intsamval/(double)0x800000);
+			}
+			samvaltot+=subsamval;
+			if (fabs(subsamval) > recordercontrol->data->trackpeak[tracknum]) {
+				recordercontrol->data->trackpeak[tracknum]=fabs(subsamval);
+			}
+			
+			mixerchannel[tracknum]->sample(i,subsamval);
+
+		}
+		if (tottracks<24) {
+			for (unsigned int tracknum=tottracks;tracknum<MAXCHANNELS;tracknum++) {
+				mixerchannel[tracknum]->sample(i,0);
+			}
+		}
+		/*
+		if (outputBuffer!=NULL) {
+			((float*)outputBuffer)[i*2] = samval; // left 
+			((float*)outputBuffer)[i*2+1] = samval; // right
+		}*/
+
+	}
+	mixer->mix(nframes);
+	
+	if (outputBuffer!=NULL) {
+		
+		for (i=0;i<nframes;i++) 
+		{
+			((float*)outputBuffer)[i*2] = mixer->masterout(0,i); // left 
+			((float*)outputBuffer)[i*2+1] = mixer->masterout(1,i); // right	
+		}
+	}
+
+return 0; // paContinue;} {}
+  }
+  Function {getBestPaFormat(__uint32 samrate)} {open return_type int
+  } {
+    code {if (portaudio==NULL) return -1;
+
+int i;
+int testformat;
+int playbackrate=samrate;
+if (playbackrate>=88200) playbackrate/=2;
+
+PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
+// TODO: set i init back to 0 to allow paFloat32!!!
+for (i=0;i<1;i++) 
+{    
+
+	switch(i)
+	{
+		case 0: { testformat=paFloat32; break; }
+		case 1: { testformat=paInt16;  break; }
+		case 2: { testformat=paInt8;  break; }
+		case 3: { testformat=paUInt8; break; }
+		default: testformat=-1;
+	}
+
+        outputParameters->device = outdev;
+        outputParameters->channelCount= 2; // stereo output
+        outputParameters->sampleFormat     = testformat;
+        outputParameters->suggestedLatency 
+            = (*(portaudio->Pa_GetDeviceInfo))(outputParameters->device )->defaultLowInputLatency;
+        outputParameters->hostApiSpecificStreamInfo = NULL;
+	PaError err = (*(portaudio->Pa_OpenStream))(
+		&portaudiostream,
+		NULL,                  /* No input. */
+		outputParameters,     /* As above. */
+		playbackrate,
+		PA_FRAMESPERBUF,
+		paClipOff,      /* don't bother */
+		paTestCallback,
+		this );
+         if( err == paNoError ) {
+              err = (*(portaudio->Pa_CloseStream))( portaudiostream );
+             return testformat;
+         }
+
+}
+return -1;} {}
+  }
+  Function {portaudio_transport_start()} {open private return_type int
+  } {
+    code {if (!(portaudio->libloaded)) {
+return 0;
+}
+
+\#if (RECORDERDEBUG==1) 
+cout << "portaudio transport start" << endl; 
+\#endif
+if (!isportaudioinitialized())
+{
+	PaError err=(*(portaudio->Pa_Initialize))();
+	if (err != paNoError) 
+	{
+\#if (RECORDERDEBUG==1) 
+		cout << "Cannot initialize portaudio- exiting." << endl;
+\#endif
+		
+	}
+}
+if (isportaudioinitialized() && (portaudiostream!=NULL)) {
+\#if (RECORDERDEBUG==1) 
+cout << "already have stream- done starting" << endl; 
+\#endif
+	return 1;
+}
+this->mustloop(false);
+
+this->as_looppos=0;
+PaDeviceIndex indev=(*(portaudio->Pa_GetDefaultInputDevice))();
+PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
+\#if (RECORDERDEBUG==1) 
+cout << "default input device="<<indev<< endl
+     << "default output device="<<outdev<<endl;
+\#endif
+if (inputParameters!=NULL)
+{
+	memset(inputParameters,'\\0',sizeof(*inputParameters));
+}
+
+int PaFormat;
+PaFormat=this->getBestPaFormat(this->samplerate());
+\#if (RECORDERDEBUG==1) 
+cout << PaFormat << endl;
+\#endif
+if (PaFormat==-1)
+{
+	fl_message("HD24connect could not start the audio stream.\\n"
+	           "Unless your audio adapter is currently in use\\n"
+	           "by another application, it is likely that none\\n" 
+	           "of the audio formats that HD24connect supports\\n"
+	           "is also supported by your sound card driver.");
+	(*(portaudio->Pa_Terminate))(); 
+	return 0;
+}
+this->paSamFormat=PaFormat;
+inputParameters->channelCount=2;
+switch (this->paSamFormat)
+{
+case AUDIOSYS_FORMAT_FLOAT32:
+    inputParameters->sampleFormat=paFloat32;
+    break;
+case AUDIOSYS_FORMAT_INT16:
+    inputParameters->sampleFormat=paInt16;
+    break;
+default:
+    inputParameters->sampleFormat=paInt16;
+    break;
+}
+
+inputParameters->device=indev;
+if (indev!=-1)
+{
+   inputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( inputParameters->device )->defaultLowInputLatency;
+}
+inputParameters->hostApiSpecificStreamInfo = NULL;
+\#if (RECORDERDEBUG==1) 
+cout << "Input params set" << endl
+ << "Device=" << indev << endl
+ << "Channelcount=" << inputParameters->channelCount << endl
+ << "sampleFormat=" << inputParameters->sampleFormat << endl
+ << "suggestedlatency=" << inputParameters->suggestedLatency << endl;
+
+\#endif
+if (outputParameters!=NULL)
+{
+	memset(outputParameters,'\\0',sizeof(*outputParameters));
+}
+
+outputParameters->channelCount=2;
+//outputParameters->sampleFormat=paFloat32;
+switch (this->paSamFormat)
+{
+case AUDIOSYS_FORMAT_FLOAT32:
+    outputParameters->sampleFormat=paFloat32;
+    break;
+case AUDIOSYS_FORMAT_INT16:
+    outputParameters->sampleFormat=paInt16;
+    break;
+default:
+    outputParameters->sampleFormat=paInt16;
+    break;
+}
+
+if (outdev==-1)
+{
+	fl_message("Output device unavailable");
+	(*(portaudio->Pa_Terminate))(); 
+	return 0; 
+} 
+
+outputParameters->device=outdev;
+if (outdev!=-1)
+{
+outputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( outputParameters->device )->defaultLowOutputLatency;
+}
+outputParameters->hostApiSpecificStreamInfo = NULL;
+\#if (RECORDERDEBUG==1) 
+cout << "Output params set" << endl
+ << "Device=" << outdev << endl
+ << "Channelcount=" << outputParameters->channelCount << endl
+ << "sampleFormat=" << outputParameters->sampleFormat << endl
+ << "suggestedlatency=" << outputParameters->suggestedLatency << endl;
+\#endif
+
+if (mtsample==NULL)
+{
+	mtsample=(long *)memutils::mymalloc("portaudio_transport_start",512000,sizeof(long));
+}
+
+double playbackrate=this->samplerate();
+if (playbackrate>=88200) playbackrate/=2;
+\#if (RECORDERDEBUG==1) 
+cout << "trying samrate="<<samrate<<endl
+ << "framesperbuf=" << PA_FRAMESPERBUF << endl;
+\#endif
+PaStreamParameters* inparm=NULL;
+PaStreamParameters* outparm=NULL;
+if (indev!=-1)
+{
+	inparm=this->inputParameters;
+}
+if (outdev!=-1)
+{
+	outparm=this->outputParameters;
+}
+PaError err;
+
+err=(*(portaudio->Pa_OpenStream))(
+&portaudiostream,
+inparm,
+outparm,
+playbackrate,
+PA_FRAMESPERBUF, /* frames per buffer */
+paClipOff | paDitherOff,
+portaudio_process,
+(void*)recorder);
+
+this->havestreamtime=false;
+this->streamtime=0;
+
+if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1) 
+cout << "Error opening stream" << endl
+ << portaudio->Pa_GetErrorText(err) << endl
+ << "playbackrate=" << playbackrate << endl;
+\#endif
+	if (err==paUnanticipatedHostError)
+	{    
+		const PaHostErrorInfo* herr;
+		herr=portaudio->Pa_GetLastHostErrorInfo();
+		// starting stream failed, revert to stopping transport.
+		portaudio_transport_stop();
+
+		if (herr)
+		{
+			fl_message("%s",herr->errorText);
+		}
+
+	} else {
+     		fl_message("%s",portaudio->Pa_GetErrorText(err));
+	}
+	
+	if (recorder)
+	{
+		recorder->button_stop_call();
+	}			
+	(*(portaudio->Pa_Terminate))(); 
+	return 0; 
+}
+\#if (RECORDERDEBUG==1)
+cout << "Stream opened, going to start it now..." << endl; 
+\#endif
+err=(*(portaudio->Pa_StartStream))(portaudiostream);
+if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1)
+cout << "Error starting stream" << endl
+ << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+	(*(portaudio->Pa_Terminate))(); 
+	return 0; 
+}
+\#if (RECORDERDEBUG==1)
+cout << "Stream started" << endl; 
+\#endif
+
+
+return 1;} {selected
+    }
+  }
+  Function {stopPAstream()} {open private return_type void
+  } {
+    code {// only to be called by portaudio_transport_stop
+if (portaudiostream==NULL) return;
+PaStream* pstream=portaudiostream;
+portaudiostream=NULL;
+
+PaError err = (*(portaudio->Pa_StopStream))( pstream );
+
+if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1)
+       cout << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+}
+
+err = (*(portaudio->Pa_CloseStream))( pstream );
+
+if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1)
+   cout << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+}
+
+(*(portaudio->Pa_Terminate))();} {}
+  }
+  Function {portaudio_transport_stop()} {open private return_type void
+  } {
+    code {if (portaudio==NULL) return;
+if (!(portaudio->libloaded)) return;
+
+\#if (RECORDERDEBUG==1) 
+cout << "portaudio transport stop" << endl;   
+\#endif
+// TODO: only stop stream if not monitoring input.
+stopPAstream();
+portaudio_initialized=0;
+portaudiostream=NULL;
+portaudiooffset+=streamtime;
+\#if (RECORDERDEBUG==1)
+cout << "portaudiooffset at stop=" << portaudiooffset << endl;
+\#endif
+if (mtsample!=NULL) 
+{
+    memutils::myfree("portaudio_transport_stop",mtsample);
+    mtsample=NULL;
+}} {}
+  }
+  Function {hd24_transport_goloc(__uint32 frames)} {open return_type void
+  } {
+    code {if (libjack!=NULL)
+{
+	if (libjack->libloaded) {
+		if (portaudio_initialized!=1) {
+
+			jackinit();
+			if (jackclient!=NULL) {
+				hd24_transport_locate((__sint64)frames);
+				return;
+			}
+		}	
+	}
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) 
+	{
+		hd24_transport_locate((__sint64)frames);
+		return;
+	}
+}} {}
+  }
+  Function {hd24_transport_locate(__sint64 i)} {open return_type void
+  } {
+    code {\#if (RECORDERDEBUG==1)
+cout << "Request to transport locate to " << i << endl;
+\#endif
+if (i<0) i=0;
+if (libjack!=NULL)
+{
+	if (libjack->libloaded) {
+\#if (RECORDERDEBUG==1)
+		cout << "try jackinit" << endl;
+\#endif
+		jackinit();
+		if (jackclient!=NULL) {
+			libjack->jack_transport_locate(jackclient,i);
+			return;
+		}
+	}
+\#if (RECORDERDEBUG==1)
+	cout << "Jack locate attempt inconclusive, will try portaudio if available" << endl;
+\#endif
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) {
+\#if (RECORDERDEBUG==1)
+		cout << "will have to do portaudio locate." << endl;
+\#endif
+		bool streamwasinitialized=true;
+		if (!(isportaudioinitialized())) 
+		{	
+\#if (RECORDERDEBUG==1)
+			cout << "No previous stream, init a new one "<< endl;
+\#endif
+			streamwasinitialized=false;
+			if (tape==NULL)
+			{
+				return;
+			}
+
+		    	tape->currentlocation((i < 0) ? 0 : i);
+\#if (RECORDERDEBUG==1)
+			cout << "set location to " << i << endl;
+\#endif
+			portaudiooffset=i; // still ok even without active stream
+			streamtime=i;
+\#if (RECORDERDEBUG==1)
+  			cout << "set portaudiooffset, streamtime to " << i << endl;
+\#endif
+  			return; // <-- see if this does the trick- no previous 
+  				// stream, no new one.
+		}
+	
+		PaError err;
+		if (portaudiostream!=NULL) 
+		{
+\#if (RECORDERDEBUG==1)
+			cout << "Still have a stream that needs stopping first." << endl;
+\#endif
+			err = (*(portaudio->Pa_StopStream))( portaudiostream );
+\#if (RECORDERDEBUG==1)
+			cout << "Returned from stopstream." << endl;
+\#endif
+			if (err!=paNoError) 
+			{
+				// maybe another program owns the stream.
+\#if (RECORDERDEBUG==1)
+            			cout << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+        		}
+        				
+			PaStream* oldportaudiostream=portaudiostream;
+			portaudiostream=NULL;
+			err = (*(portaudio->Pa_CloseStream))( oldportaudiostream );        
+		}
+		
+		portaudiooffset=i; // still ok even without active stream
+		streamtime=i; // old portaudio V18 legacy
+
+		bool streamnolongerinitialized=false;
+		if (!(isportaudioinitialized())) 
+		{
+			if (streamwasinitialized)
+			{ 
+				streamnolongerinitialized=true;
+			}
+		}
+		
+		if (streamnolongerinitialized)
+		{
+			/* if closing stream means no longer initialized,
+			   do not open another because we are not playing back
+			   anything at the moment. */
+			return;
+		}
+\#if (RECORDERDEBUG==1)
+		cout << "open a fresh stream" << endl;
+\#endif
+		
+		PaDeviceIndex indev=(*(portaudio->Pa_GetDefaultInputDevice))();
+		PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
+		if (inputParameters!=NULL)
+		{
+			memset(inputParameters,'\\0',sizeof(*inputParameters));		
+
+			this->inputParameters->device=indev;
+			this->inputParameters->channelCount=2;
+			this->inputParameters->sampleFormat=paFloat32;
+			void* devinfo=(void*)(*(portaudio->Pa_GetDeviceInfo))( inputParameters->device );
+			if (devinfo!=NULL)
+			{
+				this->inputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( inputParameters->device )->defaultLowInputLatency;
+			}
+			this->inputParameters->hostApiSpecificStreamInfo = NULL;
+		}
+		if (outputParameters!=NULL)
+		{
+			memset(outputParameters,'\\0',sizeof(*outputParameters));
+			this->outputParameters->device=outdev;
+			this->outputParameters->channelCount=2;
+			this->outputParameters->sampleFormat=paFloat32;
+			void* devinfo=(void*)(*(portaudio->Pa_GetDeviceInfo))( outputParameters->device );
+			if (devinfo!=NULL)
+			{
+				this->outputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( outputParameters->device )->defaultLowOutputLatency;
+			}
+			this->outputParameters->hostApiSpecificStreamInfo = NULL;
+		}
+
+		__uint32 playbackrate=this->samplerate();
+		if (playbackrate>=88200) playbackrate/=2;
+\#if (RECORDERDEBUG==1)
+		cout << " sample rate for new stream is " << samrate << endl;
+\#endif
+		if (samrate==0)
+		{
+			return;
+		}
+		
+		err=(*(portaudio->Pa_OpenStream))(
+			&portaudiostream,
+			NULL,/*this->inputParameters,*/
+			this->outputParameters,
+			playbackrate,
+			PA_FRAMESPERBUF, /* frames per buffer */
+			paClipOff | paDitherOff,
+			portaudio_process,
+			this->recorder);
+		this->havestreamtime=false;
+		this->streamtime=0;
+	
+		if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1)
+            		cout << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+        	}
+		if (err!=paNoError) { (*( portaudio->Pa_Terminate))(); return; }
+
+
+		err=(*(portaudio->Pa_StartStream))(portaudiostream);
+		if (err!=paNoError) { 
+\#if (RECORDERDEBUG==1)
+            		cout << portaudio->Pa_GetErrorText(err) << endl;
+\#endif
+        	}
+\#if (RECORDERDEBUG==1)
+        	cout << "stream appears to have started successfully" << endl;
+\#endif
+		        	
+		return;
+	}
+}} {}
+  }
+  Function {hd24_transport_locate(__uint32 i)} {open return_type void
+  } {
+    code {this->hd24_transport_locate((__sint64)i);} {}
+  }
+  Function {hd24_transport_start()} {open return_type int
+  } {
+    code {if (libjack!=NULL)
+{
+	if (libjack->libloaded) {
+		jackinit();
+		if (jackclient!=NULL) {
+			libjack->jack_transport_start(jackclient);
+			return 1;
+		}
+	}
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) 
+	{
+		if (!(isportaudioinitialized())) 
+		{
+			portaudioinit();
+		}
+		if (!(isportaudioinitialized()))
+		{
+\#if (RECORDERDEBUG==1)
+		    cout << "Portaudio init failed" << endl;
+\#endif
+		    return 0;
+		}
+		return portaudio_transport_start();
+	}
+}
+return 0;} {}
+  }
+  Function {hd24_transport_stop()} {open return_type void
+  } {
+    code {if (recorder!=NULL)
+{
+	recorder->resetpeaks();
+}
+
+if (libjack!=NULL)
+{
+	if (libjack->libloaded) 
+	{
+		jackinit();
+		if (jackclient!=NULL) 
+		{
+			libjack->jack_transport_stop(jackclient);
+			return;			
+		}
+	}
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) 
+	{
+		if (!(isportaudioinitialized())) 
+		{
+			portaudioinit();
+		}
+		if (isportaudioinitialized()) 
+		{
+			portaudio_transport_stop();
+			return;
+		}
+	}
+}} {}
+  }
+  Function {hd24_transport_ffwd(long int frames)} {open return_type void
+  } {
+    code {if (portaudio_initialized!=1) 
+{
+	if (libjack!=NULL)
+	{
+		if (libjack->libloaded) 
+		{
+			jackinit();
+			if (jackclient!=NULL) 
+			{
+			__sint64 frame_time = /* currentlocation() */
+				(__sint64)(libjack->jack_get_current_transport_frame(jackclient));
+			hd24_transport_locate((__sint64)(frame_time+frames));
+			return;
+			}
+		}
+	}
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) 
+	{
+		__sint64 frame_time=currentlocation();
+		hd24_transport_locate((__sint64)(frame_time+frames));
+
+//string* dur=currsong->display_cursor();
+//setstatus(*dur);
+//delete (dur);
+
+		return;
+	}
+}} {}
+  }
+  Function {hd24_transport_rew(long int frames)} {open return_type void
+  } {
+    code {if (libjack!=NULL)
+{
+	if (libjack->libloaded) 
+	{
+		if (portaudio_initialized!=1) 
+		{	
+			jackinit();	
+			if (jackclient!=NULL) 
+			{
+				__sint64 frame_time = 
+					(__sint64)(libjack->jack_get_current_transport_frame(jackclient));
+				if (frames>frame_time) {
+			   	    hd24_transport_locate((__sint64)0);
+				} else {
+				    hd24_transport_locate((__sint64)(frame_time-frames));
+				}
+				return;	
+			}
+		}	
+	}
+}
+
+if (portaudio!=NULL)
+{
+	if (portaudio->libloaded) {
+
+		__sint64 frame_time=currentlocation();
+		if (frames>frame_time) {
+		    hd24_transport_locate((__sint64)0);
+		} else {
+		    hd24_transport_locate((__sint64)(frame_time-frames));
+		}
+
+		hd24_transport_locate((__sint64)(frame_time-frames));
+
+		return;
+	}	
+}} {}
+  }
+  Function {isinitialized()} {return_type bool
+  } {
+    code {if (this->isportaudioinitialized())
+{
+	return true;
+}
+if (this->isjackinitialized())
+{
+	return true;
+}
+return false;} {}
+  }
+  Function {mustloop()} {return_type bool
+  } {
+    code {return this->as_mustloop;} {}
+  }
+  Function {mustloop(bool yesno)} {return_type void
+  } {
+    code {this->as_mustloop=yesno;} {}
+  }
+  Function {muststop()} {open return_type bool
+  } {
+    code {return this->as_muststop;} {}
+  }
+  Function {muststop(bool yesno)} {open return_type void
+  } {
+    code {this->as_muststop=yesno;} {}
+  }
+  Function {samplerate()} {return_type __uint32
+  } {
+    code {return this->samrate; 
+/*(double)(currsong->samplerate()/(currsong->physical_channels()/currsong->logical_channels())); */} {}
+  }
+  Function {samplerate(__uint32 newrate)} {return_type void
+  } {
+    code {this->samrate=newrate;} {}
+  }
+  Function {looppos()} {return_type __uint32
+  } {
+    code {return this->as_looppos;} {}
+  }
+  Function {looppos(__uint32 newpos)} {return_type void
+  } {
+    code {this->as_looppos=newpos;} {}
+  }
+  Function {locatepoint(int locpointnum,__uint32 locatepos)} {return_type void
+  } {
+    code {if (tape==NULL) return;
+tape->setlocatepos(locpointnum,locatepos);} {}
+  }
+  Function {locatepoint(int locpointnum)} {return_type __uint32
+  } {
+    code {if (tape==NULL) return 0;
+return tape->getlocatepos(locpointnum);} {}
+  }
+  Function {audiolib(int whichlib,void* libptr)} {open return_type void
+  } {
+    code {if (whichlib==AUDIOLIB_PORTAUDIO)
+{
+	this->portaudio=(PortAudioWrapper*)libptr;
+\#if (RECORDERDEBUG==1)
+cout << "set portaudio lib to " << libptr << endl;
+\#endif
+	return;
+}
+if (whichlib==AUDIOLIB_JACK)
+{
+	this->libjack=(JackWrapper*)libptr;
+\#if (RECORDERDEBUG==1)
+cout << "set jack lib to " << libptr << endl;
+\#endif	
+	return;
+}
+if (whichlib==AUDIOLIB_SNDFILE)
+{
+	this->soundfile=(SoundFileWrapper*)libptr;
+\#if (RECORDERDEBUG==1)
+cout << "set soundfile lib to " << libptr << endl;
+\#endif		
+}} {}
+  }
+  Function {audiolib(int whichlib)} {open return_type {void*}
+  } {
+    code {if (whichlib==AUDIOLIB_PORTAUDIO)
+{
+	return (void*)portaudio;
+}
+if (whichlib==AUDIOLIB_JACK)
+{
+	return (void*)libjack;
+}
+if (whichlib==AUDIOLIB_SNDFILE)
+{
+	return (void*)soundfile;
+}
+return NULL;} {}
+  }
+  Function {~AudioSystem()} {open
+  } {
+    code {if (inputParameters!=NULL)
+{
+	delete inputParameters;
+	inputParameters=NULL;
+}
+if (outputParameters!=NULL)
+{
+	delete outputParameters;
+	outputParameters=NULL;
+}
+\#if (RECORDERDEBUG==1)
+cout << "AudioSystem::~AudioSystem()" << endl;
+\#endif} {}
+  }
+  Function {audiostore(AudioStorage* store)} {open return_type void
+  } {
+    code {this->tape=store;
+if (store!=NULL)
+{
+	this->samrate=store->samplerate();
+}} {}
+  }
+  Function {audiostore()} {open return_type {AudioStorage*}
+  } {
+    code {return tape;} {}
+  }
+  Function {mixer(MixerControl* p_mixer)} {open return_type void
+  } {
+    code {this->mixercontrol=p_mixer;} {}
+  }
+  Function {mixer()} {open return_type {MixerControl*}
+  } {
+    code {return this->mixercontrol;} {}
+  }
+} 
+
+class RecorderData {open
+} {
+  decl {int loopmode;} {public
+  }
+  decl {float trackpeak[24];} {public
+  }
+} 
+
+class RecorderControl {open
+} {
+  decl {RecorderData* data;} {public
+  }
+  decl {RecorderUI* ui;} {public
+  }
+  decl {AudioSystem* audio;} {public
+  }
+  Function {RecorderControl()} {open
+  } {
+    code {this->data=new RecorderData();
+init();} {}
+  }
+  Function {~RecorderControl()} {open
+  } {
+    code {this->button_stop_call();
+if (this->audio!=NULL)
+{
+	delete this->audio;
+	this->audio=NULL;
+}
+if (this->data!=NULL)
+{
+	delete this->data;
+	this->data=NULL;
+}} {}
+  }
+  Function {init()} {open return_type void
+  } {
+    code {this->ui=NULL;
+this->audio=new AudioSystem(this);
+data->loopmode=0;} {}
+  }
+  Function {ready()} {open return_type int
+  } {
+    code {return 1;} {}
+  }
+  Function {parentui()} {open return_type {RecorderUI*}
+  } {
+    code {return this->ui;} {}
+  }
+  Function {parentui(RecorderUI* p_ui)} {open return_type void
+  } {
+    code {this->ui=p_ui;} {}
+  }
+  Function {loopmode()} {open return_type int
+  } {
+    code {return data->loopmode;} {}
+  }
+  Function {loopmode(int p_loopmode)} {return_type void
+  } {
+    code {data->loopmode=p_loopmode;
+if (ui!=NULL)
+{
+	ui->button_loopmode->value(p_loopmode);
+	ui->button_loopmode->redraw();
+}} {}
+  }
+  Function {button_scrub_call(int amount,RecorderControl* mycontrol)} {open return_type {static void}
+  } {
+    code {if (mycontrol->audio==NULL) return;
+// we could get the current transport pos here; ....
+if (amount>0) {
+mycontrol->audio->hd24_transport_ffwd((__uint32)(300*amount));
+} else {
+mycontrol->audio->hd24_transport_rew((__uint32)(-300*amount));
+}
+// ... then the new transport pos here; read the snippet 
+// of audio that is spanned by the difference, stretch 
+// it to the audio buffer size, then play it.
+// Alternatively, a visual-only representation could be fine.} {}
+  }
+  Function {button_rew_call()} {open return_type void
+  } {
+    code {if (this->audio==NULL) return;
+this->audio->hd24_transport_rew(5*this->audio->samplerate());} {}
+  }
+  Function {button_ffwd_call()} {open return_type void
+  } {
+    code {if (this->audio==NULL) return;
+this->audio->hd24_transport_ffwd(5*this->audio->samplerate());} {}
+  }
+  Function {button_stop_call()} {open return_type void
+  } {
+    code {if (this->audio==NULL) return;
+//this->currenthd24->settransportstatus(hd24fs::TRANSPORTSTATUS_STOP);
+//TODO: The above is for monitoring purposes
+this->audio->muststop(false);
+this->audio->hd24_transport_stop();
+
+if (ui==NULL) return;
+
+ui->button_light((void*)(ui->button_stop),1);
+//button_stop->up_image(button_stop_uplit->image());
+ui->button_up((void*)(ui->button_play));
+ui->button_up((void*)(ui->button_rec));} {}
+  }
+  Function {button_play_call()} {open return_type void
+  } {
+    code {if (this->audio==NULL) return;
+//if (button_rec->value()==1) {
+//	this->currenthd24->settransportstatus(hd24fs::TRANSPORTSTATUS_REC);
+// TODO: The above is for monitoring purposes
+//} else {
+//	this->currenthd24->settransportstatus(hd24fs::TRANSPORTSTATUS_PLAY);
+// TODO: The above is for monitoring purposes
+//}
+int canstart=this->audio->hd24_transport_start();
+
+if (canstart!=0)
+{
+	ui->button_light(ui->button_stop,0);
+
+	if (ui->button_play->value()==1)
+	{
+		ui->button_up(ui->button_rec);
+	}
+	ui->button_down(ui->button_play);
+} 
+else
+{
+       ui->button_light((void*)(ui->button_stop),1);
+       //button_stop->up_image(button_stop_uplit->image());
+       ui->button_up((void*)(ui->button_play));
+       ui->button_up((void*)(ui->button_rec));
+}} {}
+  }
+  Function {button_rec_call()} {open return_type void
+  } {
+    code {/* ui->button_rec->redraw();
+if (currsong==NULL) return;
+if (currenthd24==NULL) return;
+
+if (this->currenthd24->gettransportstatus()==hd24fs::TRANSPORTSTATUS_STOP) {
+	return;
+}
+
+if (ui->button_rec->value()==1) {
+	this->currenthd24->settransportstatus(hd24fs::TRANSPORTSTATUS_REC);
+} else {
+	this->currenthd24->settransportstatus(hd24fs::TRANSPORTSTATUS_PLAY);
+}
+
+this->audio->hd24_transport_stop();
+//button_play->value(0); */} {}
+  }
+  Function {solo(int channel,int val)} {} {
+    code {// set solo status of channel to value
+//mixer->mixerchannel[channel]->control->solo(val);} {}
+  }
+  Function {mute(int channel,int val)} {} {
+    code {// set mute status of channel to value
+//mixer->mixerchannel[channel]->control->mute(val);} {}
+  }
+  Function {resetpeaks()} {open return_type void
+  } {
+    code {for (int i=0;i<24;i++)
+{
+	data->trackpeak[i]=0;
+}} {}
+  }
+  Function {highlight_setbuttons(int value)} {open return_type void
+  } {
+    code {ui->highlight_setbuttons(value);} {}
+  }
+  Function {hd24_transport_goloc(__uint32 frames)} {open return_type void
+  } {
+    code {if (audio==NULL)
+{
+	return;
+}
+audio->hd24_transport_goloc(frames);} {}
+  }
+  Function {button_rehearse_call()} {return_type void
+  } {
+    code {return;} {}
+  }
+  Function {handlelocatebutton(__uint32 locpoint)} {return_type void
+  } {
+    code {// either set or jumpto locate point
+
+if (ui->button_setlocate->value()==1) 
+{
+   // set locate point
+   ui->button_setlocate->value(0);
+   highlight_setbuttons(ui->button_setlocate->value());
+   // set loop start to current song cursor
+   if (audio==NULL) return;
+   audio->locatepoint(locpoint,audio->currentlocation());   
+//   ui->populate_locatepoints(currsong,ui->locatepoints);
+} else {
+   // jump to locate point
+   if (audio==NULL) return;
+   audio->hd24_transport_locate((__sint64)(audio->locatepoint(locpoint)));
+}} {}
+  }
+  Function {disable()} {} {
+    code {/* Disable the recorder */
+//fl_message("TODO: recordercontrol::disable()");
+if ((this->ui)==NULL) return;
+this->ui->deactivate();} {}
+  }
+  Function {enable()} {} {
+    code {/* Disable the recorder */
+//fl_message("TODO: recordercontrol::enable()");
+if ((this->ui)==NULL) return;
+this->ui->activate();} {}
+  }
+  decl {int dispwritecountdown;} {public
+  }
+  Function {dispwrite(unsigned int line,const char* message)} {return_type void
+  } {
+    code {ui->dispwrite(line,message);} {}
+  }
+  Function {dispwrite(unsigned int line,const char* message,__uint32 timeout_msec)} {return_type void
+  } {
+    code {ui->dispwrite(line,message,timeout_msec);} {}
+  }
+  Function {audiolib(int whichlib,void* libptr)} {open return_type void
+  } {
+    code {if (audio==NULL) return;
+audio->audiolib(whichlib,libptr);} {}
+  }
+  Function {song(hd24song* store)} {open return_type void
+  } {
+    code {cout << "Setting audio store, audio=" << audio << ", store=" << store << endl;
+audio->audiostore((AudioStorage*)store);
+cout << "Setting audio store done." << endl;
+if (store!=NULL)
+{
+	this->enable();
+} else {
+	this->disable();
+}
+if (store==NULL)
+{
+        string* disp=new string("    No Song     "
+                                "    Selected    ");
+        dispwrite(0,disp->c_str());
+        delete disp;
+}
+else
+{
+
+	string disp="S";
+	string* idstr=Convert::int2str(store->songid(),2,"0");
+	disp+=*idstr;
+	delete idstr;
+	disp+=":\\"";
+	string* dummy=store->songname();
+	//transfersource->value(dummy->c_str());
+	string* dummy2=Convert::readstring((unsigned char*)dummy->c_str(),0,10);
+	string* dummy3=Convert::readstring((unsigned char*)dummy->c_str(),0,11);
+
+	disp+=*dummy2;
+	delete dummy;
+	delete dummy2;
+	if (dummy3->length()>10)
+	{
+	disp+="\\4"; // arrow right
+	} else {
+	disp+="\\"";
+	}
+	delete dummy3;
+	string* disp2=Convert::padright(disp,16," ");
+	
+	string* dur=store->display_duration();
+
+	*disp2+=dur->substr(0,8);
+	*disp2+=":";
+	*disp2+=dur->substr(9,2);
+	*disp2+=" ";
+	delete dur;
+
+	if (store->iswriteprotected())
+	{
+	*disp2+="\\1";
+	} else {
+	*disp2+="\\2";
+	}
+	string* strtracksb=Convert::int2str(store->logical_channels(),2,"0");
+	*disp2+=*strtracksb;
+	delete strtracksb;
+	*disp2+="t";
+
+	dispwrite(0,disp2->c_str());
+	delete disp2;
+
+}
+cout << "Returning." << endl;} {}
+  }
+  Function {song()} {open return_type {hd24song*}
+  } {
+    code {return (hd24song*)audio->audiostore();} {}
+  }
+  Function {toggletrackarmed(__uint32 base1tracknum)} {open return_type void
+  } {
+    code {AudioStorage* astore=(hd24song*)(this->audio->audiostore());
+astore->trackarmed(base1tracknum,!astore->trackarmed(base1tracknum));} {}
+  }
+} 
+
+class RecorderUI {open : {public Fl_Group}
+} {
+  decl {RecorderControl* control;} {public
+  }
+  Function {RecorderUI(int a,int b,int c,int d):Fl_Group(a,b,c,d,NULL)} {open
+  } {
+    code {this->recorderpollcount=0;
+this->busy=0;
+this->control=new RecorderControl();
+control->parentui(this);
+this->window=(Fl_Window*)(this->make_window());
+this->init_gui();} {}
+  }
+  Function {~RecorderUI()} {open
+  } {
+    code {\#if (RECORDERDEBUG==1)
+cout << "RecorderUI::~RecorderUI" << endl;
+\#endif
+control->button_stop_call();
+delete control;} {}
+  }
+  Function {init_gui()} {open
+  } {
+    code {// position vu meters on recorder tab
+int startx=trackchan[0]->x();
+int starty=trackchan[0]->y();
+for (unsigned int i=1; i<=MAXCHANNELS; i++) {
+   int coloff=((i-((i-1)%8))-1)/8;
+   trackchan[i-1]->setui(this);
+   trackchan[i-1]->position(7+(18*coloff)+(startx)+((i-1)*23),starty+10);
+   trackchan[i-1]->setchnum(i);
+
+   solobutton[i-1]->position(8+(15*coloff)+(startx)+((i-1)*23),solobutton[i-1]->y());
+   solobutton[i-1]->size(solobutton[0]->w(),solobutton[0]->h());
+   solobutton[i-1]->up_image(solobutton[0]->up_image());
+   solobutton[i-1]->down_image(solobutton[0]->down_image());
+   mutebutton[i-1]->up_image(mutebutton[0]->up_image());
+   mutebutton[i-1]->down_image(mutebutton[0]->down_image());
+   mutebutton[i-1]->position(solobutton[i-1]->x(),mutebutton[i-1]->y());
+   mutebutton[i-1]->size(mutebutton[0]->w(),mutebutton[0]->h());
+
+   armbutton[i-1]->position(solobutton[i-1]->x(),armbutton[i-1]->y());
+   if (i!=1) {
+   	armbutton[i-1]->size(armbutton[0]->w(),armbutton[0]->h());
+	armbutton[i-1]->up_image(armbutton[0]->up_image());
+	armbutton[i-1]->down_image(armbutton[0]->down_image());
+   }
+
+}
+   
+
+trackinfo[0]->position(8*23+15,starty+10);
+trackinfo[1]->position(16*23+33,starty+10);} {}
+  }
+  Function {set_ui(HD24UserInterface* p_ui)} {open return_type void
+  } {
+    code {this->ui=p_ui;} {}
+  }
+  decl {bool mustdisplaytimer;} {public
+  }
+  decl {int loopmode;} {public
+  }
+  decl {RecorderChannelUI* recorderchannel[24];} {public
+  }
+  decl {/* ==== RECORDER UI STUFF ====================*/} {}
+  decl {HD24UserInterface* ui;} {}
+  decl {//hd24fs* currenthd24;} {public
+  }
+  decl {//hd24song* currsong;} {public
+  }
+  decl {Fl_Window* window} {}
+  decl {int currpeakmode;} {public
+  }
+  decl {Fl_Box* dispcell[16][2];} {public
+  }
+  decl {Fl_Box* i7seg[10];} {public
+  }
+  decl {Fl_Box* dispfont[256];} {public
+  }
+  decl {int slidermoved;} {public
+  }
+  decl {Fl_Image_Button* armbutton[24];} {public
+  }
+  decl {Fl_Image_Toggle_Button* mutebutton[24];} {public
+  }
+  decl {Fl_Image_Toggle_Button* solobutton[24];} {public
+  }
+  decl {int blinkcounter; /* For blinking record enable leds of level meters etc */} {public
+  }
+  decl {HD24TrackChannel* trackchan[24];} {public
+  }
+  decl {TrackInfo* trackinfo[24];} {public
+  }
+  decl {char olddisp[32];} {}
+  Function {dispwrite_raw(unsigned int line,const char* message,bool savedisp)} {private return_type void
+  } {
+    code {unsigned int max=strlen(message);
+// allowed lines on display: 0 and 1
+if (line>1) { return; }
+
+if (max>(16*(2-line))) {
+   // maximum 16 chars if we start on line 1 (second line)
+   // 32 chars if we start on line 0 (first line).
+   max=(16*(2-line));
+}
+
+for (unsigned int i=0;i<max;i++) {
+    if (i==16) { line++; }    
+    unsigned int currchar=(unsigned int)((unsigned char)(message[i]));
+    if (savedisp) 
+    {
+    	olddisp[(i%16)+(16*line)]=currchar;
+    }
+    this->dispcell[i%16][line]->image(dispfont[currchar]->image());
+    this->dispcell[i%16][line]->redraw();
+    
+}
+fl_check();} {}
+  }
+  decl {int dispwritecountdown;} {public
+  }
+  Function {dispwrite(unsigned int line,const char* message)} {return_type void
+  } {
+    code {dispwrite_raw(line,message,true);
+dispwritecountdown=0;} {}
+  }
+  Function {disprestore()} {return_type void
+  } {
+    code {dispwrite_raw(0,&olddisp[0],false);
+dispwritecountdown=0;} {}
+  }
+  Function {dispwrite(unsigned int line,const char* message,__uint32 timeout_msec)} {return_type void
+  } {
+    code {dispwrite_raw(line,message,false);
+    dispwritecountdown=(int)(1000*TIMEOUT);} {}
+  }
+  Function {readmixer()} {open return_type void
+  } {
+    code {// set solo status of channel to value
+/*
+for (unsigned int i=0;i<MAXCHANNELS;i++) {
+	solobutton[i]->value(mixer->mixerchannel[i]->control->solo());
+	solobutton[i]->redraw();
+	mutebutton[i]->value(mixer->mixerchannel[i]->control->mute());
+	mutebutton[i]->redraw();
+}
+*/} {}
+  }
+  Function {make_window() /*<-----------------------------------*/} {open
+  } {
+    Fl_Window recordergroup {open
+      xywh {152 118 615 440} type Double
+      code0 {o->position(this->x(),this->y());}
+      class Fl_Group visible
+    } {
+      Fl_Group resources {open
+        xywh {25 62 560 423} hide deactivate
+      } {
+        Fl_Button button_play_up {
+          tooltip Play image {images/button_play.gif} xywh {25 75 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_play_dn {
+          tooltip Play image {images/button_play_dn.gif} xywh {75 75 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_stop_dn {
+          tooltip Play image {images/button_stop_dn.gif} xywh {295 445 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_stop_up {
+          tooltip Play image {images/button_stop.gif} xywh {345 445 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_stop_uplit {
+          tooltip Play image {images/button_stop_uplit.gif} xywh {355 455 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_small_up {
+          tooltip arm image {images/button_small.gif} xywh {565 195 20 15} deactivate
+        }
+        Fl_Button button_small_dn {
+          tooltip arm image {images/button_small_dn.gif} xywh {60 215 20 15} deactivate
+        }
+        Fl_Button button_rew_up {
+          tooltip Play image {images/button_rew.gif} xywh {35 85 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_rew_dn {
+          tooltip Play image {images/button_rew_dn.gif} xywh {85 85 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_ffwd_up {
+          tooltip Play image {images/button_ffwd.gif} xywh {45 95 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_ffwd_dn {
+          tooltip Play image {images/button_ffwd_dn.gif} xywh {95 95 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_rec_up {
+          tooltip Play image {images/button_rec.gif} xywh {55 105 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_rec_dn {
+          tooltip Play image {images/button_rec_dn.gif} xywh {105 105 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_mute_up {
+          tooltip Play image {images/button_mute.gif} xywh {65 115 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_mute_dn {
+          tooltip Play image {images/button_mute_dn.gif} xywh {115 115 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_solo_up {
+          tooltip Play image {images/button_solo.gif} xywh {75 125 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_solo_dn {
+          tooltip Play image {images/button_solo_dn.gif} xywh {125 125 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_led_up {
+          tooltip Play image {images/button_lrc_led.gif} xywh {85 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_led_dn {
+          tooltip Play image {images/button_lrc_led_dn.gif} xywh {135 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_led_on_up {
+          tooltip Play image {images/button_lrc_led_on.gif} xywh {85 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_led_on_dn {
+          tooltip Play image {images/button_lrc_led_on_dn.gif} xywh {135 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_up {
+          tooltip Play image {images/button_lrc.gif} xywh {85 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Button button_lrc_dn {
+          tooltip Play image {images/button_lrc_dn.gif} xywh {135 135 50 30} labelsize 11 align 16 deactivate
+        }
+        Fl_Box i7seg0 {
+          image {images/7seg_0.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[0]=o;}
+        }
+        Fl_Box i7seg1 {
+          image {images/7seg_1.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[1]=o;}
+        }
+        Fl_Box i7seg2 {
+          image {images/7seg_2.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[2]=o;}
+        }
+        Fl_Box i7seg3 {
+          image {images/7seg_3.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[3]=o;}
+        }
+        Fl_Box i7seg4 {
+          image {images/7seg_4.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[4]=o;}
+        }
+        Fl_Box i7seg5 {
+          image {images/7seg_5.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[5]=o;}
+        }
+        Fl_Box i7seg6 {
+          image {images/7seg_6.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[6]=o;}
+        }
+        Fl_Box i7seg7 {
+          image {images/7seg_7.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[7]=o;}
+        }
+        Fl_Box i7seg8 {
+          image {images/7seg_8.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[8]=o;}
+        }
+        Fl_Box i7seg9 {
+          image {images/7seg_9.gif} xywh {325 276 20 34} hide
+          code0 {i7seg[9]=o;}
+        }
+        Fl_Group dispfontgroup {
+          label font open
+          xywh {565 28 70 52} hide deactivate
+        } {
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_32.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[32]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_33.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[33]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_34.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[34]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_35.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[35]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_36.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[36]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_37.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[37]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_38.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[38]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_39.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[39]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_40.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[40]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_41.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[41]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_42.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[42]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_43.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[43]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_44.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[44]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_45.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[45]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_46.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[46]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_47.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[47]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_48.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[48]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_49.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[49]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_50.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[50]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_51.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[51]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_52.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[52]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_53.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[53]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_54.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[54]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_55.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[55]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_56.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[56]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_57.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[57]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_58.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[58]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_59.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[59]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_60.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[60]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_61.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[61]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_62.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[62]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_63.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[63]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_64.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[64]=o;}
+          }
+          Fl_Box {} {
+            label A
+            image {images/HD24_matrix_65.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[65]=o;}
+          }
+          Fl_Box {} {
+            label B
+            image {images/HD24_matrix_66.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[66]=o;}
+          }
+          Fl_Box {} {
+            label C
+            image {images/HD24_matrix_67.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[67]=o;}
+          }
+          Fl_Box {} {
+            label D
+            image {images/HD24_matrix_68.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[68]=o;}
+          }
+          Fl_Box {} {
+            label E
+            image {images/HD24_matrix_69.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[69]=o;}
+          }
+          Fl_Box {} {
+            label F
+            image {images/HD24_matrix_70.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[70]=o;}
+          }
+          Fl_Box {} {
+            label G
+            image {images/HD24_matrix_71.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[71]=o;}
+          }
+          Fl_Box {} {
+            label H
+            image {images/HD24_matrix_72.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[72]=o;}
+          }
+          Fl_Box {} {
+            label I
+            image {images/HD24_matrix_73.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[73]=o;}
+          }
+          Fl_Box {} {
+            label J
+            image {images/HD24_matrix_74.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[74]=o;}
+          }
+          Fl_Box {} {
+            label K
+            image {images/HD24_matrix_75.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[75]=o;}
+          }
+          Fl_Box {} {
+            label L
+            image {images/HD24_matrix_76.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[76]=o;}
+          }
+          Fl_Box {} {
+            label M
+            image {images/HD24_matrix_77.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[77]=o;}
+          }
+          Fl_Box {} {
+            label N
+            image {images/HD24_matrix_78.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[78]=o;}
+          }
+          Fl_Box {} {
+            label O
+            image {images/HD24_matrix_79.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[79]=o;}
+          }
+          Fl_Box {} {
+            label P
+            image {images/HD24_matrix_80.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[80]=o;}
+          }
+          Fl_Box {} {
+            label Q
+            image {images/HD24_matrix_81.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[81]=o;}
+          }
+          Fl_Box {} {
+            label R
+            image {images/HD24_matrix_82.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[82]=o;}
+          }
+          Fl_Box {} {
+            label S
+            image {images/HD24_matrix_83.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[83]=o;}
+          }
+          Fl_Box {} {
+            label T
+            image {images/HD24_matrix_84.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[84]=o;}
+          }
+          Fl_Box {} {
+            label U
+            image {images/HD24_matrix_85.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[85]=o;}
+          }
+          Fl_Box {} {
+            label V
+            image {images/HD24_matrix_86.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[86]=o;}
+          }
+          Fl_Box {} {
+            label W
+            image {images/HD24_matrix_87.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[87]=o;}
+          }
+          Fl_Box {} {
+            label X
+            image {images/HD24_matrix_88.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[88]=o;}
+          }
+          Fl_Box {} {
+            label Y
+            image {images/HD24_matrix_89.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[89]=o;}
+          }
+          Fl_Box {} {
+            label Z
+            image {images/HD24_matrix_90.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[90]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_91.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[91]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_92.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[92]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_93.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[93]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_94.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[94]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_95.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[95]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_96.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[96]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_97.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[97]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_98.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[98]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_99.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[99]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_100.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[100]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_101.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[101]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_102.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[102]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_103.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[103]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_104.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[104]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_105.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[105]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_106.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[106]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_107.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[107]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_108.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[108]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_109.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[109]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_110.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[110]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_111.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[111]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_112.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[112]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_113.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[113]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_114.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[114]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_115.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[115]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_116.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[116]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_117.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[117]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_118.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[118]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_119.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[119]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_120.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[120]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_121.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[121]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_122.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[122]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_123.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[123]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_124.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[124]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_125.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[125]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_126.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[126]=o;}
+          }
+          Fl_Box {} {
+            label label
+            image {images/HD24_matrix_127.gif} xywh {580 43 35 17} hide
+            code0 {this->dispfont[127]=o;}
+          }
+          Fl_Box {} {
+            label writeprotect
+            image {images/HD24_matrix_writeprotected.gif} xywh {590 53 35 17} hide
+            code0 {this->dispfont[1]=o;}
+          }
+          Fl_Box {} {
+            label writeenable
+            image {images/HD24_matrix_writeenabled.gif} xywh {600 63 35 17} hide
+            code0 {this->dispfont[2]=o;}
+          }
+          Fl_Box {} {
+            label {arrow left}
+            image {images/HD24_matrix_arrowleft.gif} xywh {600 63 35 17} hide
+            code0 {this->dispfont[3]=o;}
+          }
+          Fl_Box {} {
+            label {arrow right}
+            image {images/HD24_matrix_arrowright.gif} xywh {610 73 35 17} hide
+            code0 {this->dispfont[4]=o;}
+          }
+        }
+      }
+      Fl_Slider locationslider {
+        callback {hd24song* currsong=(hd24song*)(this->control->song());
+if (currsong==NULL) return;
+this->slidermoved=3; // a countdown (to prevent unneeded locate commands?)
+long long newpos=(long long)currsong->songlength_in_wamples();
+newpos*=(int)(o->value());
+newpos=(__uint32)(newpos/1000);
+control->hd24_transport_goloc(newpos);}
+        xywh {10 208 595 17} type Horizontal selection_color 41 labelsize 12 align 4 maximum 1000 step 1
+        code0 {this->slidermoved=0;}
+      }
+      Fl_Box {} {
+        xywh {305 226 300 149} box DOWN_BOX color 8
+      }
+      Fl_Button button_setlocate {
+        label {SET LOC}
+        callback {control->highlight_setbuttons(o->value());}
+        tooltip {Set Locate} xywh {420 290 50 20} type Toggle box FLAT_BOX down_box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 5
+        code0 {o->up_image(button_lrc_up->image()); o->down_image(button_lrc_dn->image());}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button button_loopmode {
+        label {AUTO LOOP}
+        callback {control->loopmode(button_loopmode->value());}
+        tooltip {Auto Loop} xywh {310 250 50 20} type Toggle box FLAT_BOX down_box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 5
+        code0 {o->up_image(button_lrc_up->image()); o->down_image(button_lrc_dn->image());}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Repeat_Button button_rew {
+        callback {control->button_rew_call();}
+        tooltip Rewind image {images/button_rew.gif} xywh {310 330 50 30} box FLAT_BOX labelsize 11 align 16
+        code0 {o->up_image(o->image()); o->down_image(button_rew_dn->image()); o->image(NULL);}
+        class Fl_Image_Repeat_Button
+      }
+      Fl_Repeat_Button button_ffwd {
+        callback {control->button_ffwd_call();}
+        tooltip {F Fwd} image {images/button_ffwd.gif} xywh {370 330 50 30} box FLAT_BOX labelsize 11 align 16
+        code0 {o->up_image(o->image()); o->down_image(button_ffwd_dn->image()); o->image(NULL);}
+        class Fl_Image_Repeat_Button
+      }
+      Fl_Button button_stop {
+        callback {if (control!=NULL) control->button_stop_call();}
+        tooltip Stop image {images/button_stop_uplit.gif} xywh {430 330 50 30} box FLAT_BOX labelsize 11 align 16
+        code0 {//o->up_image(button_stop_uplit->image()); o->down_image(button_stop_dn->image());}
+        code1 {o->up_image(o->image()); o->down_image(button_stop_dn->image()); o->image(NULL);}
+        class Fl_Image_Button
+      }
+      Fl_Button button_play {
+        callback {control->button_play_call();}
+        tooltip Play image {images/button_play.gif} xywh {490 330 50 30} box FLAT_BOX labelsize 11 align 16
+        code0 {o->up_image(o->image()); o->down_image(button_play_dn->image()); o->image(NULL);}
+        class Fl_Image_Button
+      }
+      Fl_Box {} {
+        xywh {475 231 127 84} box BORDER_BOX color 0
+      }
+      Fl_Button button_loopstart {
+        label {LOOP START}
+        callback {control->handlelocatebutton(hd24song::LOCATEPOS_LOOPSTART);}
+        tooltip {Loop Start} xywh {485 250 50 20} box FLAT_BOX down_box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 1
+        code0 {hlbuttons_defaultcolor=o->color(); o->up_image(button_lrc_led_up->image()); o->down_image(button_lrc_led_dn->image());}
+        class Fl_Image_Button
+      }
+      Fl_Button button_loopend {
+        label {LOOP END}
+        callback {control->handlelocatebutton(hd24song::LOCATEPOS_LOOPEND);}
+        tooltip {Loop End} xywh {550 250 50 20} box FLAT_BOX down_box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 9
+        code0 {o->up_image(button_lrc_led_up->image()); o->down_image(button_lrc_led_dn->image());}
+        class Fl_Image_Button
+      }
+      Fl_Button button_locate0 {
+        label {LOC 0}
+        callback {control->audio->hd24_transport_locate((__sint64)0);}
+        tooltip {Locate 0} xywh {420 250 50 20} box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 5
+        code0 {o->up_image(button_lrc_up->image()); o->down_image(button_lrc_dn->image());}
+        class Fl_Image_Button
+      }
+      Fl_Button button_rec {
+        callback {control->button_rec_call();}
+        tooltip Record image {images/button_rec.gif} xywh {550 330 50 30} type Toggle box FLAT_BOX labelsize 11
+        code0 {o->up_image(o->image()); o->down_image(button_rec_dn->image()); o->image(NULL);}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Group channelcanvas {open
+        xywh {10 15 595 140} box DOWN_BOX color 0
+      } {
+        Fl_Group tc1 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[0]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc2 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[1]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc3 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[2]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc4 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[3]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc5 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[4]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc6 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[5]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc7 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[6]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc8 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[7]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group trackinfo1 {open
+          xywh {15 15 15 135}
+          code0 {trackinfo[0]=trackinfo1;}
+          class TrackInfo
+        } {}
+        Fl_Group tc9 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[8]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc10 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[9]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc11 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[10]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc12 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[11]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc13 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[12]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc14 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[13]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc15 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[14]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc16 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[15]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group trackinfo2 {open
+          xywh {15 15 15 135}
+          code0 {trackinfo[1]=trackinfo2;}
+          class TrackInfo
+        } {}
+        Fl_Group tc17 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[16]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc18 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[17]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc19 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[18]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc20 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[19]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc21 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[20]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc22 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[21]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc23 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[22]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group tc24 {open
+          xywh {15 15 15 135}
+          code0 {trackchan[23]=o;}
+          class HD24TrackChannel
+        } {}
+        Fl_Group {} {open
+          xywh {35 40 15 15}
+        } {}
+      }
+      Fl_Button arm1 {
+        callback {this->control->toggletrackarmed(1);}
+        tooltip arm xywh {40 155 20 15} labelsize 8 labelcolor 7
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[0]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm2 {
+        callback {this->control->toggletrackarmed(2);}
+        tooltip arm xywh {60 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[1]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm3 {
+        callback {this->control->toggletrackarmed(3);}
+        tooltip arm xywh {75 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[2]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm4 {
+        callback {this->control->toggletrackarmed(4);}
+        tooltip arm xywh {90 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[3]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm5 {
+        callback {this->control->toggletrackarmed(5);}
+        tooltip arm xywh {105 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[4]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm6 {
+        callback {this->control->toggletrackarmed(6);}
+        tooltip arm xywh {120 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[5]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm7 {
+        callback {this->control->toggletrackarmed(7);}
+        tooltip arm xywh {135 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[6]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm8 {
+        callback {this->control->toggletrackarmed(8);}
+        tooltip arm xywh {150 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[7]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm9 {
+        callback {this->control->toggletrackarmed(9);}
+        tooltip arm xywh {235 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[8]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm10 {
+        callback {this->control->toggletrackarmed(10);}
+        tooltip arm xywh {250 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[9]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm11 {
+        callback {this->control->toggletrackarmed(11);}
+        tooltip arm xywh {265 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[10]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm12 {
+        callback {this->control->toggletrackarmed(12);}
+        tooltip arm xywh {280 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[11]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm13 {
+        callback {this->control->toggletrackarmed(13);}
+        tooltip arm xywh {295 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[12]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm14 {
+        callback {this->control->toggletrackarmed(14);}
+        tooltip arm xywh {310 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[13]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm15 {
+        callback {this->control->toggletrackarmed(15);}
+        tooltip arm xywh {325 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[14]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm16 {
+        callback {this->control->toggletrackarmed(16);}
+        tooltip arm xywh {340 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[15]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm17 {
+        callback {this->control->toggletrackarmed(17);}
+        tooltip arm xywh {430 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[16]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm18 {
+        callback {this->control->toggletrackarmed(18);}
+        tooltip arm xywh {445 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[17]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm19 {
+        callback {this->control->toggletrackarmed(19);}
+        tooltip arm xywh {460 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[18]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm20 {
+        callback {this->control->toggletrackarmed(20);}
+        tooltip arm xywh {475 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[19]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm21 {
+        callback {this->control->toggletrackarmed(21);}
+        tooltip arm xywh {490 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[20]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm22 {
+        callback {this->control->toggletrackarmed(22);}
+        tooltip arm xywh {505 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[21]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm23 {
+        callback {this->control->toggletrackarmed(23);}
+        tooltip arm xywh {520 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[22]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button arm24 {
+        callback {this->control->toggletrackarmed(24);}
+        tooltip arm xywh {535 155 15 15}
+        code0 {o->up_image(button_small_up->image()); o->down_image(button_small_dn->image()); armbutton[23]=o;}
+        class Fl_Image_Button
+      }
+      Fl_Button solo1 {
+        callback {control->solo(0,o->value());}
+        xywh {40 175 20 15} selection_color 2
+        code0 {o->up_image(button_solo_up->image()); o->down_image(button_solo_dn->image()); solobutton[0]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo2 {
+        callback {control->solo(1,o->value());}
+        xywh {60 175 15 15} selection_color 2
+        code0 {solobutton[1]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo3 {
+        callback {control->solo(2,o->value());}
+        xywh {75 175 15 15} selection_color 2
+        code0 {solobutton[2]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo4 {
+        callback {control->solo(3,o->value());}
+        xywh {90 175 15 15} selection_color 2
+        code0 {solobutton[3]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo5 {
+        callback {control->solo(4,o->value());}
+        xywh {105 175 15 15} selection_color 2
+        code0 {solobutton[4]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo6 {
+        callback {control->solo(5,o->value());}
+        xywh {120 175 15 15} selection_color 2
+        code0 {solobutton[5]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo7 {
+        callback {control->solo(6,o->value());}
+        xywh {135 175 15 15} selection_color 2
+        code0 {solobutton[6]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo8 {
+        callback {control->solo(7,o->value());}
+        xywh {150 175 15 15} selection_color 2
+        code0 {solobutton[7]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo9 {
+        callback {control->solo(8,o->value());}
+        xywh {235 175 15 15} selection_color 2
+        code0 {solobutton[8]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo10 {
+        callback {control->solo(9,o->value());}
+        xywh {250 175 15 15} selection_color 2
+        code0 {solobutton[9]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo11 {
+        callback {control->solo(10,o->value());}
+        xywh {265 175 15 15} selection_color 2
+        code0 {solobutton[10]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo12 {
+        callback {control->solo(11,o->value());}
+        xywh {280 175 15 15} selection_color 2
+        code0 {solobutton[11]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo13 {
+        callback {control->solo(12,o->value());}
+        xywh {295 175 15 15} selection_color 2
+        code0 {solobutton[12]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo14 {
+        callback {control->solo(13,o->value());}
+        xywh {310 175 15 15} selection_color 2
+        code0 {solobutton[13]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo15 {
+        callback {control->solo(14,o->value());}
+        xywh {325 175 15 15} selection_color 2
+        code0 {solobutton[14]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo16 {
+        callback {control->solo(15,o->value());}
+        xywh {340 175 15 15} selection_color 2
+        code0 {solobutton[15]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo17 {
+        callback {control->solo(16,o->value());}
+        xywh {430 175 15 15} selection_color 2
+        code0 {solobutton[16]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo18 {
+        callback {control->solo(17,o->value());}
+        xywh {445 175 15 15} selection_color 2
+        code0 {solobutton[17]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo19 {
+        callback {control->solo(18,o->value());}
+        xywh {460 175 15 15} selection_color 2
+        code0 {solobutton[18]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo20 {
+        callback {control->solo(19,o->value());}
+        xywh {475 175 15 15} selection_color 2
+        code0 {solobutton[19]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo21 {
+        callback {control->solo(20,o->value());}
+        xywh {490 175 15 15} selection_color 2
+        code0 {solobutton[20]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo22 {
+        callback {control->solo(21,o->value());}
+        xywh {505 175 15 15} selection_color 2
+        code0 {solobutton[21]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo23 {
+        callback {control->solo(22,o->value());}
+        xywh {520 175 15 15} selection_color 2
+        code0 {solobutton[22]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button solo24 {
+        callback {control->solo(23,o->value());}
+        xywh {535 175 15 15} selection_color 2
+        code0 {solobutton[23]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute1 {
+        callback {control->mute(0,o->value());}
+        xywh {40 192 20 15} selection_color 1
+        code0 {o->up_image(button_mute_up->image()); o->down_image(button_mute_dn->image()); mutebutton[0]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute2 {
+        callback {control->mute(1,o->value());}
+        xywh {60 192 15 15} selection_color 1
+        code0 {mutebutton[1]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute3 {
+        callback {control->mute(2,o->value());}
+        xywh {75 192 15 15} selection_color 1
+        code0 {mutebutton[2]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute4 {
+        callback {control->mute(3,o->value());}
+        xywh {90 192 15 15} selection_color 1
+        code0 {mutebutton[3]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute5 {
+        callback {control->mute(4,o->value());}
+        xywh {105 192 15 15} selection_color 1
+        code0 {mutebutton[4]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute6 {
+        callback {control->mute(5,o->value());}
+        xywh {120 192 15 15} selection_color 1
+        code0 {mutebutton[5]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute7 {
+        callback {control->mute(6,o->value());}
+        xywh {135 192 15 15} selection_color 1
+        code0 {mutebutton[6]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute8 {
+        callback {control->mute(7,o->value());}
+        xywh {150 192 15 15} selection_color 1
+        code0 {mutebutton[7]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute9 {
+        callback {control->mute(8,o->value());}
+        xywh {235 192 15 15} selection_color 1
+        code0 {mutebutton[8]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute10 {
+        callback {control->mute(9,o->value());}
+        xywh {250 192 15 15} selection_color 1
+        code0 {mutebutton[9]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute11 {
+        callback {control->mute(10,o->value());}
+        xywh {265 192 15 15} selection_color 1
+        code0 {mutebutton[10]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute12 {
+        callback {control->mute(11,o->value());}
+        xywh {280 192 15 15} selection_color 1
+        code0 {mutebutton[11]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute13 {
+        callback {control->mute(12,o->value());}
+        xywh {295 192 15 15} selection_color 1
+        code0 {mutebutton[12]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute14 {
+        callback {control->mute(13,o->value());}
+        xywh {310 192 15 15} selection_color 1
+        code0 {mutebutton[13]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute15 {
+        callback {control->mute(14,o->value());}
+        xywh {325 192 15 15} selection_color 1
+        code0 {mutebutton[14]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute16 {
+        callback {control->mute(15,o->value());}
+        xywh {340 192 15 15} selection_color 1
+        code0 {mutebutton[15]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute17 {
+        callback {control->mute(16,o->value());}
+        xywh {430 192 15 15} selection_color 1
+        code0 {mutebutton[16]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute18 {
+        callback {control->mute(17,o->value());}
+        xywh {445 192 15 15} selection_color 1
+        code0 {mutebutton[17]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute19 {
+        callback {control->mute(18,o->value());}
+        xywh {460 192 15 15} selection_color 1
+        code0 {mutebutton[18]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute20 {
+        callback {control->mute(19,o->value());}
+        xywh {475 192 15 15} selection_color 1
+        code0 {mutebutton[19]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute21 {
+        callback {control->mute(20,o->value());}
+        xywh {490 192 15 15} selection_color 1
+        code0 {mutebutton[20]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute22 {
+        callback {control->mute(21,o->value());}
+        xywh {505 192 15 15} selection_color 1
+        code0 {mutebutton[21]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute23 {
+        callback {control->mute(22,o->value());}
+        xywh {520 192 15 15} selection_color 1
+        code0 {mutebutton[22]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button mute24 {
+        callback {control->mute(23,o->value());}
+        xywh {535 192 15 15} selection_color 1
+        code0 {mutebutton[23]=o;}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Box arm_unarm_all {
+        callback {hd24song* currsong=this->control->song();
+if (currsong==NULL) return;
+
+bool alltracksarmed=true;
+for (unsigned int i=1;i<=currsong->logical_channels();i++) {
+   if (!currsong->trackarmed(i)) {
+      alltracksarmed=false;
+      break;
+   }
+}
+bool mustarm=false;
+if (!alltracksarmed) {
+   mustarm=true;
+}
+for (unsigned int i=1;i<=currsong->logical_channels();i++) {
+   currsong->trackarmed(i,mustarm);
+}}
+        tooltip {Arm tracks} xywh {10 156 10 10} box OVAL_BOX color 1 selection_color 1
+        class Fl_Button
+      }
+      Fl_Box {} {
+        label S
+        tooltip Solo xywh {10 176 15 14} color 1 selection_color 1 labelfont 1 labelsize 12
+      }
+      Fl_Box {} {
+        label M
+        tooltip Mute xywh {10 191 15 14} color 1 selection_color 1 labelfont 1 labelsize 12
+      }
+      Fl_Group infodisplay {open
+        xywh {10 225 295 150} box DOWN_BOX color 0
+      } {
+        Fl_Box ho1 {
+          image {images/7seg_8.gif} xywh {12 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box ho2 {
+          image {images/7seg_8.gif} xywh {27 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box mi1 {
+          image {images/7seg_8.gif} xywh {55 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box mi2 {
+          image {images/7seg_8.gif} xywh {70 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box se1 {
+          image {images/7seg_8.gif} xywh {98 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box se2 {
+          image {images/7seg_8.gif} xywh {113 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box fr1 {
+          image {images/7seg_8.gif} xywh {141 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box fr2 {
+          image {images/7seg_8.gif} xywh {156 234 16 26}
+          code0 {o->image(i7seg0->image()); o->redraw();}
+        }
+        Fl_Box {} {
+          label H
+          xywh {42 247 12 14} labelfont 3 labelsize 11 labelcolor 6
+        }
+        Fl_Box {} {
+          label M
+          xywh {85 247 12 14} labelfont 3 labelsize 11 labelcolor 6
+        }
+        Fl_Box {} {
+          label S
+          xywh {128 247 12 14} labelfont 3 labelsize 11 labelcolor 6
+        }
+        Fl_Box {} {
+          label F
+          xywh {171 247 12 14} labelfont 3 labelsize 11 labelcolor 6
+        }
+        Fl_Box l1c0 {
+          image {images/HD24_matrix_realsize.gif} xywh {13 274 20 26}
+          code0 {this->dispcell[0][0]=o;}
+        }
+        Fl_Box l1c1 {
+          image {images/HD24_matrix_realsize.gif} xywh {31 274 20 26}
+          code0 {this->dispcell[1][0]=o;}
+        }
+        Fl_Box l1c2 {
+          image {images/HD24_matrix_realsize.gif} xywh {49 274 20 26}
+          code0 {this->dispcell[2][0]=o;}
+        }
+        Fl_Box l1c3 {
+          image {images/HD24_matrix_realsize.gif} xywh {67 274 20 26}
+          code0 {this->dispcell[3][0]=o;}
+        }
+        Fl_Box l1c4 {
+          image {images/HD24_matrix_realsize.gif} xywh {85 274 20 26}
+          code0 {this->dispcell[4][0]=o;}
+        }
+        Fl_Box l1c5 {
+          image {images/HD24_matrix_realsize.gif} xywh {103 274 20 26}
+          code0 {this->dispcell[5][0]=o;}
+        }
+        Fl_Box l1c6 {
+          image {images/HD24_matrix_realsize.gif} xywh {121 274 20 26}
+          code0 {this->dispcell[6][0]=o;}
+        }
+        Fl_Box l1c7 {
+          image {images/HD24_matrix_realsize.gif} xywh {139 274 20 26}
+          code0 {this->dispcell[7][0]=o;}
+        }
+        Fl_Box l1c8 {
+          image {images/HD24_matrix_realsize.gif} xywh {157 274 20 26}
+          code0 {this->dispcell[8][0]=o;}
+        }
+        Fl_Box l1c9 {
+          image {images/HD24_matrix_realsize.gif} xywh {175 274 20 26}
+          code0 {this->dispcell[9][0]=o;}
+        }
+        Fl_Box l1ca {
+          image {images/HD24_matrix_realsize.gif} xywh {193 274 20 26}
+          code0 {this->dispcell[10][0]=o;}
+        }
+        Fl_Box l1cb {
+          image {images/HD24_matrix_realsize.gif} xywh {211 274 20 26}
+          code0 {this->dispcell[11][0]=o;}
+        }
+        Fl_Box l1cc {
+          image {images/HD24_matrix_realsize.gif} xywh {229 274 20 26}
+          code0 {this->dispcell[12][0]=o;}
+        }
+        Fl_Box l1cd {
+          image {images/HD24_matrix_realsize.gif} xywh {247 274 20 26}
+          code0 {this->dispcell[13][0]=o;}
+        }
+        Fl_Box l1ce {
+          image {images/HD24_matrix_realsize.gif} xywh {265 274 20 26}
+          code0 {this->dispcell[14][0]=o;}
+        }
+        Fl_Box l1cf {
+          image {images/HD24_matrix_realsize.gif} xywh {283 274 20 26}
+          code0 {this->dispcell[15][0]=o;}
+        }
+        Fl_Box l2c0 {
+          image {images/HD24_matrix_realsize.gif} xywh {12 304 20 26}
+          code0 {this->dispcell[0][1]=o;}
+        }
+        Fl_Box l2c1 {
+          image {images/HD24_matrix_realsize.gif} xywh {30 304 20 26}
+          code0 {this->dispcell[1][1]=o;}
+        }
+        Fl_Box l2c2 {
+          image {images/HD24_matrix_realsize.gif} xywh {48 304 20 26}
+          code0 {this->dispcell[2][1]=o;}
+        }
+        Fl_Box l2c3 {
+          image {images/HD24_matrix_realsize.gif} xywh {66 304 20 26}
+          code0 {this->dispcell[3][1]=o;}
+        }
+        Fl_Box l2c4 {
+          image {images/HD24_matrix_realsize.gif} xywh {84 304 20 26}
+          code0 {this->dispcell[4][1]=o;}
+        }
+        Fl_Box l2c5 {
+          image {images/HD24_matrix_realsize.gif} xywh {102 304 20 26}
+          code0 {this->dispcell[5][1]=o;}
+        }
+        Fl_Box l2c6 {
+          image {images/HD24_matrix_realsize.gif} xywh {120 304 20 26}
+          code0 {this->dispcell[6][1]=o;}
+        }
+        Fl_Box l2c7 {
+          image {images/HD24_matrix_realsize.gif} xywh {138 304 20 26}
+          code0 {this->dispcell[7][1]=o;}
+        }
+        Fl_Box l2c8 {
+          image {images/HD24_matrix_realsize.gif} xywh {156 304 20 26}
+          code0 {this->dispcell[8][1]=o;}
+        }
+        Fl_Box l2c9 {
+          image {images/HD24_matrix_realsize.gif} xywh {174 304 20 26}
+          code0 {this->dispcell[9][1]=o;}
+        }
+        Fl_Box l2ca {
+          image {images/HD24_matrix_realsize.gif} xywh {192 304 20 26}
+          code0 {this->dispcell[10][1]=o;}
+        }
+        Fl_Box l2cb {
+          image {images/HD24_matrix_realsize.gif} xywh {210 304 20 26}
+          code0 {this->dispcell[11][1]=o;}
+        }
+        Fl_Box l2cc {
+          image {images/HD24_matrix_realsize.gif} xywh {228 304 20 26}
+          code0 {this->dispcell[12][1]=o;}
+        }
+        Fl_Box l2cd {
+          image {images/HD24_matrix_realsize.gif} xywh {246 304 20 26}
+          code0 {this->dispcell[13][1]=o;}
+        }
+        Fl_Box l2ce {
+          image {images/HD24_matrix_realsize.gif} xywh {264 304 20 26}
+          code0 {this->dispcell[14][1]=o;}
+        }
+        Fl_Box l2cf {
+          image {images/HD24_matrix_realsize.gif} xywh {282 304 20 26}
+          code0 {this->dispcell[15][1]=o;}
+        }
+        Fl_Box autoanythingled {
+          label AUTO
+          xywh {193 233 65 8} box FLAT_BOX color 93 labelfont 1 labelsize 8 hide
+        }
+        Fl_Box autoplayled {
+          label PLAY
+          xywh {215 242 24 8} box FLAT_BOX color 93 labelfont 1 labelsize 8 hide
+        }
+        Fl_Box autortnled {
+          label RTN
+          xywh {240 242 18 8} box FLAT_BOX color 93 labelfont 1 labelsize 8 hide
+        }
+        Fl_Box autorecled {
+          label REC
+          xywh {193 242 21 8} box FLAT_BOX color 1 labelfont 1 labelsize 8 align 16 hide
+        }
+        Fl_Box rehearseled {
+          label REHEARSE
+          xywh {193 251 65 8} box FLAT_BOX color 1 labelfont 1 labelsize 8
+        }
+        Fl_Box pitchled {
+          label PITCH
+          xywh {260 242 40 8} box FLAT_BOX color 6 labelfont 1 labelsize 8 hide
+        }
+      }
+      Fl_Button button_rehearse {
+        label REHEARSE
+        callback {control->button_rehearse_call();}
+        tooltip {Set Locate} xywh {310 290 50 20} type Toggle box FLAT_BOX down_box FLAT_BOX color 47 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 5 deactivate
+        code0 {o->up_image(button_lrc_up->image()); o->down_image(button_lrc_dn->image());}
+        class Fl_Image_Toggle_Button
+      }
+      Fl_Button button_punchin {
+        label {PUNCH IN}
+        callback {control->handlelocatebutton(hd24song::LOCATEPOS_PUNCHIN);}
+        tooltip {Set Locate} xywh {485 290 50 20} box FLAT_BOX down_box FLAT_BOX color 47 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 1
+        code0 {o->up_image(button_lrc_led_up->image()); o->down_image(button_lrc_led_dn->image());}
+        class Fl_Image_Button
+      }
+      Fl_Button button_punchout {
+        label {PUNCH OUT}
+        callback {control->handlelocatebutton(hd24song::LOCATEPOS_PUNCHOUT);}
+        tooltip {Set Locate} xywh {550 290 50 20} box FLAT_BOX down_box FLAT_BOX color 47 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 9
+        code0 {o->up_image(button_lrc_led_up->image()); o->down_image(button_lrc_led_dn->image());}
+        class Fl_Image_Button
+      }
+      Fl_Button button_peakmode {
+        label {Peak
+mode}
+        callback {this->currpeakmode=((this->currpeakmode)+1)%3;
+
+for (unsigned int i=0;i<MAXCHANNELS;i++) {
+	this->trackchan[i]->peakmode(this->currpeakmode);
+}
+switch (this->currpeakmode) 
+{
+	case 0: // "No" "Peak Hold"
+		dispwrite(0,"       No       "
+                            "   Peak Hold    ",2000);
+		break;
+	case 1: // "Momentary" "Peak Hold"
+		dispwrite(0,"   Momentary    "
+                            "   Peak Hold    ",2000);
+		break;
+	case 2: // "Continuous" "Peak Hold"
+		dispwrite(0,"   Continuous   "
+                            "   Peak Hold    ",2000);
+		break;
+	default:
+		// ???????	
+	        break;
+}}
+        tooltip arm xywh {10 375 50 30} color 8 selection_color 8 labelfont 1 labelsize 10 labelcolor 7
+        code0 {o->clear_visible_focus();}
+        class Fl_Button
+      }
+      Fl_Button button_peakclear {
+        label {Peak
+clear}
+        callback {this->currpeakmode=((this->currpeakmode)+1)%3;
+
+for (unsigned int i=0;i<MAXCHANNELS;i++) {
+	this->trackchan[i]->peakreset();
+}}
+        tooltip arm xywh {60 375 50 30} color 8 selection_color 8 labelfont 1 labelsize 10 labelcolor 7
+        code0 {o->clear_visible_focus();}
+        class Fl_Button
+      }
+      Fl_Button button_autoinput {
+        label {Auto
+input}
+        callback {/*
+if (currenthd24==NULL) return;
+if (button_autoinput->value()==1) {
+	currenthd24->setautoinput(true);
+} else {
+	currenthd24->setautoinput(false);
+}
+*/}
+        tooltip arm xywh {110 375 45 30} type Toggle color 8 selection_color 59 labelfont 1 labelsize 10 labelcolor 7
+        code0 {o->clear_visible_focus();}
+        class Fl_Button
+      }
+      Fl_Button button_allinput {
+        label {All
+input}
+        callback {/*
+if (currenthd24==NULL) return;
+if (button_allinput->value()==0) {
+	currenthd24->setallinput(false);
+} else {
+	currenthd24->setallinput(true);
+}
+*/}
+        tooltip arm xywh {155 375 45 30} type Toggle color 8 selection_color 59 labelfont 1 labelsize 10 labelcolor 7
+        code0 {o->clear_visible_focus();}
+        class Fl_Button
+      }
+      Fl_Choice stereoinmap {
+        label {Stereo input mapping} open
+        xywh {463 390 140 20} down_box BORDER_BOX labelsize 12 align 5 textsize 12 deactivate
+      } {
+        MenuItem {} {
+          label Normal
+          xywh {5 5 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {Swap Left and Right}
+          xywh {15 15 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {Mix to mono}
+          xywh {15 15 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {Use Left only}
+          xywh {25 25 36 21} labelsize 12
+        }
+        MenuItem {} {
+          label {Use Right only}
+          xywh {35 35 36 21} labelsize 12
+        }
+      }
+      Fl_Roller {} {
+        label {Drag to Jog}
+        callback {// scrubwheel calls button_scrub_call()}
+        xywh {310 390 110 20} type Horizontal labelsize 12 align 1 minimum -1 step 2
+        code0 {o->setui(this);}
+        class ScrubWheel
+      }
+    }
+  }
+  decl {/* === Audio/transport ===================================================== */} {}
+  decl {int hlbuttons_defaultcolor;} {public
+  }
+  Function {highlight_setbuttons(int value)} {open return_type void
+  } {
+    code {if (value==1) {
+   if (button_loopstart!=NULL) {
+   button_loopstart->up_image(button_lrc_led_on_up->image());
+   button_loopstart->down_image(button_lrc_led_on_dn->image());
+   }
+   if (button_loopend!=NULL) {
+   button_loopend->up_image(button_lrc_led_on_up->image());
+   button_loopend->down_image(button_lrc_led_on_dn->image());
+   }
+   if (button_punchin!=NULL) {
+   button_punchin->up_image(button_lrc_led_on_up->image());
+   button_punchin->down_image(button_lrc_led_on_dn->image());
+   }
+   if (button_punchout!=NULL) {
+   button_punchout->up_image(button_lrc_led_on_up->image());
+   button_punchout->down_image(button_lrc_led_on_dn->image());
+   }
+} else {
+   button_loopstart->up_image(button_lrc_led_up->image());
+   button_loopstart->down_image(button_lrc_led_dn->image());
+   button_loopend->up_image(button_lrc_led_up->image());
+   button_loopend->down_image(button_lrc_led_dn->image());
+   button_punchin->up_image(button_lrc_led_up->image());
+   button_punchin->down_image(button_lrc_led_dn->image());
+   button_punchout->up_image(button_lrc_led_up->image());
+   button_punchout->down_image(button_lrc_led_dn->image());
+}
+   if (button_punchout!=NULL) { button_punchout->redraw(); }
+   if (button_punchin!=NULL) { button_punchin->redraw(); }
+   if (button_loopstart!=NULL) { button_loopstart->redraw(); }
+   if (button_loopend!=NULL) { button_loopend->redraw();}} {}
+  }
+  Function {uipoll_callback(void* user)} {open return_type {static void}
+  } {
+    code {//HD24UserInterface* mythis=(HD24UserInterface*)user;
+
+// TODO: Define what this poll is really for.
+// Just UI updates, pr playback control as well?
+
+RecorderUI* mythis=(RecorderUI*)user;
+mythis->recorderpollcount=((mythis->recorderpollcount)+1)%10;
+\#if (RECORDERDEBUG==1)
+cout << "recorderpoll " << mythis->recorderpollcount << endl;
+\#endif
+int visible=0;
+      if (mythis->recordergroup->visible())
+      { 
+	visible=1;
+     } else {
+        visible=0;
+      }
+
+
+if (mythis->control->ready()!=1) { return; }
+
+if (mythis->dispwritecountdown>0)
+{
+	mythis->dispwritecountdown--;
+	if (mythis->dispwritecountdown==0) {
+		mythis->disprestore();
+	}
+}
+
+if (mythis->busy!=1) {
+	mythis->busy=1;
+	mythis->blinkcounter=(mythis->blinkcounter+1)%BLINKRATE;
+
+   if (visible==1) {
+	for (unsigned int i=0;i<MAXCHANNELS;i++) {
+		mythis->trackchan[i]->setval(mythis->control->data->trackpeak[i]);
+	}
+
+	Fl_Image* oldimg;
+	Fl_Image* newimg=NULL;
+	 
+	string* dur=NULL;
+               hd24song* mycurrsong=mythis->control->song();
+	if (mycurrsong!=NULL) {
+		dur=mycurrsong->display_cursor();
+	   } else {
+		dur=new string("00:00:00.00");
+	   }
+
+	   
+	   oldimg=mythis->ho1->image(); 
+	   mythis->ho1->image(mythis->i7seg[dur->c_str()[0]-'0']->image());
+	   if (newimg!=oldimg) mythis->ho1->redraw();
+	
+	   oldimg=mythis->ho2->image(); 
+	   mythis->ho2->image(mythis->i7seg[dur->c_str()[1]-'0']->image());
+	   if (newimg!=oldimg) mythis->ho2->redraw();
+	
+	   oldimg=mythis->mi1->image(); 
+	   mythis->mi1->image(mythis->i7seg[dur->c_str()[3]-'0']->image());
+	   if (newimg!=oldimg) mythis->mi1->redraw();
+
+	   oldimg=mythis->mi2->image(); 
+	   mythis->mi2->image(mythis->i7seg[dur->c_str()[4]-'0']->image());
+	   if (newimg!=oldimg) mythis->mi2->redraw();
+	
+	   oldimg=mythis->se1->image(); 
+	   mythis->se1->image(mythis->i7seg[dur->c_str()[6]-'0']->image());
+	   if (newimg!=oldimg) mythis->se1->redraw();
+
+	   oldimg=mythis->se2->image(); 
+	   mythis->se2->image(mythis->i7seg[dur->c_str()[7]-'0']->image());
+	   if (newimg!=oldimg) mythis->se2->redraw();
+	   oldimg=mythis->fr1->image(); 
+	   mythis->fr1->image(mythis->i7seg[dur->c_str()[9]-'0']->image());
+	   if (newimg!=oldimg) mythis->fr1->redraw();
+
+	   oldimg=mythis->fr2->image(); 
+	   mythis->fr2->image(mythis->i7seg[dur->c_str()[10]-'0']->image());
+	   if (newimg!=oldimg) mythis->fr2->redraw();
+	   if (mycurrsong !=NULL)
+	   {	     
+		__uint32 currloc=mycurrsong->cursorpos();
+		if (mycurrsong->songlength_in_wamples() >0) {
+		    currloc=mycurrsong->cursorpos()/(mycurrsong->songlength_in_wamples()/1000);
+		} else {
+		    currloc=0;
+		}
+		if (mythis->slidermoved!=0) {
+		   mythis->slidermoved--;
+		} else {
+		   mythis->locationslider->value(currloc);
+		}	
+	   }
+	   delete (dur);         
+	}
+
+}
+mythis->busy=0;} {}
+  }
+  Function {audiopoll_callback(void* user)} {open return_type {static void}
+  } {
+    code {RecorderUI* mythis=(RecorderUI*)user;
+
+AudioSystem* audio=mythis->control->audio;
+
+if (!audio->isinitialized()) return;
+if (!audio->mustloop()) {
+	if (audio->muststop()) 
+	{		
+		mythis->control->button_stop_call();
+	}
+	return;
+}
+audio->hd24_transport_locate((__sint64)(audio->looppos()));
+audio->mustloop(false);
+audio->looppos(0);} {}
+  }
+  Function {fl_check()} {open return_type void
+  } {
+    code {Fl::check();} {}
+  }
+  decl {int busy;} {public
+  }
+  decl {int recorderpollcount;} {public
+  }
+  decl {friend class ScrubWheel;} {}
+  decl {int uiredrawcount; /* to limit refreshing UI */} {public
+  }
+  Function {finish()} {open return_type void
+  } {
+    code {if (this==NULL) return;
+
+this->control->button_stop_call();} {}
+  }
+  Function {button_light(void* button,bool lit)} {open return_type void
+  } {
+    code {if (button==NULL) return;
+if (((Fl_Image_Button*)button)==button_stop)
+{
+	if (lit==1)
+	{
+		button_stop->up_image(button_stop_uplit->image());
+		button_stop->down_image(button_stop_dn->image());	
+	}
+	else
+	{
+		button_stop->up_image(button_stop_up->image());
+		button_stop->down_image(button_stop_dn->image());		
+	}
+	button_stop->redraw();
+	return;
+}} {}
+  }
+  Function {button_up(void* button)} {open return_type void
+  } {
+    code {if (button==NULL)
+{
+	return;
+}
+
+if ((void*)button==(void*)button_stop)
+{
+	button_stop->value(0);
+	button_stop->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_play)
+{
+	button_play->value(0);
+	button_play->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_rec)
+{
+	button_rec->value(0);
+	button_rec->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_rew)
+{
+	button_rew->value(0);
+	button_rew->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_ffwd)
+{
+	button_ffwd->value(0);
+	button_ffwd->redraw();
+	return;
+}} {}
+  }
+  Function {button_down(void* button)} {open return_type void
+  } {
+    code {if (button==NULL)
+{
+	return;
+}
+
+if ((void*)button==(void*)button_stop)
+{
+	button_stop->value(1);
+	button_stop->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_play)
+{
+	button_play->value(1);
+	button_play->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_rec)
+{
+	button_rec->value(1);
+	button_rec->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_rew)
+{
+	button_rew->value(1);
+	button_rew->redraw();
+	return;
+}	
+if ((void*)button==(void*)button_ffwd)
+{
+	button_ffwd->value(1);
+	button_ffwd->redraw();
+	return;
+}} {}
+  }
+} 

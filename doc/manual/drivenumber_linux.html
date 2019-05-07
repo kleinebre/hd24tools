@@ -1,0 +1,39 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Finding the HD24 device name (Linux)</h2>
+<p>To find the device name under Linux, start up a terminal, then type</p>
+<p><pre>ls /dev/sd* /dev/hd*</pre></p>
+<p>then press Enter.</p>
+<p>This should give you a list of drives, such as:</p>
+<p><pre>/dev/sda
+/dev/sda1
+/dev/sda2
+/dev/sda5
+/dev/sdb
+/dev/sdb1
+/dev/sdc</pre></p>
+<p>You may also get an error, as it is likely that either one 
+of the the /dev/sd.. or /dev/hd.. device groups do not exist. 
+You can ignore this error.</p>
+<p>How do you know which device is the HD24 drive? A few hints:</p>
+<p><ul>
+<li>It is usually not <b>/dev/sda</b> or <b>/dev/hda</b> because the first
+drive is usually your system drive.</li>
+<li>It is not any of the drives where the device name
+ends in a number; this is because the numbers indicate 
+various partitions on the drive. The HD24 does not support partitions, 
+so any disk which is also followed by a number is not an HD24
+drive. In the example above, <b>/dev/sda</b> and <b>/dev/sdb</b> are not HD24 drives
+because <b>/dev/sda</b> has partitions numbered 1, 2 and 5 and <b>/dev/sdb has</b> a
+partition numbered 1.</li>
+<li>Finally, it is most likely to be the drive name that
+was not listed before connecting the HD24 drive, but that
+suddenly shows up when you do connect the HD24 drive to
+your computer.</li></ul></p>
+<p>In the above case, <b>/dev/sdc</b> is the most likely candidate.</p>
+<p>Under <b>File->Recovery->Select device...</b> you should
+now specify this device. In the dropdown box <b>Choose device</b>, either select the
+device name, or select <b>--Use other device--</b> and manually
+enter the device name of the HD24 drive.</p>
+</body></html>

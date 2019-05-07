@@ -1,0 +1,105 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {using namespace std;} {public
+} 
+
+decl {\#include <string>} {public
+} 
+
+decl {\#include <iostream>} {public
+} 
+
+decl {\#include <FL/Fl_File_Chooser.H>} {public
+} 
+
+decl {\#include <FL/Fl_Native_File_Chooser.H>} {public
+} 
+
+class UI_Instdir {open
+} {
+  decl {string currscreen;} {public
+  }
+  decl {char* instdir;} {public
+  }
+  Function {make_window(char* p_currscreen,char* p_instdir)} {open
+  } {
+    Fl_Window {} {
+      label {HD24tools HD24VERSION - Setup Wizard} open selected
+      xywh {1246 284 590 350} type Double color 7
+      code0 {currscreen=p_currscreen;}
+      code1 {instdir=p_instdir;} visible
+    } {
+      Fl_Box {} {
+        image {welcome.png} xywh {0 -137 165 487}
+      }
+      Fl_Button {} {
+        label {&Browse...}
+        callback {Fl_Native_File_Chooser chooser;
+chooser.title("Select installation directory");
+chooser.type(Fl_Native_File_Chooser::BROWSE_DIRECTORY||Fl_Native_File_Chooser::BROWSE_SAVE_DIRECTORY||Fl_Native_File_Chooser::NEW_FOLDER);
+chooser.filter("");
+
+string cdir="";
+cdir+=currdir->value();
+
+chooser.directory(cdir.c_str());
+switch (chooser.show()) {
+	case -1: break; //error
+	case 1: break; //cancel
+	default:
+		if (chooser.filename()) {
+			currdir->value(chooser.filename());			
+		}
+
+		break;
+}}
+        xywh {505 125 80 20} color 53 labelsize 12
+      }
+      Fl_Box {} {
+        label {Choose installation directory}
+        xywh {175 -3 320 33} labelfont 1 labelsize 16 align 20
+      }
+      Fl_Group {} {open
+        xywh {-5 315 620 35} box BORDER_BOX color 53 selection_color 47
+      } {
+        Fl_Button button_next {
+          label {&Next >}
+          callback {currscreen="next";
+string newdir=currdir->value();
+strncpy(&instdir[0],newdir.c_str(),128);
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {415 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label Cancel
+          callback {currscreen="cancel";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {505 320 85 25} color 53 labelsize 12
+        }
+        Fl_Button {} {
+          label {< &Back}
+          callback {currscreen="back";
+Fl_Window* winx=Fl::first_window();
+winx->~Fl_Window();}
+          xywh {330 320 85 25} color 53 labelsize 12
+        }
+      }
+      Fl_Input currdir {
+        xywh {175 125 325 20} labelsize 12 align 5 textsize 11
+        code0 {currdir->value(p_instdir);}
+      }
+      Fl_Box {} {
+        label {Setup will install HD24tools in the following folder. To 
+install in a different folder, click Browse and select 
+another folder. 
+
+After that, click Next to start the installation.}
+        xywh {175 38 370 81} labelsize 12 align 21
+      }
+    }
+  }
+} 

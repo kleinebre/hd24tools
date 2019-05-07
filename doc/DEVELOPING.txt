@@ -1,0 +1,273 @@
+Developing HD24tools
+====================
+
+To start on development of hd24tools, here are a few tips to get you started.
+
+Development environment
+=======================
+You will want libsndfile, libportaudio and the Fast Light Toolkit FLTK to be
+present on your system. On Linux you will also want the Jack Audio Connection
+Kit (optionally on Mac as well). The targeted compiler is gcc. 
+
+On Windows, development is based on a MSYS/MinGW environment.
+
+On Mac, XCode is needed, as well as portaudio, libsndfile and FLTK.
+
+Configuring and building
+========================
+Configuration is auto-detected by running
+
+	./configure
+
+Building is done with 
+
+	make
+
+Installing is optional. You may want to run the following as root:
+
+	make install
+
+which will install common binaries to /usr/bin. More interestingly, 
+you can run 
+
+	make installer
+
+to create the installer for the current platform. Finally, with
+
+	make clean	
+
+you can work from a clean configuration. The configure script also
+calls make clean.
+
+Cross-compiling
+===============
+Cross compiling is highly experimental and will probably fail for
+most purposes. On linux, you can say 
+	
+	./configure os=win32
+
+which will attempt to create windows .exe files. However, until
+now only hd24hexview.exe has been successfully built on Linux.
+
+
+
+./configure
+make
+
+Setup
+=====
+During configuration, the set of libraries, make files etc to
+use is decided by the files in the setup directory. The file
+Makefile.in which is located there contains the release number
+which must be bumped up for every version. Unless you build
+official releases, please add your name to the release number
+or make your personal releases otherwise distinguishable from
+official releases.
+
+To perform library detection etc, there are files called
+Makefile.setup.<platform> in the setup directory. These are
+called with various targets to figure out if libraries exist.
+
+Unless porting to a new platform or adding external libraries,
+you will probably rarely need to change most of the setup 
+scripts.
+
+File system documentation
+=========================
+Reverse-engineered information about the ADAT FST file system 
+can be found in doc/ADATFS.txt. Probably this file contains 
+enough info to not only allow reading ADAT drives but also to
+write them. The biggest obstacle in writing ADAT drives so
+far has been to get an accurate LBA sector count of non-
+formatted drives on all operating systems. Especially Windows
+seems to lack a reliable way to obtain this information.
+(Multiplying sectors/cylinders/heads isn't LBA accurate, 
+any other way known to me is limited to a specific version 
+of Windows). If you want to contribute to the ADATFS.txt
+file, figure out how the FST undo buffers work. To keep this
+software free, DO NOT obtain information from Alesis about 
+FST which might pollute the project with non-free 
+information.
+
+The HD24 library
+================
+Directory src/lib contains the HD24 library (and other
+library source code).
+
+common.cxx - some common string manipulation functions
+convertlib.cpp/.h - conversion between various data types
+countsectors.cpp - library to calculate drive size
+hd24connect.ico - HD24connect Icon for Windows
+hd24devicenamegenerator.cpp/.h - 
+	Library to generate device names that could be 
+	HD24 drives; contains alternatives for all
+	supported OS platforms
+hd24fs.cpp/.h
+	Library containing definition for HD24 file system
+	object.
+	Each file system contains drive info;
+	The drive info contains 1 or more projects;
+	Each project contains 0 or more songs;
+	Each song contains 25 locate points (START
+ 	+locate point 1-24) and track slip info for
+	each track.
+
+	Including hd24fs.h is sufficient to have access to
+	all of this.
+
+hd24project.cpp/.h
+	Library containing hd24 project decoding.
+
+hd24song.cpp/.h
+	Library containing hd24 song decoding;
+	this includes functionality to read audio, set
+	the song cursor, etc.
+ 
+hd24utils.cpp/.h
+	Library that contains useful routines, such as
+	printing the hd24 catalog, dumping a header, 
+	saving a drive image etc. that do not belong in
+	the file system decoding library,
+	but that multiple programs might have a use for.
+
+nojack.cpp/.h
+	Dummy library to replace jack on windows and other
+	platforms in case it is not present.
+
+src/lib/FL/
+	Native OS file dialog support.
+
+INSTALLER GENERATOR
+===================
+
+The code for the installer generator is found in 
+src/installer. 
+
+Essentially, it takes the compiled binaries of hd24tools,
+and converts those to hexdumps in c-source (using an 
+application called bin2c). This c source is then compiled
+and will be able to re-create the original binary 
+files. 
+
+While no complex registry magic is needed, this is
+sufficient for simple installations and probably less work 
+to figure out than other solutions.
+
+This was originally intended to create install wizards for Mac,
+but ended up being used for Windows only. Mac users seem 
+comfortable enough with the install-free .dmg images that they
+are presented with.
+
+The install wizard itself is basically implemented as a state
+machine.
+
+The installer for Linux installation could still be made a bit
+smoother, specifically in the libraries department- the right
+libraries are not always available at the right locations yet.
+
+THE ACTUAL HD24TOOLS
+====================
+
+Some tools only have a console/command line version. They are:
+
+hd24hexview	a hex editor
+hd24wavefix	a program that attempts to recover bit-distorted
+		audio to something remotely usable again
+hd24towav	a program that converts raw 24 bit hd24 audio to
+		wav files
+syx2bin		a program that converts the HD24 OS .syx files
+		to binary (not sure if the resulting binaries 
+		are valid)
+hd24info	a program that prints some info about the hd24
+		drives present in the system
+
+And finally, there is the graphical flagship program of the suite
+hd24connect. To start development, it would be recommended to 
+understand the library, then the command line utilities first.
+
+The command line tools are in src/ whereas hd24connect is in 
+src/frontend.
+
+Originally I intended hd24connect to have a frontend (GUI) and
+a backend. As it turned out, the whole thing ended up in the
+frontend. If you feel like creating a nice backend so that the
+frontend *really* *only* contains GUI stuff, feel free. Sorry.
+
+The entry point of hd24connect is src/frontend/hd24connect.cpp-
+this calls and opens the GUI.
+
+The main entrance for the GUI is in fluid file ui_hd24connect.fl
+(you *really* should use the 'fluid' user interface editor that
+comes with fltk to maintain the .fl files). Method make_window
+in class UserInterface starts it all.
+
+TEST SUITE
+==========
+Unit tests are performed by selftest.cpp.
+
+There is a directory test/ which should at some point contain
+regression tests for hd24tools. To make it easier to perform
+such tests, it would need to be possible to control hd24tools
+entirely in batch-mode (using MIDI for this is may be a 
+possibile way).
+
+
+DOCUMENTATION
+=============
+
+The user manual is now maintained online as static HTML.
+
+TASKS
+=====
+If you want to contribute, here are some things left to do:
+
+- Write support (realtime vs copy mode)
+
+	Save altered drive/project/song info - DONE
+
+	Write support can initially be tested on 
+	drive image files.
+
+	Phase A1: Only overwriting existing audio, but
+	not allocating new space (copy mode) - DONE
+
+	Phase A2: Allocating new space (copy mode) - DONE
+
+	Phase B1: realtime write mode with JACK support
+
+- Wave preview
+
+  This would have to be awfully smart to be able to display
+  waves with zero active waiting time and without utilizing 
+  peak files. Use information such as screen width reso-
+  lution to limit the amount of data that needs to be read
+  from disk. Probably adding a special read mode in the 
+  library could help support this.
+
+- Figure out how to build (fat) Mac binaries with or without
+  Mac (but preferrably without requiring both intel and ppc
+  to build a release that works on either platform) - DONE
+
+- Figuring out a way to write wav header info/session
+  notes to HD24 songs, while maintaining HD24 compatibility
+
+- Adding MIDI support to the library (MMC, MTC)
+
+- Sync to real HD24 recorders? 
+
+- Special HD24tools distro containing ReWire support to 
+  allow streaming audio directly to protools/cubase? 
+	- Not a priority as HD24tools is now open source
+
+- Use real LRC to control HD24tools?
+	- LRC decoding has been figured out.
+
+- Figure out OS binary checksum algorithm
+
+- Figure out how the HD24 performs Undo administration on 
+  the file system level
+
+	- Not important
+
+- Improve realtime read mode performance for audio streaming
+

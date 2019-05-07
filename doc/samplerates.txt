@@ -1,0 +1,77 @@
+Regular vs high sample rates on the HD24
+========================================
+
+The HD24 has two operational modes for recording audio; regular sample rates
+(44k1, 48k) and high sample rates (88k2, 96k). High sample rate mode is 
+achieved by using 2 physical tracks for each logical track. This shows both
+in on-drive audio storage and in the way high sample rate audio is presented
+on the lightpipe. By interlacing even and odd samples of each logical track
+across two physical tracks, backwards ADAT compatibility is achieved.
+
+Meanwhile, songs are still allowed to have the same running time regardless
+of sample rate at the cost of some location precision.
+At higher sample rates, locate points occur every other sample and the
+actual songlength reported also equals the amount of samples divided by 2.
+This makes it clear that when dealing with high sample rates, sometimes we
+work with actual samples (where a sample is defined as "one measurement")
+whereas somethimes we work with sample pairs. In analog to the channels
+where an actual on-disk/lightpipe channel is referred to as "physical 
+channel" whereas the pair of channels making up a single channel worth of
+audio is referred to as "logical channel", we'll also refer to samples
+as "physical sample" when we're talking about a single measurement and a
+"logical sample" if we're dealing with a possible sample pair.
+
+Here's a breakdown of how the numbers of these two modes compare.
+
+			Normal rates		High rates
+Physical tracks needed
+   per logical track		1			2
+Sectors per audio block 	1152 (0x480)		1152 (0x480)
+Max physical channels		24			24
+Max logical channels		24			12
+Locate point precision	Sample accurate		Boundaries at even samples
+Max song length		2^32 samples 		2^32 samples 
+			per logical track	per logical track
+Bytes used in a song
+per channel
+per block
+in a 12 (logical) ch		1152*512/12		1152*512/12
+Bytes used per physical ch.	1152*512/12		1152*512/24
+
+Total physical samples per block:
+				1152*512/3
+				196608			196608
+Total logical samples per block:
+				196608			196608/2
+Samples per log. track 
+in 24 channel song:		8192 (0x2000)		n/a
+				(48 sectors)		(data rate too high)
+			
+physical samples per log. track
+in 12 (log) ch song:		196608/12=16384		Same; 16384. 
+				(0x4000).		96 (0x60) sectors.
+	
+				Note that audio blocks are filled up twice as
+				fast in high samplerate modes.
+
+logical samples per log. track
+in in 12 (log) ch song:		196608/12=16384		8192
+				(0x4000).		96 (0x60) sectors.
+
+physical samples per phys. track
+in 12 log. ch. song:		16384 (x04000)		8192 (0x2000)
+				(96 sectors)		(48 sectors)
+
+bytes per phys. track
+in 12 log. ch. song		16384*3	(96 sectors)	8192*3 (48 sectors)
+
+bytes per phys. track
+in 2 log. ch. song		16384*3*6		8192*3*6
+				(576=0x240 sectors)	(288=0x120 sectors)
+bytes per log track
+in 2 log. ch. song		16384*3*6		16384*3*6
+				(576=0x240 sectors)	(576=0x240 sectors)
+
+Songlength to specify
+for a 100ksamples input file	100 (logical)samples	50000 (logical) samples
+

@@ -1,0 +1,2 @@
+#!/bin/sh
+amidi --send-hex="F0 7F 7F 06 40 04 4F 02 20 00 F7"

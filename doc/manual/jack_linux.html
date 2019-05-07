@@ -1,0 +1,9 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Using JACK under Linux</h2>
+<p>HD24connect supports both PortAudio and JACK under Linux, and will use whatever is available at the time audio is activated. To enable JACK output, make sure HD24connect is not playing back audio, then start <b>jackd</b> in the usual way (most people use <b>qjackctl</b>). Clicking the STOP button on the Recorder tab in HD24connect will allow HD24connect to detect <b>jackd</b> and start the JACK client. After this, HD24tools will show up in the connections list in qjackctl:
+</p>
+<p><img src="qjackctl_linux.png"></p>
+<p>From that point on, you need to connect the track outputs of HD24connect to the audio inputs of the application that you want to route the audio to, for instance Ardour. You can use qjackctl to do this. If you want to stop using JACK, close down the JACK server. When HD24connect detects that JACK is no longer available, it will fall back to PortAudio for audio playback.
+</p></body></html>

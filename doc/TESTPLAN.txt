@@ -1,0 +1,130 @@
+Testplan for HD24tools
+
+Hexview
+- startup without HD24 drive connected
+- startup with HD24 connected
+- startup with --dev option (dev=drive image file, dev=device file, dev=normal file): use either clean image or image know to have problems (unexpected end
+of song, corrupt header, etc)
+- startup with --dev and --force
+- Specific to hexview: d-1 (sectorcount relative to end of disk)
+  How much time does the detection take under windows?
+
+HD24connect:
+- startup without HD24 drive connected
+- startup with 1 HD24 drive connected
+- startup with multiple HD24 drives connected
+- startup with --dev option (device node and image file, respectively)
+- ... ditto, AND with/without an HD24 drive connected
+- startup with both --dev en --force options
+- As above, but by selecting these options from the GUI
+- And again. Any irregularities?
+- Irregularities with drives/images containing:
+   0, 1, more projects? 99 projects?
+- Irregularities with projects containing 
+   0, 1, more songs? 99 songs?
+- Irregularities when selecting songs with:
+   0 length?
+   0 tracks? (is this possible?)
+- Irregularities when selecting option '--All songs--' ?
+- Irregularities on renaming drive/project/song?
+- Does the 'new folder' button work while browsing the project directory?
+
+Exporting: 
+- HD24connect should detect when the exportdirectory does not (or no longer)
+  exist when the export transfer is started.
+
+Special cases:
+- Exporting a song with zero length
+- Exporting 0 samples
+- Exporting 1 sample
+- Exporting > 2GigaSamples 
+- Auto split enabled/disabled
+
+Test for all sample rates:
+- What name is being used (renamed or not?)
+- Full songs in all formats
+- Export all tracks
+- Export 0 tracks
+- Export only track 1, track 2, ... track N (n=number of tracks)
+- Songs > 2 GiB/track (to test automatic splitting)
+- Start locpoint=START, end locpoint=END
+- start locpoint=START, end locpoint=2 samples
+- start locpoint=START, end locpoint=10 sec
+- start locpoint=1 sec, end locpoint=10 sec
+- start locpoint=END, end locpoint=START
+- start locpoint=1 sample, end locpoint=END
+- start locpoint=1 sample, end locpoint=2 samples
+- start locpoint=1 sample, end locpoint=10 sec
+- start locpoint=1 sample, end locpoint=END
+- start locpoint=1 sec, end locpoint=END
+
+Select song 'All songs' on a drive not containing double songnames, 
+export to an empty directory.
+- No questions are asked regarding overwriting files.
+- Nothing is mentioned about double song names (or prefixing song names).
+- HD24connect correctly detects if any songs with those prefixes already exist.
+- Are existing filenames properly detected when exporting large files (that
+  need splitting)? e.g. files with suffix _part1, _part2.
+
+TRANSPORT CONTROL/audio preview
+- To be tested on songs of either high or low sample rates
+- All possible state changes: stop->play, play->stop, etc.
+- Set locatepoints
+- Loop mode
+- Drag locate bar
+- FF past end of song possible? (by changing songs? by using JACK?)
+- REW to negative time code possible? (by using Jack?)
+- Change song during playback, including the possibility of changing song
+  at a time code not present in both songs
+- Export audio during playback could cause audio to sound choppy but the exported audio should be OK.
+
+RECOVERY FEATURES
+- Creating a drive image:
+  - What happens if there isn't enough drive space to hold the image?
+- Load created drive image and use it as HD24 drive
+- If this drive image is opened (File->open drive image), and we select
+  file->recovery->select device, the filename of the current drive image
+  should be reported as current device.
+- Switch device
+- Loading longliverec header: Can audio be exported correctly? (is it similar/
+  equal to the audio of the audio preview?
+- For both high and low sample rates?
+- Selecting a non-HD24 drive as drive image (for instance a random file,
+  or windos drive) should not cause HD24tools to crash during playback or
+  export.
+
+Other features
+- Exporting and printing file index should work with any number of projects and any number of songs per project. It is especially important to test large number of songs as only this will reveal memory leaks.
+
+TRANSFER TO HD24 DRIVE
+Tests to run that do not perform allocation:
+- Start transfer without files
+- With 1 file (in first slot)
+- With 1 file (in 2nd slot, in last slot) (using a clean image)
+- With 1 file (in 2nd slot, in last slot) (using an image with track 1 in use)
+- 16 track song/24 track song
+- With multiple files, less than the number of tracks
+- With multiple files, equal to the number of tracks
+- with files smaller than the song size
+- with files equal to the song size
+- with files larger than the song size
+- with multi channel files
+- with files that have a different sample rate
+- with files that have a different bit depth
+- with several files of various formats at once
+
+Tests that do perform allocation:
+- Start with an empty song
+- Transfer a file with 0 length to HD24
+- Transfer a file with >0 length to HD24
+- Transfer a file with even greater length to HD24
+- Create another song, transfer some audio to it. 
+  Is start of song cluster word-aligned in usage table?
+- Extend the first song. Does this work right?
+  Is the continuation of the song word-aligned?
+- What happens if the file to transfer is longer than 
+  the remaining amount of drive space?
+  
+
+
+

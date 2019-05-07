@@ -1,0 +1,205 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <hd24utils.h>} {public
+} 
+
+decl {\#include <FL/fl_ask.H>} {public
+} 
+
+class dialog_options {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {hd24song* currsong;} {}
+  decl {string* itemname;} {public
+  }
+  Function {~dialog_options()} {open
+  } {
+    code {if (itemname!=NULL) delete itemname;} {}
+  }
+  decl {int locnum;} {}
+  Function {make_window()} {open
+  } {
+    Fl_Window optionswindow {
+      label options open
+      xywh {396 229 565 280} type Double
+      code0 {buttonclicked=0;} modal visible
+    } {
+      Fl_Tabs {} {open
+        xywh {0 0 565 280}
+        code0 {o->value(tabCatalog);}
+      } {
+        Fl_Group tabCatalog {
+          label Catalog open
+          xywh {0 20 565 260} labelsize 12 hide
+        } {
+          Fl_Choice cat_locpoints {
+            label {Locate points:} open
+            xywh {95 25 305 20} down_box BORDER_BOX labelsize 12 textsize 12
+            code0 {string* x=hd24utils::getconfigvalue("catalog_locpoints","1"); o->value(x->c_str()[0]-48); delete x;}
+          } {
+            MenuItem {} {
+              label {Do not list locate points in the catalog}
+              xywh {0 0 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {List non-zero locate points in the catalog}
+              xywh {10 10 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {List all locate points in the catalog}
+              xywh {20 20 36 21} labelsize 12
+            }
+          }
+          Fl_Choice cat_songsize {
+            label {Locate points:} open
+            xywh {95 50 305 20} down_box BORDER_BOX labelsize 12 textsize 12
+            code0 {string* x=hd24utils::getconfigvalue("catalog_songsize","1"); o->value(x->c_str()[0]-48); delete x;}
+          } {
+            MenuItem {} {
+              label {Do not list song size in the catalog}
+              xywh {10 10 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {List recorded size in the catalog}
+              xywh {20 20 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {List allocated space in the catalog}
+              xywh {30 30 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {List both recorded size and allocated space}
+              xywh {40 40 36 21} labelsize 12
+            }
+          }
+        }
+        Fl_Group {} {
+          label Transfers open selected
+          xywh {0 20 565 260} labelsize 12
+        } {
+          Fl_Input filenameformat {
+            label {Output file name:}
+            callback {char filteredname[129];
+int x=strlen(o->value());
+if (x>127) { x=127; }
+int src=0;
+int filtered=0;
+for (int i=0;i<x;i++) {
+ 	if (
+ 	   (o->value()[i]=='*') 
+ 	|| (o->value()[i]=='?') 
+ 	|| (o->value()[i]=='"') 
+ 	|| (o->value()[i]=='|'))
+ 	{
+ 		filtered=1;
+ 		continue; 	
+ 	}
+	filteredname[src]=o->value()[i];
+	src++;
+}
+filteredname[src]='\\0';
+if (filtered==1) {
+ 	int pos=o->position()-1;
+ 	if (pos<0) pos=0;
+	o->value(filteredname);
+	o->position(pos,pos);
+}}
+            xywh {120 25 435 20} labelsize 12 when 1 textsize 12
+            code0 {o->maximum_size(128);}
+            code1 {o->take_focus();}
+            code2 {string* cval=hd24utils::getconfigvalue("filenameformat",""); o->value(cval->c_str()); delete cval;}
+          }
+          Fl_Box {} {
+            label {The following special sequences can be used:
+
+<vol>	  The volume label of the drive
+<pn>	  Project name
+<sn>	  Song name
+<p\#>	  Project number
+<s\#>	  Song number
+<t\#>	  Track number
+<t\#+off>  Track number, prompt for track offset (for multi-reel recordings)
+<time>	  Current date/time (YYYY-MM-DD HH:MI:SS)
+
+Note that part sequence, extension etc. will still be appended to file names.}
+            xywh {10 72 545 208} labelfont 4 labelsize 11 align 21
+          }
+        }
+        Fl_Group {} {
+          label Safety open
+          xywh {0 20 565 260} labelsize 12 align 2 hide
+        } {
+          Fl_Choice safety_fstmode {
+            label {FST mode} open
+            xywh {80 30 440 20} down_box BORDER_BOX labelsize 12 textsize 12
+            code0 {string* x=hd24utils::getconfigvalue("catalog_locpoints","1"); o->value(x->c_str()[0]-48); delete x;}
+          } {
+            MenuItem {} {
+              label {Use pure Alesis FST only}
+              xywh {20 20 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {Permit HD24tools-specific extensions (Header stamping only)}
+              xywh {30 30 36 21} labelsize 12
+            }
+            MenuItem {} {
+              label {Permit HD24tools-specific extensions (Allow data storage on HD24)}
+              xywh {40 40 36 21} labelsize 12
+            }
+          }
+          Fl_Button {} {
+            label i
+            callback {fl_message("Explanation:\\n"
+"- 'Use pure Alesis FST only':\\n"
+"  In this mode, data written to HD24 drives will be compatible with the\\n"
+"  FST file system as designed by Alesis. No additional bells and whistles\\n"
+"  will apply.\\n"
+"- 'Permit HD24tools-specific extensions (Header stamping only)':\\n"
+"  If you specify this option, you allow HD24tools to write a unique reference\\n"
+"  number to unused space in Drive-, project- and song information. This will\\n"
+"  allow HD24tools to store additional information about them on your computer\\n"
+"  and keep them associated with each other. The information may be things such\\n"
+"  as track names, mixes, session notes, etc.\\n"
+"- 'Permit HD24tools-specific extensions (Allow data storage on HD24)':\\n"
+"  Similar to the previous option, but uses a 0-track song on the HD24 to store\\n"
+"  the information.\\n\\n"
+"Note that although you can already specify these permissions,\\n"
+"not all of the above features are actually built in yet.\\n"
+);}
+            xywh {520 30 20 20} box FLAT_BOX color 15 labelfont 5 labelsize 12 labelcolor 7
+          }
+        }
+      }
+      Fl_Button button_ok {
+        label Apply
+        callback {buttonclicked=1; //OK
+hd24utils::setconfigvalue("filenameformat",filenameformat->value());
+string* loc=Convert::int2str(cat_locpoints->value());
+hd24utils::setconfigvalue("catalog_locpoints",loc->c_str());
+string* songsize=Convert::int2str(cat_songsize->value());
+hd24utils::setconfigvalue("catalog_songsize",songsize->c_str());
+delete loc;
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {485 255 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=0; //CANCEL
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {410 255 70 20} labelsize 12
+      }
+    }
+  }
+  Function {dialog_options()} {open
+  } {
+    code {itemname=NULL;} {}
+  }
+} 

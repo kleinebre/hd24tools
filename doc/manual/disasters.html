@@ -1,0 +1,20 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h1>Disaster scenarios</h1>
+<p>Now that we are up to speed about drive layout and types of recovery, we can explore some disaster scenarios along with their solutions.</p>
+<a name="powerloss"></a><h2>Power loss during a live recording</h2>
+<p>This is probably the most common disaster scenario to occur in the HD24 scene. A recorder is taken on location to a live recording session, where a power loss occurs- either because the power fails, or a power chord is pulled out, or because somebody accidentally hits the off switch.</p>
+<h3>What happens during a power loss?</h3>
+<p>While the HD24 recorder is recording, it is only writing audio data to the data area of the disk. The length of a song or recording is not written to the system area, because during recording there is no time to update that information; also, the final size of the song is only known when you press the STOP button of the recorder. As a result, when a power loss occurs, the system area is not updated, leaving the disk in an inconsistent state, most likely with the song length set to 0 and no information known about where the audio is stored on disk.</p>
+<h3>How can you prepare to minimize the damage in case of a power loss?</h3>
+<p>There are a few things you can do to help reduce the chance of data loss when power fails.</p>
+<p><ol>
+<li>Ideally, get a UPS (Uninterruptible Power Supply). In case of a power loss, this will provide the HD24 recorder with backup power and the problem does not occur.</li>
+<li>It is possible to prepare your drive by recording silence to a song as long as you expect the live recording to last. As information about where the audio is recorded to is already known before recording, the disk will not be corrupted at all in case of a power loss. <b>WARNING: Recording over pre-recorded silence means the recorder has to both read and write audio, which will increase load on the drive. Only do this with drives that are fast enough, and in stable operating environments where high sound levels are unlikely to vibrate the hard drive, as this may cause drop-outs.</b> Because of this, pre-recording silence would be most suitable for recording low SPL, low throughput live audio such as a singer-songwriter on acoustic guitar.</li>
+<li>If the previous measures are too much trouble, at least quickformat your drive before recording. This makes it easier to predict where the audio will and up on disk and makes it likely that you'll be able to use the Simplified recovery procedure.</li>
+<li>Do not record anything on your drive between power loss and recovery!</li></ol></p>
+<h3>How can you recover audio from a drive that suffered a power loss?</h3>
+<p>Follow either the <a href="simplifiedrecovery.html">Simplified live recovery procedure</a>, or follow the <a href="generalrecoveryproc.html">general recovery procedure</a> using the longliverec header file.</p>
+
+</body></html>

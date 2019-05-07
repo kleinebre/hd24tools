@@ -1,0 +1,167 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <FL/fl_ask.H>} {public
+} 
+
+class dialog_filesize {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {__uint32 lastsector;} {public
+  }
+  decl {int imagetype;} {public
+  }
+  Function {make_window()} {open
+  } {
+    Fl_Window filesizewindow {
+      label {Image size} open
+      xywh {351 357 340 140} type Double color 52 labelsize 12
+      code0 {buttonclicked=0;} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+//char dest[66];
+//strncpy(&dest[0],currname->value(),64);
+//dest[64]='\\0';
+//itemname=new string(dest);
+__uint64 sizeval=strtol(filesize->value(),0,10);
+switch (sizeunit->value()) {
+	case 0:
+		sizeval*=2048; 
+		break;
+	case 1:
+		sizeval*=1024*2048; 
+		break;
+	default:	
+		break;
+}
+sizeval--;
+if (sizeval>0xFFFFFFFF) {
+	sizeval=0xFFFFFFFF;
+}
+this->lastsector=(__uint32)(sizeval & 0xFFFFFFFF);
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {185 110 70 20} labelsize 12
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {260 110 70 20} labelsize 12
+      }
+      Fl_Button {} {
+        label i
+        callback {fl_message("- 'Raw' images are a pure, strict representation of\\n"
+"  drives. Each sector in the image corresponds to\\n"
+"  a sector on the drive and the file size will be\\n"
+"  as big as the size you indicate. Use this for\\n"
+"  best compatibility with other programs.\\n\\n"
+"- 'Smart' images only use the drive space necessary\\n"
+"  and dynamically expand up to the indicated size.\\n"
+"  There is a (minor) performance hit. In most cases\\n"
+"  this is the image type you will want to use as it\\n"
+"  is typically more space-efficient and quicker to \\n"
+"  create.");}
+        xywh {234 83 20 20} box FLAT_BOX color 15 labelfont 5 labelsize 12 labelcolor 7
+      }
+      Fl_Input filesize {
+        label {Enter size:}
+        xywh {120 55 120 20} labelsize 12 textsize 12
+        code0 {o->maximum_size(16);}
+        code1 {o->take_focus();}
+      }
+      Fl_Choice preset {
+        label {Select preset size} open
+        xywh {120 10 210 20} down_box BORDER_BOX labelsize 12 textsize 12
+        code0 {o->value(0);}
+      } {
+        MenuItem {} {
+          label {Specified below}
+          callback {sizeunit->activate();
+filesize->activate();}
+          xywh {0 0 34 21} labelsize 12
+        }
+        MenuItem {} {
+          label {DVD+R (Single layer)}
+          callback {sizeunit->value(2);
+filesize->value("9180416");
+sizeunit->deactivate();
+filesize->deactivate();}
+          xywh {10 10 34 21} labelsize 12
+        }
+        MenuItem {} {
+          label {DVD-R (Single layer)}
+          callback {sizeunit->value(2);
+filesize->value("9193984");
+sizeunit->deactivate();
+filesize->deactivate();}
+          xywh {20 20 34 21} labelsize 12
+        }
+        MenuItem {} {
+          label {DVD+R (Dual Layer)}
+          callback {sizeunit->value(2);
+filesize->value("16695296");
+sizeunit->deactivate();
+filesize->deactivate();}
+          xywh {20 20 34 21} labelsize 12
+        }
+        MenuItem {} {
+          label {DVD-R (Dual layer)}
+          callback {sizeunit->value(2);
+filesize->value("16686848");
+sizeunit->deactivate();
+filesize->deactivate();}
+          xywh {30 30 34 21} labelsize 12
+        }
+      }
+      Fl_Choice sizeunit {open
+        xywh {245 55 85 20} down_box BORDER_BOX labelsize 12
+        code0 {o->value(1);}
+      } {
+        MenuItem {} {
+          label MB
+          xywh {10 10 34 21}
+        }
+        MenuItem {} {
+          label GB
+          xywh {20 20 34 21}
+        }
+        MenuItem {} {
+          label Sectors
+          xywh {20 20 34 21}
+        }
+      }
+      Fl_Box {} {
+        label {- OR -}
+        xywh {85 33 35 17} labelsize 12
+      }
+      Fl_Group {} {open
+        xywh {115 80 130 25}
+      } {
+        Fl_Round_Button imgtype_raw {
+          label Raw
+          callback {this->imagetype=0;}
+          tooltip {Use raw images as big as the size specified.} xywh {120 85 55 15} down_box ROUND_DOWN_BOX labelsize 12
+        }
+        Fl_Round_Button imgtype_smart {
+          label Smart
+          callback {this->imagetype=1;} selected
+          tooltip {Use dynamically expanding images up to the size specified.} xywh {175 85 60 15} down_box ROUND_DOWN_BOX value 1 labelsize 12
+          code0 {this->imagetype=1;}
+        }
+      }
+      Fl_Box {} {
+        label {Image type:}
+        xywh {25 83 95 17} labelsize 12 align 24
+      }
+    }
+  }
+} 

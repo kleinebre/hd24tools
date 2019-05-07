@@ -1,0 +1,13 @@
+a {
+	text-decoration: none;
+}
+a.link {
+	font-family: courier, fixed;
+}
+li { font-family: times, serif; }
+.footnote { font-family: times, serif; font-style:italic; }
+.page { margin-left:40px; margin-right:70px; margin-top:20px; }
+h1 { font-family: times, serif; }
+h2 { font-family: arial,helvetica,sans-serif; }
+h3 { font-family: arial,helvetica,sans-serif; font-style:italic;}
+p {font-family: times, serif; }

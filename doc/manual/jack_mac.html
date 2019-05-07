@@ -1,0 +1,13 @@
+<html><head>
+<link rel=stylesheet href="style.css" type="text/css">
+<title>HD24tools manual</title></head><body class="page"">
+<h2>Using JACK on your Mac</h2>
+<p>If you wish to stream audio from HD24tools to other OS/X applications, visit <a href="http://www.jackosx.com">http://www.jackosx.com</a> and download JACK from there. Install the package in the usual manner. The package may require you to reboot your computer.</p>
+<p>After the installation is complete, start up HD24connect. In the menu <b>Help -> System Info</b> verify that JACK is loaded.</p>
+<p>If it is loaded (which is to be expected), run the JackPilot application and click Start to start up the Jack Server.</p>
+<p>If this is the case, click <b>Routing</b> in JackPilot. The Connections Manager will show a list of all JACK-enabled applications. As HD24connect is not playing back audio yet, it will still be missing from this list:</p>
+<p><img src="jack_mac_connectionmgr_1.png"></p>
+<p>After clicking the <b>STOP</b> button on the recording tab, however, the Connection Manager will in fact show HD24connect as a JACK application:</p>
+<p><img src="jack_mac_connectionmgr_2.png"></p>
+<p>You can now route JACK audio from HD24connect to other applications as you see fit. If you quit JackPilot and click the <b>Stop</b> button in the recorder again, audio playback will revert to default (CoreAudio).</p>
+</body></html>

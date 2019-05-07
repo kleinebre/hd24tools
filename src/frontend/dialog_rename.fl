@@ -1,0 +1,89 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <hd24fs.h>} {public
+} 
+
+decl {\#include <FL/fl_ask.H>} {public
+} 
+
+class dialog_rename {open
+} {
+  decl {int buttonclicked;} {public
+  }
+  decl {hd24song* currsong;} {}
+  decl {string* itemname;} {public
+  }
+  Function {~dialog_rename()} {open
+  } {
+    code {if (itemname!=NULL) delete itemname;} {}
+  }
+  decl {int locnum;} {}
+  Function {make_window(string* p_currname,string* p_title)} {open
+  } {
+    Fl_Window renamewindow {
+      label Rename open
+      xywh {111 127 490 75} type Double color 52
+      code0 {buttonclicked=0;}
+      code1 {currname->value(p_currname->c_str());}
+      code2 {o->label(p_title->c_str());} modal visible
+    } {
+      Fl_Button button_ok {
+        label OK
+        callback {buttonclicked=1; //OK
+char dest[66];
+strncpy(&dest[0],currname->value(),64);
+dest[64]='\\0';
+itemname=new string(dest);
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {330 40 70 25}
+      }
+      Fl_Button button_cancel {
+        label Cancel
+        callback {buttonclicked=2; //Cancel
+Fl_Window * x = Fl::first_window();
+x->~Fl_Window();}
+        xywh {405 40 70 25}
+      }
+      Fl_Input currname {
+        label {New Name:}
+        callback {char filteredname[65];
+int x=strlen(o->value());
+if (x>64) { x=64; }
+int src=0;
+int filtered=0;
+for (int i=0;i<x;i++) {
+ 	if (
+ 	   (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='/') 
+ 	|| (o->value()[i]==':') 
+ 	|| (o->value()[i]=='*') 
+ 	|| (o->value()[i]=='?') 
+ 	|| (o->value()[i]=='"') 
+ 	|| (o->value()[i]=='<') 
+ 	|| (o->value()[i]=='>') 
+ 	|| (o->value()[i]=='\\\\') 
+ 	|| (o->value()[i]=='|'))
+ 	{
+ 		filtered=1;
+ 		continue; 	
+ 	}
+	filteredname[src]=o->value()[i];
+	src++;
+}
+filteredname[src]='\\0';
+if (filtered==1) {
+ 	int pos=o->position()-1;
+ 	if (pos<0) pos=0;
+	o->value(filteredname);
+	o->position(pos,pos);
+}} selected
+        xywh {90 10 385 20} labelsize 12 when 1 textsize 12
+        code0 {o->maximum_size(64);}
+        code1 {o->take_focus();}
+      }
+    }
+  }
+} 

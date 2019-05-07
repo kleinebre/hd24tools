@@ -1,0 +1,68 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0107 
+header_name {.h} 
+code_name {.cxx}
+class UserInterface_HelpAbout {open
+} {
+  Function {make_window()} {open
+  } {
+    Fl_Window {} {
+      label {About HD24connect} open
+      xywh {567 209 340 350} type Double color 52 modal visible
+    } {
+      Fl_Box {} {
+        xywh {10 10 320 305} box DOWN_BOX color 7
+      }
+      Fl_Box {} {
+        image {images/hd24connect.png} xywh {45 25 250 77}
+      }
+      Fl_Button {} {
+        label OK
+        callback {/* Find the window regardless of its class name */
+Fl_Window * x=Fl::first_window();
+x->~Fl_Window();}
+        xywh {125 320 90 25} labelsize 12
+      }
+      Fl_Box {} {
+        label {HD24connect version HD24VERSION}
+        xywh {45 110 250 20} labelsize 12
+      }
+      Fl_Box {} {
+        label {This program was written as an independent effort,}
+        xywh {15 130 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {and is neither endorsed by nor affiliated with Alesis.}
+        xywh {15 145 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {No warranty of any kind is given or implied.} selected
+        xywh {15 175 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {Share and enjoy!}
+        xywh {10 290 310 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {Use at your own risk.}
+        xywh {15 190 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {If you find this program useful, please make a }
+        xywh {15 215 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {donation to the author. See }
+        xywh {15 230 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {http://ringbreak.dnd.utwente.nl/~mrjb/hd24tools/}
+        xywh {15 245 305 20} labelsize 11
+      }
+      Fl_Box {} {
+        label {Feel free to request additional features.}
+        xywh {15 260 305 20} labelsize 11
+      }
+    }
+  }
+} 

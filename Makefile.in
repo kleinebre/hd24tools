@@ -1,0 +1,618 @@
+
+# ===============================================
+# 
+#		GENERIC CONFIG
+#
+# ===============================================
+RELEASENUM=1.1.0betaRC6
+INSTALLDIR=/usr/bin
+INST_UI=src/installer/
+INST_BIN=bin/installer/
+BINDIR=bin/
+SRCDIR=src/
+UI=src/frontend/
+LIB=src/lib/
+UILIBS=`fltk-config --use-images --use-forms --ldstaticflags` 
+
+ifeq ($(FLTK_HAS_FILE_CHOOSER), 1)
+FLFILECHOOSER=
+else
+FLFILECHOOSER=$(BINDIR)Fl_Native_File_Chooser.o
+endif
+
+CCARGS=$(TMPCCARGS) `fltk-config --cxxflags` -DLIBSND=Yes -DLIBJACK -DLIBPORTAUDIO
+
+# ===============================================
+# 
+#		ARCH DEPENDENT CONFIG
+#
+# ===============================================
+ifeq ($(BUILD_ARCH), Win32)
+PLATFORM=win32
+CC=g++ $(DEBUGGING) -Wall -Werror -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"portaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:/WINDOWS\;C\:/WINDOWS/SYSTEM32\"
+INCLUDEDIRS=-I src/frontend -I src/lib -I src/backend -I /local/include -I /local/lib -I setup -I src -Bsrc -Bsrc/lib 
+LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -Lsrc/
+CONSLIBS=`fltk-config --ldstaticflags` -lm -lkernel32 -lole32 -luuid -lmsvcrt -luser32 -lwsock32 -lcomctl32 -lsupc++ 
+PROGICON=$(BINDIR)icon.o
+RESOURCE_LIBSNDFILE_1=$(BINDIR)win32/libsndfile-1.dll
+RESOURCE_LIBSNDFILE_1_FILENAME=libsndfile-1.dll
+RESOURCE_PORTAUDIO=$(BINDIR)win32/portaudio.dll
+RESOURCE_PORTAUDIO_FILENAME=portaudio.dll
+RESOURCE_LIBSNDFILE_2=
+RESOURCE_LIBSNDFILE_3=
+CONSDEPS=-mwindows -mconsole
+WINDEPS=$(BINDIR)nojack.o 
+WINEXT=.exe
+endif
+
+ifeq ($(BUILD_ARCH), Darwin)
+PLATFORM=OSX10.4
+CFLAGS=-no-cpp-precomp -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+CXXFLAGS=-no-cpp-precomp -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+CC=g++ $(DEBUGGING) $(CXXFLAGS) -Wall -DDARWIN -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile.1.dylib\" -DLIBFILE_PORTAUDIO=\"libportaudio.dylib\" -DLIBFILE_JACK=\"libjack.dylib\" -DDEFAULTLIBPATH=\"/usr/lib/:/usr/local/lib/:/lib/\"
+LIBDIRS=-L/usr/local/lib -Lsrc/lib/ -L/sw/lib/
+INCLUDEDIRS=-I /usr/local/include -I /sw/include -I src/frontend -I src/lib -I src/backend  -I setup
+CONSLIBS=-framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreServices `fltk-config --ldstaticflags`
+RESOURCE_LIBSNDFILE_1=$(BINDIR)ppc10.4/libsndfile.dylib
+RESOURCE_LIBSNDFILE_1_FILENAME=libsndfile.1.dylib
+endif
+
+ifeq ($(BUILD_ARCH), LinuxGNU)
+PLATFORM=linux
+CC=g++ $(DEBUGGING) $(TESTFLAGS) -Wall -Werror -DLINUX -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile.so.1\" -DLIBFILE_PORTAUDIO=\"libportaudio.so\" -DLIBFILE_JACK=\"libjack.so\" -DDEFAULTLIBPATH=\"/usr/lib/:/usr/local/lib/:/lib/\"
+# a bit of a hack including Xpm here, but that is because we cannot add to UILIBS in a makefile
+LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -lXpm
+INCLUDEDIRS=-I /usr/local/lib -I src/frontend -I src/lib -I src/backend -I /local/include -I setup 
+CONSLIBS=`fltk-config --ldstaticflags`
+RESOURCE_LIBSNDFILE_1=$(BINDIR)linux/libsndfile.so
+RESOURCE_LIBSNDFILE_1_FILENAME=libsndfile.so.1
+endif
+
+ifeq ($(BUILD_ARCH), Win32Linux)
+PLATFORM=win32
+CC=mingw32msvc-g++ $(DEBUGGING) -Wall -Werror -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"libportaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:\\WINDOWS\;C\:\\WINDOWS\\SYSTEM32\"
+INCLUDEDIRS=-I src/frontend -I src/lib -I src/backend -I /local/include -I /local/lib -I setup -I src -Bsrc -Bsrc/lib 
+LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -Lsrc/
+CONSLIBS=`fltk-config --ldstaticflags` -lm -lkernel32 -lole32 -luuid -lmsvcrt -luser32 -lwsock32 -lcomctl32 -lsupc++ 
+WINDEPS=$(BINDIR)nojack.o 
+PROGICON=$(BINDIR)icon.o
+RESOURCE_PORTAUDIO=$(BINDIR)win32/portaudio.dll
+RESOURCE_PORTAUDIO_FILENAME=portaudio.dll
+RESOURCE_LIBSNDFILE_1=$(BINDIR)win32/libsndfile-1.dll
+RESOURCE_LIBSNDFILE_1_FILENAME=libsndfile-1.dll
+RESOURCE_LIBSNDFILE_2=
+RESOURCE_LIBSNDFILE_3=
+CONSDEPS=-mwindows -mconsole
+WINEXT=.exe
+endif
+
+# ===============================================
+# 
+#		DEFAULT TARGET
+#
+# ===============================================
+default: hd24connect
+
+all: hd24hexview hd24connect hd24wavefix #hd24towav hd24info
+
+# ===============================================
+# 
+#		CLEANUP TARGETS
+#
+# ===============================================
+clean:
+	@rm -f $(BINDIR)*.o 			\
+	      $(BINDIR)*.cpp 			\
+	      $(BINDIR)*.cxx			\
+	      $(UI)*.cxx 			\
+	      $(UI)*.h 				\
+	      hd24connect$(WINEXT) 		\
+	      hd24hexview$(WINEXT) 		\
+	      hd24towav$(WINEXT) 		\
+	      hd24wavefix$(WINEXT) 		\
+	      hd24info$(WINEXT) 		\
+	      src/lib/*~ 			\
+	      src/*~ 				\
+	      src/installer/*~ 			\
+	      src/installer/resource_*.c 	\
+	      src/installer/*.o 		\
+	      src/installer/ui_*.cxx 		\
+	      src/installer/ui_*.h 		\
+	      src/installer/bin2c		\
+	      silent
+
+distclean: clean
+	@rm -f Makefile 		\
+	      makeincludes 		\
+	      setup/config.h 		\
+	      setup/Makefile.setup
+
+# ===============================================
+# 
+#		INSTALL TARGET
+#
+# ===============================================
+install: hd24connect$(WINEXT) hd24hexview$(WINEXT)
+	cp hd24connect$(WINEXT) $(INSTALLDIR)
+	# cp hd24info$(WINEXT) $(INSTALLDIR)
+	cp hd24hexview$(WINEXT) $(INSTALLDIR)
+	# cp hd24towav$(WINEXT) $(INSTALLDIR)
+	# cp hd24wavefix$(WINEXT) $(INSTALLDIR)
+
+# ===============================================
+# 
+#		INSTALL BUILDING
+#
+# ===============================================
+installer: $(PLATFORM)_installer
+	echo Making installer for $(PLATFORM)...
+	
+win32_installer: hd24connect$(WINEXT) hd24hexview$(WINEXT) $(FLFILECHOOSER)
+	$(CC) $(CCARGS) $(SRCDIR)installer/bin2c.c -o $(SRCDIR)installer/bin2c$(WINEXT)
+	# create installer resources include file
+	echo // This file contains installer resources >$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) images/longliverec.h24 $(SRCDIR)installer/resource_longliverec.c resource_longliverec 
+	echo \#include \"resource_longliverec.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_longliverec_filename \"longliverec.h24\" >>$(SRCDIR)installer/installer_resources.h
+	#$(SRCDIR)installer/bin2c$(WINEXT) doc/hd24tools_manual.pdf $(SRCDIR)installer/resource_hd24tools_manual.c resource_hd24tools_manual 
+	#echo \#include \"resource_hd24tools_manual.c\" >>$(SRCDIR)installer/installer_resources.h
+	#echo \#define resource_hd24tools_manual_filename \"hd24tools_manual.pdf\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) images/unquickformat.h24 $(SRCDIR)installer/resource_unquickformat.c resource_unquickformat 
+	echo \#include \"resource_unquickformat.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_unquickformat_filename \"unquickformat.h24\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) hd24connect$(WINEXT) $(SRCDIR)installer/resource_hd24connect.c resource_hd24connect 
+	echo \#include \"resource_hd24connect.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_hd24connect_filename \"hd24connect$(WINEXT)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) hd24hexview$(WINEXT) $(SRCDIR)installer/resource_hd24hexview.c resource_hd24hexview
+	echo \#include \"resource_hd24hexview.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_hd24hexview_filename \"hd24hexview$(WINEXT)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(RESOURCE_PORTAUDIO) $(SRCDIR)installer/resource_portaudio.c resource_portaudio
+	echo \#include \"resource_portaudio.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_portaudio_filename \"$(RESOURCE_PORTAUDIO_FILENAME)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(RESOURCE_LIBSNDFILE_1) $(SRCDIR)installer/resource_libsndfile_1.c resource_libsndfile_1
+	echo \#include \"resource_libsndfile_1.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_libsndfile_1_filename \"$(RESOURCE_LIBSNDFILE_1_FILENAME)\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define sharedlibdir \"\" >>$(SRCDIR)installer/installer_resources.h
+	echo // These are apple specific resources >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(SRCDIR)installer/info.plist.hd24connect $(SRCDIR)installer/resource_plistconnect.c resource_plist_connect
+	echo \#include \"resource_plistconnect.c\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(SRCDIR)installer/PkgInfo.hd24connect $(SRCDIR)installer/resource_pkginfoconnect.c resource_pkginfo_connect
+	echo \#include \"resource_pkginfoconnect.c\" >>$(SRCDIR)installer/installer_resources.h
+	fluid -c $(SRCDIR)installer/ui_welcome.fl; \
+	cat ui_welcome.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_welcome.cxx; \
+	mv ui_welcome.h $(SRCDIR)installer; \
+	rm ui_welcome.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_license.fl; \
+	cat ui_license.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_license.cxx; \
+	mv ui_license.h $(SRCDIR)installer; \
+	rm ui_license.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_instdir.fl; \
+	cat ui_instdir.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_instdir.cxx; \
+	mv ui_instdir.h $(SRCDIR)installer; \
+	rm ui_instdir.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_ready.fl; \
+	cat ui_ready.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_ready.cxx; \
+	mv ui_ready.h $(SRCDIR)installer; \
+	rm ui_ready.cxx; \
+	\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_welcome.cxx -o $(SRCDIR)installer/ui_welcome.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_license.cxx -o $(SRCDIR)installer/ui_license.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_instdir.cxx -o $(SRCDIR)installer/ui_instdir.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_ready.cxx -o $(SRCDIR)installer/ui_ready.o $(INCLUDEDIRS) $(LIBDIRS);\
+	echo -e "\n\nInstaller spec files built. You must now make the appropriate target to get an installer file."
+	make createinstallerpackage_win32
+
+linux_installer: hd24connect$(WINEXT) hd24hexview$(WINEXT) $(FLFILECHOOSER)
+	scripts/mkdeb.sh hd24tools $(RELEASENUM)
+
+old_deb_linux_installer: hd24connect$(WINEXT) hd24hexview$(WINEXT) $(FLFILECHOOSER)
+	sudo apt-get remove hd24tools; \
+	rm *.deb; \ rm *.rpm; \
+	cat $(SRCDIR)/installer/checkinstall.in|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/checkinstall.txt; \
+	mv doc cidoc; \
+	sudo checkinstall --nodoc < $(SRCDIR)installer/checkinstall.txt;\
+	mv cidoc doc;\
+	sudo alien --to-rpm hd24tools*.deb
+	mv hd24tools_$(RELEASENUM)-1_i386.deb hd24tools_$(RELEASENUM)_i386.deb
+	mv hd24tools-$(RELEASENUM)-2.i386.rpm hd24tools-$(RELEASENUM)_i386.rpm
+
+dummy_was_linux_installer:
+	$(CC) $(CCARGS) $(SRCDIR)installer/bin2c.c -o $(SRCDIR)installer/bin2c$(WINEXT)
+	# create installer resources include file
+	echo // This file contains installer resources >$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) images/longliverec.h24 $(SRCDIR)installer/resource_longliverec.c resource_longliverec 
+	echo \#include \"resource_longliverec.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_longliverec_filename \"longliverec.h24\" >>$(SRCDIR)installer/installer_resources.h
+	#$(SRCDIR)installer/bin2c$(WINEXT) doc/hd24tools_manual.pdf $(SRCDIR)installer/resource_hd24tools_manual.c resource_hd24tools_manual 
+	#echo \#include \"resource_hd24tools_manual.c\" >>$(SRCDIR)installer/installer_resources.h
+	#echo \#define resource_hd24tools_manual_filename \"hd24tools_manual.pdf\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) images/unquickformat.h24 $(SRCDIR)installer/resource_unquickformat.c resource_unquickformat 
+	echo \#include \"resource_unquickformat.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_unquickformat_filename \"unquickformat.h24\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) hd24connect$(WINEXT) $(SRCDIR)installer/resource_hd24connect.c resource_hd24connect 
+	echo \#include \"resource_hd24connect.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_hd24connect_filename \"hd24connect$(WINEXT)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) hd24hexview$(WINEXT) $(SRCDIR)installer/resource_hd24hexview.c resource_hd24hexview
+	echo \#include \"resource_hd24hexview.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_hd24hexview_filename \"hd24hexview$(WINEXT)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(RESOURCE_LIBSNDFILE_1) $(SRCDIR)installer/resource_libsndfile_1.c resource_libsndfile_1
+	echo \#include \"resource_libsndfile_1.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_libsndfile_1_filename \"$(RESOURCE_LIBSNDFILE_1_FILENAME)\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(RESOURCE_PORTAUDIO) $(SRCDIR)installer/resource_portaudio.c resource_portaudio
+
+	echo \#include \"resource_portaudio.c\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define resource_portaudio_filename \"$(RESOURCE_PORTAUDIO_FILENAME)\" >>$(SRCDIR)installer/installer_resources.h
+	echo \#define sharedlibdir \"\" >>$(SRCDIR)installer/installer_resources.h
+	echo // These are apple specific resources >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(SRCDIR)installer/info.plist.hd24connect $(SRCDIR)installer/resource_plistconnect.c resource_plist_connect
+	echo \#include \"resource_plistconnect.c\" >>$(SRCDIR)installer/installer_resources.h
+	$(SRCDIR)installer/bin2c$(WINEXT) $(SRCDIR)installer/PkgInfo.hd24connect $(SRCDIR)installer/resource_pkginfoconnect.c resource_pkginfo_connect
+	echo \#include \"resource_pkginfoconnect.c\" >>$(SRCDIR)installer/installer_resources.h
+	fluid -c $(SRCDIR)installer/ui_welcome.fl; \
+	cat ui_welcome.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_welcome.cxx; \
+	mv ui_welcome.h $(SRCDIR)installer; \
+	rm ui_welcome.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_license.fl; \
+	cat ui_license.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_license.cxx; \
+	mv ui_license.h $(SRCDIR)installer; \
+	rm ui_license.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_instdir.fl; \
+	cat ui_instdir.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_instdir.cxx; \
+	mv ui_instdir.h $(SRCDIR)installer; \
+	rm ui_instdir.cxx; \
+	\
+	fluid -c $(SRCDIR)installer/ui_ready.fl; \
+	cat ui_ready.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/ui_ready.cxx; \
+	mv ui_ready.h $(SRCDIR)installer; \
+	rm ui_ready.cxx; \
+	\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_welcome.cxx -o $(SRCDIR)installer/ui_welcome.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_license.cxx -o $(SRCDIR)installer/ui_license.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_instdir.cxx -o $(SRCDIR)installer/ui_instdir.o $(INCLUDEDIRS) $(LIBDIRS);\
+	$(CC) $(CCARGS) -c $(SRCDIR)installer/ui_ready.cxx -o $(SRCDIR)installer/ui_ready.o $(INCLUDEDIRS) $(LIBDIRS);\
+	make createinstallerpackage_linux
+
+createinstallerpackage_win32:
+	$(CC) $(CCARGS) $(SRCDIR)installer/setup.cpp $(FLFILECHOOSER) $(SRCDIR)installer/ui_license.o $(SRCDIR)installer/ui_welcome.o $(SRCDIR)installer/ui_instdir.o $(SRCDIR)installer/ui_ready.o -o $(SRCDIR)installer/setup$(WINEXT) $(INCLUDEDIRS) $(UILIBS)
+	fltk-config --post $(SRCDIR)installer/setup$(WINEXT)
+	echo Win32 setup post processing
+	mv src/installer/setup.exe .
+	zip a hd24tools_setup_$(RELEASENUM)_win32.zip setup.exe 
+	mv setup.exe src/installer
+	echo Setup.exe is in src/installer, may still need zipping.
+
+createinstallerpackage_linux:
+	$(CC) $(CCARGS) -static-libgcc $(SRCDIR)installer/setup.cpp $(FLFILECHOOSER) $(SRCDIR)installer/ui_license.o $(SRCDIR)installer/ui_welcome.o  $(SRCDIR)installer/ui_instdir.o $(SRCDIR)installer/ui_ready.o -o $(SRCDIR)installer/setup$(WINEXT) $(INCLUDEDIRS) $(LIBDIRS) $(UILIBS)
+	fltk-config --post $(SRCDIR)installer/setup
+	echo Linux setup post processing
+	mv setup setup.bck
+	mv src/installer/setup .
+	tar cvfz hd24tools_setup_$(RELEASENUM)_linuxi386.tgz setup
+	mv setup src/installer
+	mv setup.bck setup
+
+OSX10.4_installer: hd24connect$(WINEXT) hd24hexview$(WINEXT) $(FLFILECHOOSER) createinstallerpackage_mac
+createinstallerpackage_mac:
+#	$(CC) $(CCARGS) $(SRCDIR)installer/setup.cpp $(FLFILECHOOSER) $(SRCDIR)installer/ui_license.o $(SRCDIR)installer/ui_welcome.o  $(SRCDIR)installer/ui_instdir.o $(SRCDIR)installer/ui_ready.o -o $(SRCDIR)installer/setup$(WINEXT) $(INCLUDEDIRS) $(LIBDIRS) $(UILIBS)
+#	fltk-config --post $(SRCDIR)installer/setup$(WINEXT)
+	echo Mac setup post processing
+	rm -rf result
+	mkdir result
+	ditto hd24hexview result/
+	mkdir result/HD24connect.app
+	mkdir result/HD24connect.app/Contents
+	cat $(SRCDIR)installer/info.plist.hd24connect|sed -e 's/HD24VERSION/$(RELEASENUM)/' > $(SRCDIR)installer/info.plist.hd24c; \
+	ditto $(SRCDIR)installer/info.plist.hd24c result/HD24connect.app/Contents/info.plist
+	ditto $(SRCDIR)installer/PkgInfo.hd24connect result/HD24connect.app/Contents/
+	mkdir result/HD24connect.app/Contents/MacOS
+	mkdir result/HD24connect.app/Contents/Resources
+	ditto $(SRCDIR)installer/icon.icns result/HD24connect.app/Contents/Resources
+	chmod 4755 hd24connect
+	cp hd24connect hd24connect-bin
+	ditto $(SRCDIR)installer/hd24connect.sh result/HD24connect.app/Contents/MacOS/hd24connect
+	ditto hd24connect-bin result/HD24connect.app/Contents/MacOS
+#	ditto doc/hd24tools_manual.pdf result
+	ditto images/longliverec.h24 result
+	ditto images/unquickformat.h24 result
+	cd bin/ppc_10.4/;gunzip libsnd*.gz; cd ../..
+	ditto bin/ppc_10.4/*dylib* result/HD24connect.app/Contents/MacOS
+	cd bin/ppc_10.4/;gzip libsnd*; cd ../..
+#	cp src/installer/starthd24connect.command result/
+	rm -rf HD24tools.dmg
+	hdiutil create -fs HFS+ -srcfolder "result/" -volname "HD24tools" HD24tools.dmg
+	rm -rf hd24tools_$(RELEASENUM)-$(PLATFORM).dmg
+	hdiutil convert -format UDZO -o hd24tools_$(RELEASENUM)-$(PLATFORM).dmg HD24tools.dmg
+
+	rm -rf HD24tools.dmg
+	rm -rf result
+	
+#macrelease:
+#	rm -rf RELEASE
+#	rm -rf hd24_$(RELEASE_NUM)*.gz
+#	mkdir RELEASE
+#	mkdir RELEASE/usr
+#	mkdir RELEASE/usr/local
+#	mkdir RELEASE/usr/local/lib
+#	find HD24connect.app -print | cpio -pvcmdB RELEASE
+#	cp hd24connect RELEASE/HD24connect.app/Contents/MacOS
+#	cp hd24hexview RELEASE
+#	cp /usr/local/lib/libsndfile.1.0.16.dylib RELEASE/usr/local/lib
+#	cd RELEASE/usr/local/lib ; \
+#	    ln -s libsndfile.1.0.16.dylib libsndfile.1.dylib \
+#	    ln -s libsndfile.1.0.16.dylib libsndfile.dylib
+#	cd RELEASE ; \
+#	    find . -print | cpio -ovcB >../hd24_$(RELEASE_NUM)mac10.4.cpio
+#	gzip hd24_$(RELEASE_NUM)mac10.4.cpio
+#	cd RELEASE ; \
+#	    tar -cf ../hd24_$(RELEASE_NUM)mac10.4.tar .
+#	gzip hd24_$(RELEASE_NUM)mac10.4.tar
+
+# ===============================================
+# 
+#		CODE BUILDING
+#
+# ===============================================
+hd24info: $(SRCDIR)hd24info.cpp $(BINDIR)hd24fs.o $(BINDIR)convertlib.o 
+	$(CC) $(CCARGS) $(SRCDIR)hd24info.cpp $(BINDIR)memutils.o $(BINDIR)hd24fs.o $(BINDIR)hd24devicenamegenerator.o $(BINDIR)hd24utils.o $(BINDIR)convertlib.o -o hd24info $(LIBDIRS) $(INCLUDEDIRS) $(CONSLIBS) $(CONSDEPS)
+
+hd24wavefix: $(SRCDIR)hd24wavefix.cpp $(BINDIR)convertlib.o
+	$(CC) $(CCARGS) $(SRCDIR)hd24wavefix.cpp $(BINDIR)memutils.o $(BINDIR)convertlib.o -lsndfile -o hd24wavefix $(LIBDIRS) $(INCLUDEDIRS) $(CONSLIBS)
+
+hd24towav: $(SRCDIR)hd24towav.cpp $(BINDIR)convertlib.o
+	$(CC) $(CCARGS) $(SRCDIR)hd24towav.cpp $(BINDIR)memutils.o $(BINDIR)convertlib.o -lsndfile -o hd24towav $(LIBDIRS) $(INCLUDEDIRS) $(CONSLIBS)
+
+hd24hexview: $(SRCDIR)hd24hexview.cpp $(BINDIR)hd24fs.o $(BINDIR)hd24utils.o $(BINDIR)hd24driveimage.o
+	$(CC) $(CCARGS) $(SRCDIR)hd24hexview.cpp $(BINDIR)memutils.o $(BINDIR)hd24driveimage.o $(BINDIR)hd24fs.o $(BINDIR)hd24devicenamegenerator.o $(BINDIR)hd24utils.o $(BINDIR)convertlib.o  -o hd24hexview$(WINEXT) $(LIBDIRS) $(INCLUDEDIRS) $(CONSLIBS) $(CONSDEPS)
+
+$(BINDIR)Fl_Native_File_Chooser.o: $(LIB)FL/Fl_Native_File_Chooser.H $(LIB)FL/Fl_Native_File_Chooser.cxx
+	$(CC) $(CCARGS) -c $(LIB)FL/Fl_Native_File_Chooser.cxx -o $(BINDIR)Fl_Native_File_Chooser.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)Fl_Image_Button.o: $(LIB)FL/Fl_Image_Button.H $(LIB)FL/Fl_Image_Button.cxx
+	$(CC) $(CCARGS) -c $(LIB)FL/Fl_Image_Button.cxx -o $(BINDIR)Fl_Image_Button.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)Fl_Image_Repeat_Button.o: $(LIB)FL/Fl_Image_Repeat_Button.H $(LIB)FL/Fl_Image_Repeat_Button.cxx
+	$(CC) $(CCARGS) -c $(LIB)FL/Fl_Image_Repeat_Button.cxx -o $(BINDIR)Fl_Image_Repeat_Button.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)Fl_Image_Toggle_Button.o: $(LIB)FL/Fl_Image_Toggle_Button.H $(LIB)FL/Fl_Image_Toggle_Button.cxx
+	$(CC) $(CCARGS) -c $(LIB)FL/Fl_Image_Toggle_Button.cxx -o $(BINDIR)Fl_Image_Toggle_Button.o $(INCLUDEDIRS) $(LIBDIRS)
+	
+hd24connect: $(BINDIR)WidgetPDial.o $(BINDIR)hd24connect.o $(PROGICON) $(FLFILECHOOSER) $(BINDIR)Fl_Image_Button.o $(BINDIR)Fl_Image_Toggle_Button.o $(BINDIR)Fl_Image_Repeat_Button.o $(BINDIR)ui_hd24connect.o $(BINDIR)hd24sndfile.o $(BINDIR)hd24transferengine.o $(BINDIR)smpte.o $(BINDIR)hd24fs.o $(BINDIR)hd24driveimage.o $(BINDIR)sharedlibs.o $(BINDIR)convertlib.o $(BINDIR)dialog_format.o $(BINDIR)dialog_rename.o $(BINDIR)dialog_options.o $(BINDIR)dialog_filesize.o $(BINDIR)dialog_newsong.o $(BINDIR)dialog_newproject.o $(BINDIR)dialog_fromto.o $(BINDIR)dialog_setlocate.o $(BINDIR)dialog_setlength.o $(BINDIR)ui_help_about.o $(BINDIR)ui_recorder.o $(BINDIR)ui_mixer.o $(BINDIR)dialog_choosedevice.o $(BINDIR)ui_hd24trackchannel.o $(BINDIR)hd24utils.o $(MOREDEPS) 
+	$(CC) $(TESTLINKERFLAGS) $(CCARGS) $(BINDIR)hd24connect.o $(BINDIR)memutils.o $(BINDIR)hd24sndfile.o $(BINDIR)hd24transferengine.o $(BINDIR)WidgetPDial.o $(BINDIR)dialog_rename.o $(BINDIR)dialog_options.o $(BINDIR)dialog_filesize.o $(BINDIR)dialog_format.o $(BINDIR)dialog_newsong.o $(BINDIR)dialog_newproject.o $(PROGICON) $(BINDIR)dialog_fromto.o $(BINDIR)dialog_choosedevice.o $(MOREDEPS) $(BINDIR)dialog_setlocate.o $(BINDIR)dialog_setlength.o $(BINDIR)ui_hd24connect.o $(BINDIR)smpte.o $(BINDIR)hd24fs.o $(BINDIR)hd24driveimage.o $(BINDIR)hd24devicenamegenerator.o $(BINDIR)hd24utils.o $(BINDIR)sharedlibs.o $(BINDIR)convertlib.o $(BINDIR)ui_help_about.o $(BINDIR)ui_recorder.o $(BINDIR)ui_mixer.o $(FLFILECHOOSER) $(BINDIR)Fl_Image_Button.o $(BINDIR)Fl_Image_Repeat_Button.o  $(BINDIR)Fl_Image_Toggle_Button.o $(BINDIR)ui_hd24trackchannel.o -o hd24connect $(INCLUDEDIRS) $(LIBDIRS) $(MORELIBS) $(UILIBS); fltk-config --post hd24connect
+
+$(BINDIR)icon.o: $(UI)resource.rc
+	windres $(UI)resource.rc $(BINDIR)icon.o
+
+$(BINDIR)convertlib.o: $(LIB)convertlib.cpp $(LIB)convertlib.h
+	$(CC) $(CCARGS) -c $(LIB)convertlib.cpp -o $(BINDIR)convertlib.o $(INCLUDEDIRS) $(LIBDIRS) 
+
+$(BINDIR)sharedlibs.o: $(LIB)sharedlibs.cpp $(LIB)sharedlibs.h
+	$(CC) $(CCARGS) -c $(LIB)sharedlibs.cpp -o $(BINDIR)sharedlibs.o $(INCLUDEDIRS) $(LIBDIRS) 
+
+$(BINDIR)nojack.o: $(LIB)nojack.cpp $(LIB)nojack.h
+$(BINDIR)nojack.o: $(LIB)nojack.cpp $(LIB)nojack.h
+	$(CC) $(CCARGS) -c $(LIB)nojack.cpp -o $(BINDIR)nojack.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)ui_hd24connect.cxx: $(UI)ui_hd24trackchannel.h $(UI)ui_hd24connect.cxx $(UI)ui_hd24connect.h $(BINDIR)dialog_rename.o $(BINDIR)dialog_format.o $(BINDIR)dialog_options.o $(BINDIR)dialog_filesize.o $(BINDIR)dialog_newsong.o $(BINDIR)dialog_newproject.o $(BINDIR)dialog_fromto.o $(BINDIR)dialog_setlocate.o $(BINDIR)dialog_setlength.o $(BINDIR)ui_help_about.o $(BINDIR)ui_recorder.o $(BINDIR)ui_mixer.o $(BINDIR)dialog_choosedevice.o $(FLFILECHOOSER)
+	cat $(UI)ui_hd24connect.cxx|sed -e 's/HD24VERSION/$(RELEASENUM)/' >$(BINDIR)ui_hd24connect.cxx
+#	$(CC) $(CCARGS) -E $(UI)ui_hd24connect.cxx -o $(BINDIR)ui_hd24connect.cpp $(INCLUDEDIRS) $(LIBDIRS); cat $(BINDIR)ui_hd24connect.cpp|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(BINDIR)ui_hd24connect.cxx
+
+$(BINDIR)ui_hd24connect.o: $(BINDIR)ui_hd24connect.cxx $(BINDIR)hd24driveimage.o
+	$(CC) $(CCARGS) -c $(BINDIR)ui_hd24connect.cxx -o $(BINDIR)ui_hd24connect.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24devicenamegenerator.o: $(LIB)hd24devicenamegenerator.h $(LIB)hd24devicenamegenerator.cpp $(BINDIR)convertlib.o
+	$(CC) $(CCARGS) -c $(LIB)hd24devicenamegenerator.cpp -o $(BINDIR)hd24devicenamegenerator.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24utils.o: $(LIB)hd24utils.cpp $(LIB)hd24utils.h $(LIB)hd24project.cpp $(LIB)hd24song.cpp $(BINDIR)convertlib.o $(BINDIR)hd24devicenamegenerator.o
+	$(CC) $(CCARGS) -c $(LIB)hd24utils.cpp -o $(BINDIR)hd24utils.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24sndfile.o: $(LIB)hd24sndfile.cpp $(LIB)hd24sndfile.h $(BINDIR)convertlib.o 
+	$(CC) $(CCARGS) -c $(LIB)hd24sndfile.cpp -o $(BINDIR)hd24sndfile.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24transferengine.o: $(LIB)hd24transferengine.cpp $(LIB)hd24transferengine.h $(LIB)hd24project.cpp $(LIB)hd24song.cpp $(BINDIR)convertlib.o $(BINDIR)ui_mixer.o
+	$(CC) $(CCARGS) -c $(LIB)hd24transferengine.cpp -o $(BINDIR)hd24transferengine.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)memutils.o: $(LIB)memutils.cpp $(LIB)memutils.h
+	$(CC) $(CCARGS) -c $(LIB)memutils.cpp -o $(BINDIR)memutils.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)smpte.o: $(LIB)smpte.cpp $(LIB)smpte.h
+	$(CC) $(CCARGS) -c $(LIB)smpte.cpp -o $(BINDIR)smpte.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24driveimage.o: $(LIB)hd24driveimage.cpp $(LIB)hd24driveimage.h $(BINDIR)convertlib.o
+	$(CC) $(CCARGS) -c $(LIB)hd24driveimage.cpp -o $(BINDIR)hd24driveimage.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)hd24fs.o: $(BINDIR)hd24driveimage.o $(BINDIR)memutils.o $(LIB)hd24fs.cpp $(LIB)hd24fs.h $(LIB)hd24project.cpp $(LIB)hd24song.cpp $(BINDIR)convertlib.o $(BINDIR)hd24devicenamegenerator.o
+	$(CC) $(CCARGS) -c $(LIB)hd24fs.cpp -o $(BINDIR)hd24fs.o $(INCLUDEDIRS) $(LIBDIRS)
+ 
+$(BINDIR)ui_help_about.o: $(UI)ui_help_about.cxx
+	$(CC) $(CCARGS) -c $(UI)ui_help_about.cxx -o $(BINDIR)ui_help_about.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)ui_mixer.o: $(UI)ui_mixer.cxx
+	$(CC) $(CCARGS) -c $(UI)ui_mixer.cxx -o $(BINDIR)ui_mixer.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)ui_recorder.o: $(UI)ui_recorder.cxx 
+	$(CC) $(CCARGS) -c $(UI)ui_recorder.cxx -o $(BINDIR)ui_recorder.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)ui_hd24trackchannel.o: $(UI)ui_hd24trackchannel.cxx
+	$(CC) $(CCARGS) -c $(UI)ui_hd24trackchannel.cxx -o $(BINDIR)ui_hd24trackchannel.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_format.o: $(UI)dialog_format.cxx $(UI)dialog_format.h
+	$(CC) $(CCARGS) -c $(UI)dialog_format.cxx -o $(BINDIR)dialog_format.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_fromhd24.o: $(UI)dialog_fromhd24.cxx $(UI)dialog_fromhd24.h
+	$(CC) $(CCARGS) -c $(UI)dialog_fromhd24.cxx -o $(BINDIR)dialog_fromhd24.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_rename.o: $(UI)dialog_rename.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_rename.cxx -o $(BINDIR)dialog_rename.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_options.o: $(UI)dialog_options.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_options.cxx -o $(BINDIR)dialog_options.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_choosedevice.o: $(UI)dialog_choosedevice.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_choosedevice.cxx -o $(BINDIR)dialog_choosedevice.o $(INCLUDEDIRS) $(LIBDIRS)
+	
+$(BINDIR)dialog_setlength.o: $(UI)dialog_setlength.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_setlength.cxx -o $(BINDIR)dialog_setlength.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(BINDIR)dialog_filesize.o: $(UI)dialog_filesize.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_filesize.cxx -o $(BINDIR)dialog_filesize.o $(INCLUDEDIRS) $(LIBDIRS)
+	
+$(BINDIR)dialog_newsong.o: $(UI)dialog_newsong.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_newsong.cxx -o $(BINDIR)dialog_newsong.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(UI)dialog_newsong.h: $(UI)dialog_newsong.fl
+	fluid -c $(UI)dialog_newsong.fl; \
+	mv dialog_newsong.h $(UI); \
+	mv dialog_newsong.cxx $(UI)
+
+$(UI)dialog_newsong.cxx: $(UI)dialog_newsong.fl
+	fluid -c $(UI)dialog_newsong.fl; \
+	mv dialog_newsong.h $(UI); \
+	mv dialog_newsong.cxx $(UI)
+
+$(BINDIR)dialog_newproject.o: $(UI)dialog_newproject.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_newproject.cxx -o $(BINDIR)dialog_newproject.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(UI)dialog_newproject.h: $(UI)dialog_newproject.fl
+	fluid -c $(UI)dialog_newproject.fl; \
+	mv dialog_newproject.h $(UI); \
+	mv dialog_newproject.cxx $(UI)
+
+$(UI)dialog_newproject.cxx: $(UI)dialog_newproject.fl
+	fluid -c $(UI)dialog_newproject.fl; \
+	mv dialog_newproject.h $(UI); \
+	mv dialog_newproject.cxx $(UI)
+		
+$(BINDIR)dialog_setlocate.o: $(UI)dialog_setlocate.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_setlocate.cxx -o $(BINDIR)dialog_setlocate.o $(INCLUDEDIRS) $(LIBDIRS)
+	
+$(BINDIR)dialog_fromto.o: $(UI)dialog_fromto.cxx
+	$(CC) $(CCARGS) -c $(UI)dialog_fromto.cxx -o $(BINDIR)dialog_fromto.o $(INCLUDEDIRS) $(LIBDIRS)
+	
+$(BINDIR)hd24connect.o: $(UI)hd24connect.cpp $(UI)selftest.cpp $(BINDIR)ui_hd24connect.o $(BINDIR)hd24fs.o $(BINDIR)hd24utils.o
+	cat $(UI)hd24connect.cpp|sed -e 's/\HD24VERSION/$(RELEASENUM)/' >$(BINDIR)hd24connect.cpp
+	$(CC) $(CCARGS) -c $(BINDIR)hd24connect.cpp -o $(BINDIR)hd24connect.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(UI)ui_hd24connect.h: $(UI)ui_hd24connect.fl $(UI)dialog_fromto.cxx $(UI)dialog_choosedevice.h
+	fluid -c $(UI)ui_hd24connect.fl; \
+	cat ui_hd24connect.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_hd24connect.cxx; \
+	mv ui_hd24connect.h $(UI); \
+	rm ui_hd24connect.cxx
+
+$(UI)ui_help_about.cxx: $(UI)ui_help_about.fl
+	fluid -c $(UI)ui_help_about.fl; \
+	cat ui_help_about.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_help_about.cxx; \
+	mv ui_help_about.h $(UI); \
+	rm ui_help_about.cxx
+
+$(UI)ui_recorder.cxx: $(UI)ui_recorder.fl $(UI)ui_hd24connect.h $(UI)ui_mixer.cxx
+	fluid -c $(UI)ui_recorder.fl; \
+	cat ui_recorder.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_recorder.cxx; \
+	mv ui_recorder.h $(UI); \
+	rm ui_recorder.cxx
+
+$(UI)ui_mixer.cxx: $(UI)ui_mixer.fl $(UI)ui_hd24connect.h
+	fluid -c $(UI)ui_mixer.fl; \
+	cat ui_mixer.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_mixer.cxx; \
+	mv ui_mixer.h $(UI); \
+	rm ui_mixer.cxx
+
+$(UI)ui_hd24trackchannel.h: $(UI)ui_hd24trackchannel.fl $(UI)ui_hd24connect.h
+	fluid -c $(UI)ui_hd24trackchannel.fl; \
+	cat ui_hd24trackchannel.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_hd24trackchannel.cxx; \
+	mv ui_hd24trackchannel.h $(UI); \
+	rm ui_hd24trackchannel.cxx
+
+$(UI)ui_hd24trackchannel.cxx: $(UI)ui_hd24trackchannel.fl $(UI)ui_hd24connect.h
+	fluid -c $(UI)ui_hd24trackchannel.fl; \
+	cat ui_hd24trackchannel.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_hd24trackchannel.cxx; \
+	mv ui_hd24trackchannel.h $(UI); \
+	rm ui_hd24trackchannel.cxx
+
+$(UI)dialog_filesize.h: $(UI)dialog_filesize.fl
+	fluid -c $(UI)dialog_filesize.fl; \
+	mv dialog_filesize.h $(UI); \
+	mv dialog_filesize.cxx $(UI)
+
+$(UI)dialog_filesize.cxx: $(UI)dialog_filesize.fl
+	fluid -c $(UI)dialog_filesize.fl; \
+	mv dialog_filesize.h $(UI); \
+	mv dialog_filesize.cxx $(UI)
+
+$(UI)dialog_setlength.cxx: $(UI)dialog_setlength.fl
+	fluid -c $(UI)dialog_setlength.fl; \
+	mv dialog_setlength.h $(UI); \
+	mv dialog_setlength.cxx $(UI)
+
+$(UI)dialog_setlocate.cxx: $(UI)dialog_setlocate.fl
+	fluid -c $(UI)dialog_setlocate.fl; \
+	mv dialog_setlocate.h $(UI); \
+	mv dialog_setlocate.cxx $(UI)
+
+$(UI)dialog_format.cxx: $(UI)dialog_format.fl
+	fluid -c $(UI)dialog_format.fl; \
+	mv dialog_format.h $(UI); \
+	mv dialog_format.cxx $(UI)
+
+$(UI)dialog_format.h: $(UI)dialog_format.fl
+	fluid -c $(UI)dialog_format.fl; \
+	mv dialog_format.h $(UI); \
+	mv dialog_format.cxx $(UI)
+
+$(UI)dialog_fromhd24.h: $(UI)dialog_fromhd24.fl
+	fluid -c $(UI)dialog_fromhd24.fl; \
+	mv dialog_fromhd24.h $(UI); \
+	mv dialog_fromhd24.cxx $(UI)
+
+$(UI)dialog_fromhd24.cxx: $(UI)dialog_fromhd24.fl
+	fluid -c $(UI)dialog_fromhd24.fl; \
+	mv dialog_fromhd24.h $(UI); \
+	mv dialog_fromhd24.cxx $(UI)
+
+$(UI)dialog_rename.cxx: $(UI)dialog_rename.fl
+	fluid -c $(UI)dialog_rename.fl; \
+	mv dialog_rename.h $(UI); \
+	mv dialog_rename.cxx $(UI)
+
+$(UI)dialog_options.cxx: $(UI)dialog_options.fl
+	fluid -c $(UI)dialog_options.fl; \
+	mv dialog_options.h $(UI); \
+	mv dialog_options.cxx $(UI)
+
+$(UI)dialog_fromto.cxx: $(UI)dialog_fromto.fl
+	fluid -c $(UI)dialog_fromto.fl; \
+	mv dialog_fromto.h $(UI); \
+	mv dialog_fromto.cxx $(UI)
+
+$(UI)ui_hd24connect.cxx: $(UI)ui_hd24connect.fl
+	fluid -c $(UI)ui_hd24connect.fl; \
+	cat ui_hd24connect.cxx|sed -e 's/\HD24VERSION/$(RELEASENUM)/' > $(UI)ui_hd24connect.cxx; \
+	mv ui_hd24connect.h $(UI); \
+	rm ui_hd24connect.cxx
+
+$(UI)dialog_choosedevice.cxx: $(UI)dialog_choosedevice.fl
+	fluid -c $(UI)dialog_choosedevice.fl; \
+	mv dialog_choosedevice.h $(UI); \
+	mv dialog_choosedevice.cxx $(UI)
+
+$(UI)dialog_choosedevice.h: $(UI)dialog_choosedevice.fl
+	fluid -c $(UI)dialog_choosedevice.fl; \
+	mv dialog_choosedevice.h $(UI); \
+	mv dialog_choosedevice.cxx $(UI)
+
+
+$(BINDIR)WidgetPDial.o: $(UI)WidgetPDial.cxx $(UI)WidgetPDial.h
+	$(CC) $(CCARGS) -c $(UI)WidgetPDial.cxx -o $(BINDIR)WidgetPDial.o $(INCLUDEDIRS) $(LIBDIRS)
+
+$(UI)WidgetPDial.h: $(UI)WidgetPDial.fl
+	fluid -c $(UI)WidgetPDial.fl; mv WidgetPDial.h $(UI); mv WidgetPDial.cc $(UI)WidgetPDial.cxx
+
+$(UI)WidgetPDial.cxx: $(UI)WidgetPDial.fl
+	fluid -c $(UI)WidgetPDial.fl; mv WidgetPDial.h $(UI); mv WidgetPDial.cc $(UI)WidgetPDial.cxx
+
+$(UI)WidgetPDial.fl: $(LIB)FL/WidgetPDial.fl
+	cp $(LIB)FL/WidgetPDial.fl $(UI)WidgetPDial.fl
