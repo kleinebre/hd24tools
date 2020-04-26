@@ -208,10 +208,10 @@ void hd24utils::gencatalog_showsongs(hd24project* currentproj,
 				string* strcatalog,
 				int catalogoptions)
 {
-	if (currentproj==NULL) {
+	if (!currentproj) {
 		return;
 	}
-	if (strcatalog==NULL) {
+	if (!strcatalog) {
 		return;
 	}
 	int numsongs=currentproj->songcount();
@@ -223,7 +223,7 @@ void hd24utils::gencatalog_showsongs(hd24project* currentproj,
         hd24song* currsong=NULL;
 	for (int i=1; i<=numsongs; i++) {
 		currsong=currentproj->getsong(i);
-		if (currsong==NULL) continue;
+		if (!currsong) continue;
 
 		*strcatalog+="     ";
 		*strcatalog+="  ";
@@ -359,7 +359,7 @@ string* hd24utils::savecatalog(hd24fs* currenthd24,string* filename,int catalogo
 		return error;
 	}
 	fstream to_out(filename->c_str(),ios::out);
-	if (to_out==NULL) 
+	if (!to_out) 
 	{
 		*error+="Cannot write catalog.";
 		return error;
@@ -392,7 +392,7 @@ string* hd24utils::printcatalog(hd24fs* currenthd24,int catalogoptions)
 		return error;
 	}
 	fstream to_out(catname.c_str(),ios::out);
-	if (to_out==NULL) 
+	if (!to_out) 
 	{
 		*error+="Cannot write catalog.";
 		return error;
@@ -557,7 +557,7 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 #endif
 #ifdef WINDOWS
 	FSHANDLE handle;
-	if (currenthd24==NULL)
+	if (!currenthd24)
 	{
               _unlink(outputfilename->c_str());
 		
