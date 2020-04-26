@@ -312,7 +312,7 @@ data->panvalue=0;
 \#ifdef REVERBMODULE
 data->delaybuffersize=maxreverbunits*maxreverbseconds*MAXSAMRATE;
 data->delaybuffer=(float *)memutils::mymalloc("MixerChannelControl::init()",data->delaybuffersize,sizeof(float));
-if (data->delaybuffer==NULL) {
+if (!data->delaybuffer) {
 	fl_message("out of memory");
 }
 data->delaybuffersam=data->delaybuffersize;
@@ -470,8 +470,8 @@ data->parentui->mixpan->redraw();} {}
   }
   Function {sample(int framenum,float samval)} {open
   } {
-    code {if (data==NULL) return;
-if ((data->sample)==NULL) return;
+    code {if (!data) return;
+if (!(data->sample)) return;
 data->sample[framenum]=samval;
 /*float q=1;
 if (samval<0) {
@@ -1392,7 +1392,7 @@ mixcontrol->eq_on(3,mixcontrol->eq_on(3));} {}
   Function {savemix(string* strfile)} {return_type {string*}
   } {
     code {fstream to_out(strfile->c_str(),ios::out);
-if (to_out==NULL) {
+if (!to_out) {
 	string *error=new string("");
 	*error+="Cannot open mix file for writing.";
 	return error;
@@ -1426,7 +1426,7 @@ return NULL;} {}
   Function {savetrackmix(string* strfile,int base0track)} {return_type {string*}
   } {
     code {fstream to_out(strfile->c_str(),ios::out);
-if (to_out==NULL) {
+if (!to_out) {
 	string *error=new string("");
 	*error+="Cannot open mix file for writing.";
 	return error;
@@ -1456,11 +1456,6 @@ return NULL;} {}
   Function {loadmix(string* strfile)} {open return_type {string*}
   } {
     code {fstream from_in(strfile->c_str(),ios::in);
-if (from_in==NULL) {
-	string *error=new string("");
-	*error+="Cannot open mix file for reading.";
-	return error;
-}
 string line;
 int savechan=selectedchannel();
 bool master=false;
@@ -1561,11 +1556,6 @@ return NULL;} {selected
   Function {loadtrackmix(string* strfile,int base0track)} {open return_type {string*}
   } {
     code {fstream from_in(strfile->c_str(),ios::in);
-if (from_in==NULL) {
-	string *error=new string("");
-	*error+="Cannot open mix file for writing.";
-	return error;
-}
 string line;
 int savechan=base0track;
 while (!(from_in.eof())) 
@@ -1638,7 +1628,7 @@ return NULL;} {}
   Function {updatemeters()} {open
   } {
     code {MixerUI* pui=this->parentui();
-if (pui==NULL) return;
+if (!pui) return;
 for (int tracknum=0;tracknum<24;tracknum++) {
 	pui->mixerchannel[tracknum]->control->updatemeters();
 }
@@ -1650,7 +1640,7 @@ pui->fader_master->control->updatemeters();} {}
     code {data->samplerate=p_samplerate;
 
 MixerUI* pui=this->parentui();
-if (pui==NULL) return;
+if (!pui) return;
 for (int tracknum=0;tracknum<24;tracknum++) {
 	pui->mixerchannel[tracknum]->control->samplerate(p_samplerate);
 }} {}
@@ -2130,7 +2120,7 @@ switch (chooser.show()) {
 
 		delete strfile;
 		delete fpath;
-		if (anyerrors==NULL) {
+		if (!anyerrors) {
 			fl_message("Mix file saved successfully.");
 		} else {	
 			delete anyerrors;
@@ -2202,7 +2192,7 @@ switch (chooser.show()) {
 		string* anyerrors=control->savetrackmix(strfile,control->selectedchannel());
 
 		delete strfile;
-		if (anyerrors==NULL) {
+		if (!anyerrors) {
 			fl_message("Mix file saved successfully.");
 		} else {	
 			delete anyerrors;
