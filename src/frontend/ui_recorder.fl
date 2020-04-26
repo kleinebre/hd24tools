@@ -3815,7 +3815,7 @@ audio->looppos(0);} {}
   }
   Function {finish()} {open return_type void
   } {
-    code {if (this==NULL) return;
+    code {
 
 this->control->button_stop_call();} {}
   }
