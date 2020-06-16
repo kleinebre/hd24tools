@@ -56,7 +56,7 @@ x->~Fl_Window();}
       }
       Fl_Input hr {
         label {New locate point:}
-        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+        callback {uint32_t chmult=(currsong->physical_channels()/currsong->logical_channels());
 unsigned long realrate=currsong->samplerate()/chmult;
 
 locpoint-=(unsigned long)(3600*realrate*(currsong->display_hours(locpoint)));
@@ -67,7 +67,7 @@ setuiloc(locpoint);}
       }
       Fl_Input min {
         label {:}
-        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+        callback {uint32_t chmult=(currsong->physical_channels()/currsong->logical_channels());
 unsigned long realrate=currsong->samplerate()/chmult;
 
 locpoint-=(unsigned long)(60*realrate*(currsong->display_minutes(locpoint)));
@@ -78,7 +78,7 @@ setuiloc(locpoint);}
       }
       Fl_Input sec {
         label {:}
-        callback {unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+        callback {uint32_t chmult=(currsong->physical_channels()/currsong->logical_channels());
 unsigned long realrate=currsong->samplerate()/chmult;
 
 locpoint-=(unsigned long)(realrate*(currsong->display_seconds(locpoint)));
@@ -96,7 +96,7 @@ setuiloc(locpoint);}
     
 }
 
-unsigned int chmult=(currsong->physical_channels()/currsong->logical_channels());
+uint32_t chmult=(currsong->physical_channels()/currsong->logical_channels());
 unsigned long realrate=currsong->samplerate()/chmult;
 
 long subseconds=currsong->display_subseconds(locpoint);

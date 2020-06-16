@@ -1,66 +1,66 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
-header_name {.h} 
+version 1.0107
+header_name {.h}
 code_name {.cxx}
 decl {\#define MAXSAMRATE 48000} {public
-} 
+}
 
 decl {\#define maxfilterunits 200} {public
-} 
+}
 
 decl {\#define maxreverbunits 20} {public
-} 
+}
 
 decl {\#define maxreverbseconds 1} {public
-} 
+}
 
 decl {\#define eqperchan 4} {public
-} 
+}
 
 decl {\#define Pi2 (2*3.1415926535897)} {public
-} 
+}
 
-decl {\#include <config.h>} {public
-} 
+decl {\#include <stdint.h>} {public
+}
 
 decl {\#include <string>} {public
-} 
+}
 
 decl {\#include <vector>} {public
-} 
+}
 
 decl {\#include <memutils.h>} {public
-} 
+}
 
 decl {\#include <soundlibs.h>} {public
-} 
+}
 
 decl {\#include <iostream>} {public
-} 
+}
 
 decl {\#include <fstream>} {public
-} 
+}
 
 decl {\#include <FL/FLTKstuff.H>} {public
-} 
+}
 
 decl {\#include <FL/filename.H>} {public
-} 
+}
 
 decl {\#include <convertlib.h>} {public
-} 
+}
 
 decl {\#include <WidgetPDial.h>} {public
-} 
+}
 
 decl {\#include <time.h>} {public
-} 
+}
 
 decl {\#include <math.h>} {public
-} 
+}
 
 decl {\#include <ui_hd24connect.h>} {public
-} 
+}
 
 class stereosample {open
 } {
@@ -68,28 +68,28 @@ class stereosample {open
   }
   decl {float right;} {public
   }
-} 
+}
 
 decl {class MixerChannelControl;} {public
-} 
+}
 
 decl {class MixerChannelUI;} {public
-} 
+}
 
 decl {class MixerChannelData;} {public
-} 
+}
 
 decl {class MasterChannelUI;} {public
-} 
+}
 
 decl {class MasterChannelControl;} {public
-} 
+}
 
 decl {class MixerControl;} {public
-} 
+}
 
 decl {class MixerChannelUI;} {public
-} 
+}
 
 class MixerLevelMeterData {} {
   decl {\#define PEAKMODE_NOHOLD 0} {public
@@ -112,7 +112,7 @@ class MixerLevelMeterData {} {
   }
   decl {int dBrange;} {public
   }
-} 
+}
 
 class MixerLevelMeterControl {} {
   decl {MixerLevelMeterData* data;} {}
@@ -132,14 +132,14 @@ return;
 
 // reset peaks if desired
 switch (data->mode) {
-	case PEAKMODE_NOHOLD: this->peakreset(); break;	
-	case PEAKMODE_TEMPHOLD: 		
+	case PEAKMODE_NOHOLD: this->peakreset(); break;
+	case PEAKMODE_TEMPHOLD:
 		if (data->holdtime>PEAKMODE_MAXHOLD) {
-			peakreset(); 
+			peakreset();
 		} else {
 			data->holdtime++;
 		}
-		break;	
+		break;
 	case PEAKMODE_CONTHOLD:
 		break;
 	default:
@@ -181,7 +181,7 @@ if (pct>100) { pct=100; }
 
 return pct;} {}
   }
-} 
+}
 
 class MixerLevelMeterUI {: {public Fl_Group}
 } {
@@ -199,7 +199,7 @@ class MixerLevelMeterUI {: {public Fl_Group}
   }
   Function {draw()} {open
   } {
-    code {float pct=(control->getpctvalue())/100; 
+    code {float pct=(control->getpctvalue())/100;
 
 int zro=y();
 int bot=zro+128;
@@ -223,7 +223,7 @@ return;} {}
   } {
     code {delete control;} {}
   }
-} 
+}
 
 class MixerChannelData {open
 } {
@@ -267,11 +267,11 @@ class MixerChannelData {open
   }
   decl {int mixmono;} {}
   decl {MixerControl* parentmixercontrol;} {}
-  decl {__uint32 samplerate;} {public
+  decl {uint32_t samplerate;} {public
   }
   decl {int selected;} {}
   decl {int ringbufpos[maxreverbunits];} {}
-} 
+}
 
 class MixerChannelControl {open
 } {
@@ -492,7 +492,7 @@ if ((samval*q) > data->trackpeak) {
 if (data->bypass==1)
 {
 	/* Bypass all mixer functions, just return the sample */
-	sam->left=monosam/2; 
+	sam->left=monosam/2;
 	sam->right=monosam/2;
 	return;
 }
@@ -504,15 +504,15 @@ if (data->enable_eq==1) {
 	if (eq_on(0)==1 && (eq_gain(0)!=0)) monosam=FilterCell(0,monosam,eq_freq(0),Q,eq_gain(0),7);
 	if (eq_on(1)==1 && (eq_gain(1)!=0)) monosam=FilterCell(1,monosam,eq_freq(1),Q,eq_gain(1),7);
 	if (eq_on(2)==1 && (eq_gain(2)!=0)) monosam=FilterCell(2,monosam,eq_freq(2),Q,eq_gain(2),7);
-	if (eq_on(3)==1 && (eq_gain(3)!=0)) monosam=FilterCell(3,monosam,eq_freq(3),Q,eq_gain(3),7);		   	
-}   	  
-	
+	if (eq_on(3)==1 && (eq_gain(3)!=0)) monosam=FilterCell(3,monosam,eq_freq(3),Q,eq_gain(3),7);
+}
+
 monosam*=getfadermult();
-   	
+
 sam->left=monosam;
 sam->right=monosam;
 
-if (data->enable_pan==1)   		
+if (data->enable_pan==1)
 {
    	panval=panvalue();
 } else {
@@ -522,7 +522,7 @@ if (data->enable_pan==1)
 float pctright=(panval+127)/254;
 float pctleft=1-pctright;
 sam->left*=pctleft;
-sam->right*=pctright;   	
+sam->right*=pctright;
 
 float subsamval=fabs(monosam);
 if (subsamval > trackpeak()) {
@@ -539,7 +539,7 @@ parentui()->mixchsel->redraw();} {}
   }
   Function {FilterCell(unsigned long Unit, double Input, double Frequency, double Q, double Gain, unsigned long Type)} {return_type double
   } {
-    code {__uint32 SampleRate=data->samplerate;
+    code {uint32_t SampleRate=data->samplerate;
 
 /* --------------------------------------------------------------- */
    double Output,S,omega,A,sn,cs,alpha,beta,temp1,temp2,temp3,temp4;
@@ -649,44 +649,44 @@ parentui()->mixchsel->redraw();} {}
          break;
       case 1:                                                  /* lowpass */
       case 2:                                                  /* highpass */
-         Output = filter_b0[Unit]*Input 
-         	+ filter_b1[Unit]*filter_i1[Unit] 
-         	+ filter_b0[Unit]*filter_i2[Unit] 
-         	- filter_a1[Unit]*filter_o1[Unit] 
+         Output = filter_b0[Unit]*Input
+         	+ filter_b1[Unit]*filter_i1[Unit]
+         	+ filter_b0[Unit]*filter_i2[Unit]
+         	- filter_a1[Unit]*filter_o1[Unit]
          	- filter_a2[Unit]*filter_o2[Unit];
          break;
       case 3:                                                  /* bandpass */
-         Output = filter_b0[Unit]*Input 
-         	- filter_b0[Unit]*filter_i2[Unit] 
-         	- filter_a1[Unit]*filter_o1[Unit] 
+         Output = filter_b0[Unit]*Input
+         	- filter_b0[Unit]*filter_i2[Unit]
+         	- filter_a1[Unit]*filter_o1[Unit]
          	- filter_a2[Unit]*filter_o2[Unit];
          break;
       case 4:                                                  /* notch */
-         Output = filter_b0[Unit]*Input 
-         	+ filter_b1[Unit]*filter_i1[Unit] 
-         	+ filter_b0[Unit]*filter_i2[Unit] 
-         	- filter_a1[Unit]*filter_o1[Unit] 
+         Output = filter_b0[Unit]*Input
+         	+ filter_b1[Unit]*filter_i1[Unit]
+         	+ filter_b0[Unit]*filter_i2[Unit]
+         	- filter_a1[Unit]*filter_o1[Unit]
          	- filter_a2[Unit]*filter_o2[Unit];
          break;
       case 5:                                                  /* low shelving */
       case 6:                                                  /* high shelving */
-         Output = filter_b0[Unit]*Input 
-         	+ filter_b1[Unit]*filter_i1[Unit] 
-         	+ filter_b2[Unit]*filter_i2[Unit] 
-         	- filter_a1[Unit]*filter_o1[Unit] 
+         Output = filter_b0[Unit]*Input
+         	+ filter_b1[Unit]*filter_i1[Unit]
+         	+ filter_b2[Unit]*filter_i2[Unit]
+         	- filter_a1[Unit]*filter_o1[Unit]
          	- filter_a2[Unit]*filter_o2[Unit];
          break;
       case 7:                                                  /* peaking */
-         Output = filter_b0[Unit]*Input 
-         	+ filter_a1[Unit]*filter_i1[Unit] 
-         	+ filter_b2[Unit]*filter_i2[Unit] 
-         	- filter_a1[Unit]*filter_o1[Unit] 
+         Output = filter_b0[Unit]*Input
+         	+ filter_a1[Unit]*filter_i1[Unit]
+         	+ filter_b2[Unit]*filter_i2[Unit]
+         	- filter_a1[Unit]*filter_o1[Unit]
          	- filter_a2[Unit]*filter_o2[Unit];
          break;
    }
-   filter_o2[Unit]=filter_o1[Unit]; 
-   filter_o1[Unit]=Output; 
-   filter_i2[Unit]=filter_i1[Unit]; 
+   filter_o2[Unit]=filter_o1[Unit];
+   filter_o1[Unit]=Output;
+   filter_i2[Unit]=filter_i1[Unit];
    filter_i1[Unit]=Input; /* update variables for recursion */
 
    return(Output);} {}
@@ -701,40 +701,40 @@ data->eq_gain[whicheq]=gain;
 WidgetPDial* gainwidget=NULL;
 Fl_Output* dispwidget=NULL;
 switch (whicheq) {
-	case 0: 
+	case 0:
 	{
-		gainwidget=parentmixercontrol()->parentui()->gain1; 
-		dispwidget=parentmixercontrol()->parentui()->dispgain1; 
+		gainwidget=parentmixercontrol()->parentui()->gain1;
+		dispwidget=parentmixercontrol()->parentui()->dispgain1;
 		break;
 	}
-	case 1: 
+	case 1:
 	{
-		gainwidget=parentmixercontrol()->parentui()->gain2; 
-		dispwidget=parentmixercontrol()->parentui()->dispgain2; 		
+		gainwidget=parentmixercontrol()->parentui()->gain2;
+		dispwidget=parentmixercontrol()->parentui()->dispgain2;
 		break;
 	}
-	case 2: 
+	case 2:
 	{
-		gainwidget=parentmixercontrol()->parentui()->gain3; 
-		dispwidget=parentmixercontrol()->parentui()->dispgain3; 		
-		break;	
+		gainwidget=parentmixercontrol()->parentui()->gain3;
+		dispwidget=parentmixercontrol()->parentui()->dispgain3;
+		break;
 	}
-	case 3: 
+	case 3:
 	{
-		gainwidget=parentmixercontrol()->parentui()->gain4; 
-		dispwidget=parentmixercontrol()->parentui()->dispgain4; 		
-		break;	
+		gainwidget=parentmixercontrol()->parentui()->gain4;
+		dispwidget=parentmixercontrol()->parentui()->dispgain4;
+		break;
 	}
 }
 if (dispwidget!=NULL)
 {
-	string* sval=Convert::int64tostr((__sint64)gain); 
-	dispwidget->value(sval->c_str()); 
+	string* sval=Convert::int64tostr((int64_t)gain);
+	dispwidget->value(sval->c_str());
 	delete sval;
 	dispwidget->redraw();
 }
 if (gainwidget!=NULL)
-{	
+{
 	gainwidget->value(gain);
 	gainwidget->redraw();
 }} {}
@@ -753,40 +753,40 @@ data->eq_freq[whicheq]=freq;
 WidgetPDial* freqwidget=NULL;
 Fl_Output* dispwidget=NULL;
 switch (whicheq) {
-	case 0: 
+	case 0:
 	{
-		freqwidget=parentmixercontrol()->parentui()->freq1; 
-		dispwidget=parentmixercontrol()->parentui()->dispfreq1; 
+		freqwidget=parentmixercontrol()->parentui()->freq1;
+		dispwidget=parentmixercontrol()->parentui()->dispfreq1;
 		break;
 	}
-	case 1: 
+	case 1:
 	{
-		freqwidget=parentmixercontrol()->parentui()->freq2; 
-		dispwidget=parentmixercontrol()->parentui()->dispfreq2; 		
+		freqwidget=parentmixercontrol()->parentui()->freq2;
+		dispwidget=parentmixercontrol()->parentui()->dispfreq2;
 		break;
 	}
-	case 2: 
+	case 2:
 	{
-		freqwidget=parentmixercontrol()->parentui()->freq3; 
-		dispwidget=parentmixercontrol()->parentui()->dispfreq3; 		
-		break;	
+		freqwidget=parentmixercontrol()->parentui()->freq3;
+		dispwidget=parentmixercontrol()->parentui()->dispfreq3;
+		break;
 	}
-	case 3: 
+	case 3:
 	{
-		freqwidget=parentmixercontrol()->parentui()->freq4; 
-		dispwidget=parentmixercontrol()->parentui()->dispfreq4; 		
-		break;	
+		freqwidget=parentmixercontrol()->parentui()->freq4;
+		dispwidget=parentmixercontrol()->parentui()->dispfreq4;
+		break;
 	}
 }
 if (dispwidget!=NULL)
 {
-	string* sval=Convert::int64tostr((__sint64)freq); 
-	dispwidget->value(sval->c_str()); 
+	string* sval=Convert::int64tostr((int64_t)freq);
+	dispwidget->value(sval->c_str());
 	delete sval;
 	dispwidget->redraw();
 }
 if (freqwidget!=NULL)
-{	
+{
 	freqwidget->value(freq);
 	freqwidget->redraw();
 }} {}
@@ -806,8 +806,8 @@ data->eq_on[whicheq]=onoff;
 switch (whicheq) {
 	case 0: parentmixercontrol()->parentui()->eqon1->value(onoff); break;
 	case 1: parentmixercontrol()->parentui()->eqon2->value(onoff); break;
-	case 2: parentmixercontrol()->parentui()->eqon3->value(onoff); break;	
-	case 3: parentmixercontrol()->parentui()->eqon4->value(onoff); break;	
+	case 2: parentmixercontrol()->parentui()->eqon3->value(onoff); break;
+	case 3: parentmixercontrol()->parentui()->eqon4->value(onoff); break;
 }
 parentmixercontrol()->parentui()->eqon1->redraw();
 parentmixercontrol()->parentui()->eqon2->redraw();
@@ -829,8 +829,8 @@ data->eq_Q[whicheq]=Q;
 //switch (whicheq) {
 //	case 0: parentmixercontrol()->parentui()->Q1->value(freq); break;
 //	case 1: parentmixercontrol()->parentui()->Q2->value(freq); break;
-//	case 2: parentmixercontrol()->parentui()->Q3->value(freq); break;	
-//	case 3: parentmixercontrol()->parentui()->Q4->value(freq); break;	
+//	case 2: parentmixercontrol()->parentui()->Q3->value(freq); break;
+//	case 3: parentmixercontrol()->parentui()->Q4->value(freq); break;
 //}
 //parentmixercontrol()->parentui()->freq1->redraw();
 //parentmixercontrol()->parentui()->freq2->redraw();
@@ -881,15 +881,15 @@ return data->eq_Q[whicheq];} {}
   } {
     code {return data->bypass;} {}
   }
-  Function {samplerate(__uint32 p_samplerate)} {open return_type void
+  Function {samplerate(uint32_t p_samplerate)} {open return_type void
   } {
     code {data->samplerate=p_samplerate;} {}
   }
-  Function {samplerate()} {open return_type __uint32
+  Function {samplerate()} {open return_type uint32_t
   } {
     code {return data->samplerate;} {}
   }
-} 
+}
 
 class MixerChannelUI {open : {public Fl_Group}
 } {
@@ -970,7 +970,7 @@ this->control->mute(o->value());}
   } {
     code {delete control;} {}
   }
-} 
+}
 
 class MasterChannelData {open
 } {
@@ -1007,7 +1007,7 @@ class MasterChannelData {open
   decl {float* sample;} {public
   }
   decl {int mixmono;} {}
-} 
+}
 
 class MasterChannelControl {open
 } {
@@ -1118,7 +1118,7 @@ parentui()->mix_mono->redraw();} {}
   } {
     code {return data->mixmono;} {}
   }
-} 
+}
 
 class MasterChannelUI {open : {public Fl_Group}
 } {
@@ -1170,7 +1170,7 @@ make_window();} {}
   } {
     code {delete control;} {}
   }
-} 
+}
 
 class MixerData {open
 } {
@@ -1183,16 +1183,16 @@ class MixerData {open
   }
   decl {double fadermult[2];} {public
   }
-  decl {__uint32 samplerate;} {public
+  decl {uint32_t samplerate;} {public
   }
   decl {int selectedchannel;} {public
   }
   decl {double fadervalue;} {public
   }
-  decl {__uint32 delaybuffersam;} {public
+  decl {uint32_t delaybuffersam;} {public
   }
   decl {int bypass;} {}
-} 
+}
 
 class MixerControl {open
 } {
@@ -1206,13 +1206,13 @@ MixerChannelControl* trackctl[24];
 for (int tracknum=0;tracknum<24;tracknum++) {
 	trackctl[tracknum]=parentui()->mixerchannel[tracknum]->control;
 	trackon[tracknum]=1; // normal
-	MixerChannelControl* track=trackctl[tracknum];	
+	MixerChannelControl* track=trackctl[tracknum];
 	if (track->issolo()!=0) {
 		solo=1;
 		trackon[tracknum]++;
 	}
 	if (track->ismute()!=0) {
-		trackon[tracknum]--;	
+		trackon[tracknum]--;
 	}
 	track->eq_enabled(data->eqon);
 	track->pan_enabled(1-(parentui()->fader_master->control->mixmono()));
@@ -1223,17 +1223,17 @@ stereosample sam;
 for (int i=0;i<frames;i++) {
    float outleft=0;
    float outright=0;
-   
- 
+
+
    for (int j=0;j<24 /* tracks */;j++) {
    	if (!(trackon[j]>solo)) continue;
 	MixerChannelControl* track=trackctl[j];
 
    	track->getsample(&sam,i);
-	
+
    	outleft+=sam.left;
-	outright+=sam.right;	
-   }   
+	outright+=sam.right;
+   }
    outleft*=parentui()->fader_master->control->getfadermult(0);
    outright*=parentui()->fader_master->control->getfadermult(1);
 
@@ -1248,7 +1248,7 @@ for (int i=0;i<frames;i++) {
    } else {
    	if (outright<-1) outright=-1;
    }
-   
+
 
    if (fabs(outleft) > parentui()->fader_master->control->trackpeak(0)) {
    	parentui()->fader_master->control->trackpeak(0,fabs(outleft));
@@ -1256,7 +1256,7 @@ for (int i=0;i<frames;i++) {
    if (fabs(outright) > parentui()->fader_master->control->trackpeak(1)) {
    	parentui()->fader_master->control->trackpeak(1,fabs(outright));
    }
-   
+
    /* / tape saturation emulation
    if (parentui()->tapesaton->value()==1)
    {
@@ -1279,9 +1279,9 @@ for (int i=0;i<frames;i++) {
 	   	}
 	}
 	outleft=myleft/tapewidth;
-	outright=myright/tapewidth;	
+	outright=myright/tapewidth;
    } */
-   data->mixermasterout[i*25+0]=outleft;   
+   data->mixermasterout[i*25+0]=outleft;
    data->mixermasterout[i*25+1]=outright;
 }} {}
   }
@@ -1400,12 +1400,12 @@ if (!to_out) {
 
 for (int i=0;i<24;i++) {
 	MixerChannelControl* track=parentui()->mixerchannel[i]->control;
-	to_out << "[Track="<<i+1<<"]" <<endl;	
-	to_out << "solo=" << track->solo() << endl;	
-	to_out << "mute=" << track->mute() << endl;	
-	to_out << "fader=" << track->fadervalue() << endl;		
+	to_out << "[Track="<<i+1<<"]" <<endl;
+	to_out << "solo=" << track->solo() << endl;
+	to_out << "mute=" << track->mute() << endl;
+	to_out << "fader=" << track->fadervalue() << endl;
 	to_out << "pan=" << track->panvalue() << endl;
-	
+
 	for (int j=0;j<eqperchan;j++) {
 		to_out << "eq_on[" << j << "]=" << track->eq_on(j) << endl;
 		to_out << "eq_freq[" << j << "]=" << track->eq_freq(j) << endl;
@@ -1420,7 +1420,7 @@ to_out << "mono=" << parentui()->fader_master->control->mixmono() << endl;
 to_out << "fader=" << parentui()->fader_master->control->fadervalue()<< endl;
 
 to_out.flush();
-to_out.close(); 
+to_out.close();
 return NULL;} {}
   }
   Function {savetrackmix(string* strfile,int base0track)} {return_type {string*}
@@ -1435,12 +1435,12 @@ if (!to_out) {
 int i=base0track;
 
 	MixerChannelControl* track=parentui()->mixerchannel[i]->control;
-	to_out << "[Track="<<i+1<<"]" <<endl;	
-	to_out << "solo=" << track->solo() << endl;	
-	to_out << "mute=" << track->mute() << endl;	
-	to_out << "fader=" << track->fadervalue() << endl;		
+	to_out << "[Track="<<i+1<<"]" <<endl;
+	to_out << "solo=" << track->solo() << endl;
+	to_out << "mute=" << track->mute() << endl;
+	to_out << "fader=" << track->fadervalue() << endl;
 	to_out << "pan=" << track->panvalue() << endl;
-	
+
 	for (int j=0;j<eqperchan;j++) {
 		to_out << "eq_on[" << j << "]=" << track->eq_on(j) << endl;
 		to_out << "eq_freq[" << j << "]=" << track->eq_freq(j) << endl;
@@ -1450,7 +1450,7 @@ int i=base0track;
 	}
 
 to_out.flush();
-to_out.close(); 
+to_out.close();
 return NULL;} {}
   }
   Function {loadmix(string* strfile)} {open return_type {string*}
@@ -1459,7 +1459,7 @@ return NULL;} {}
 string line;
 int savechan=selectedchannel();
 bool master=false;
-while (!(from_in.eof())) 
+while (!(from_in.eof()))
 {
 	getline(from_in,line);
 	if (line=="") continue;
@@ -1478,11 +1478,11 @@ while (!(from_in.eof()))
 		if (line.substr(0,5)=="mono=") {
 			parentui()->fader_master->control->mixmono(Convert::str2long(line.substr(5,1)));
 			continue;
-		}	
+		}
 		if (line.substr(0,5)=="eqon=") {
-			this->eq_on(Convert::str2long(line.substr(5,1)));		
+			this->eq_on(Convert::str2long(line.substr(5,1)));
 			continue;
-		}			
+		}
 	}
 	if (line.substr(0,5)=="solo=") {
 //		mixsolo[this->selectedchannel]->value(Convert::str2long(line.substr(5,1)));
@@ -1497,7 +1497,7 @@ while (!(from_in.eof()))
 	if (line.substr(0,4)=="pan=") {
 		track->panvalue(Convert::str2dbl(line.substr(4,10)));
 		continue;
-	}	
+	}
 	if ((line.substr(0,8)=="eq_freq[")
 		&&(line.substr(9,2)=="]="))
 	{
@@ -1505,7 +1505,7 @@ while (!(from_in.eof()))
 		double freq=Convert::str2dbl(line.substr(11,10));
 		track->eq_freq(whicheq,freq);
 		continue;
-	
+
 	}
 	if ((line.substr(0,8)=="eq_gain[")
 		&&(line.substr(9,2)=="]="))
@@ -1514,7 +1514,7 @@ while (!(from_in.eof()))
 		double gain=Convert::str2dbl(line.substr(11,10));
 		track->eq_gain(whicheq,gain);
 		continue;
-	
+
 	}
 	if ((line.substr(0,5)=="eq_Q[")
 		&&(line.substr(6,2)=="]="))
@@ -1522,7 +1522,7 @@ while (!(from_in.eof()))
 		int whicheq=Convert::str2long(line.substr(5,1));
 		double Q=Convert::str2dbl(line.substr(8,10));
 		track->eq_Q(whicheq,Q);
-		continue;	
+		continue;
 	}
 	if ((line.substr(0,6)=="eq_on[")
 		&&(line.substr(7,2)=="]="))
@@ -1530,21 +1530,21 @@ while (!(from_in.eof()))
 		int whicheq=Convert::str2long(line.substr(6,1));
 		int onoff=Convert::str2long(line.substr(9,10));
 		track->eq_on(whicheq,onoff);
-		continue;	
-	}	
+		continue;
+	}
 	if (line.substr(0,6)=="fader=") {
 		if (master) {
-		   this->fadervalue(Convert::str2dbl(line.substr(6,10)));		
-		} 
+		   this->fadervalue(Convert::str2dbl(line.substr(6,10)));
+		}
 		else
-		{			
+		{
 		   track->fadervalue(Convert::str2dbl(line.substr(6,10)));
 
 		}
 
 		continue;
 	}
-	
+
 	// Unknown setting. Will be ignored.
 }
 this->selectedchannel(savechan);
@@ -1558,7 +1558,7 @@ return NULL;} {selected
     code {fstream from_in(strfile->c_str(),ios::in);
 string line;
 int savechan=base0track;
-while (!(from_in.eof())) 
+while (!(from_in.eof()))
 {
 	getline(from_in,line);
 	if (line=="") continue;
@@ -1579,7 +1579,7 @@ while (!(from_in.eof()))
 	if (line.substr(0,4)=="pan=") {
 		track->panvalue(Convert::str2dbl(line.substr(4,10)));
 		continue;
-	}	
+	}
 	if ((line.substr(0,8)=="eq_freq[")
 		&&(line.substr(9,2)=="]="))
 	{
@@ -1587,7 +1587,7 @@ while (!(from_in.eof()))
 		double freq=Convert::str2dbl(line.substr(11,10));
 		track->eq_freq(whicheq,freq);
 		continue;
-	
+
 	}
 	if ((line.substr(0,8)=="eq_gain[")
 		&&(line.substr(9,2)=="]="))
@@ -1596,7 +1596,7 @@ while (!(from_in.eof()))
 		double gain=Convert::str2dbl(line.substr(11,10));
 		track->eq_gain(whicheq,gain);
 		continue;
-	
+
 	}
 	if ((line.substr(0,5)=="eq_Q[")
 		&&(line.substr(6,2)=="]="))
@@ -1604,7 +1604,7 @@ while (!(from_in.eof()))
 		int whicheq=Convert::str2long(line.substr(5,1));
 		double Q=Convert::str2dbl(line.substr(8,10));
 		track->eq_Q(whicheq,Q);
-		continue;	
+		continue;
 	}
 	if ((line.substr(0,6)=="eq_on[")
 		&&(line.substr(7,2)=="]="))
@@ -1612,13 +1612,13 @@ while (!(from_in.eof()))
 		int whicheq=Convert::str2long(line.substr(6,1));
 		int onoff=Convert::str2long(line.substr(9,10));
 		track->eq_on(whicheq,onoff);
-		continue;	
-	}	
+		continue;
+	}
 	if (line.substr(0,6)=="fader=") {
 		track->fadervalue(Convert::str2dbl(line.substr(6,10)));
 		continue;
 	}
-	
+
 }
 this->selectedchannel(savechan);
 from_in.close();
@@ -1635,7 +1635,7 @@ for (int tracknum=0;tracknum<24;tracknum++) {
 // update and redraw meterlevels object
 pui->fader_master->control->updatemeters();} {}
   }
-  Function {samplerate(__uint32 p_samplerate)} {open return_type void
+  Function {samplerate(uint32_t p_samplerate)} {open return_type void
   } {
     code {data->samplerate=p_samplerate;
 
@@ -1645,7 +1645,7 @@ for (int tracknum=0;tracknum<24;tracknum++) {
 	pui->mixerchannel[tracknum]->control->samplerate(p_samplerate);
 }} {}
   }
-  Function {samplerate()} {open return_type __uint32
+  Function {samplerate()} {open return_type uint32_t
   } {
     code {return data->samplerate;} {}
   }
@@ -1669,7 +1669,7 @@ parentui()->eqon->redraw();} {}
 parentui()->bypass->value(onoff);
 parentui()->bypass->redraw();} {}
   }
-} 
+}
 
 class MixerUI {open : {public Fl_Group}
 } {
@@ -1958,7 +1958,7 @@ switch (o->value())
 {
 	case 0:
 		eqgroup->activate();
-		channelgroup->activate();		
+		channelgroup->activate();
 	break;
 	case 1:
 		eqgroup->deactivate();
@@ -1990,10 +1990,10 @@ this->window=(Fl_Window*)(this->make_window());} {}
     code {int starty=(mixerchannel[0]->y());
 int startx=(mixerchannel[0]->x());
 fader_master->clear_visible_focus();
-for (int i=1;i<=24;i++) 
+for (int i=1;i<=24;i++)
 {
    if (i==1) {
-   	mixerchannel[i-1]->control->channelselect(1); 
+   	mixerchannel[i-1]->control->channelselect(1);
    }
    mixerchannel[i-1]->position(startx+((i-1)*23),starty);
 //   mixerchannel[i-1]->size(mixerchannel[0]->w(),mixerchannel[0]->h());
@@ -2001,7 +2001,7 @@ for (int i=1;i<=24;i++)
    mixerchannel[i-1]->control->channel_number(i);
 
    mixerchannel[i-1]->control->parentmixercontrol(this->control);
-   
+
    // set values on freq/gain displays:
    mixerchannel[i-1]->control->eq_freq(0,mixerchannel[i-1]->control->eq_freq(0));
    mixerchannel[i-1]->control->eq_freq(1,mixerchannel[i-1]->control->eq_freq(1));
@@ -2021,10 +2021,10 @@ for (int i=1;i<=24;i++)
 //   eq_on[(i-1)*eqperchan+0]=eqon1->value();
 //   eq_on[(i-1)*eqperchan+1]=eqon2->value();
 //   eq_on[(i-1)*eqperchan+2]=eqon3->value();
-//   eq_on[(i-1)*eqperchan+3]=eqon4->value();         
+//   eq_on[(i-1)*eqperchan+3]=eqon4->value();
 //   for (int j=0;j<4;j++) {
 //   	eq_gain[(i-1)*eqperchan+j]=0;
-//   	
+//
 // 	eq_Q[(i-1)*eqperchan+j]=1;
 //	eq_type[(i-1)*eqperchan+j]=7;
 //   }
@@ -2075,7 +2075,7 @@ switch (chooser.show()) {
 	default:
 		if (chooser.filename()) {
 			string* cfilename=new string(chooser.filename());
-		
+
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
 			hd24utils::setlastdir("mixdir",fpath->c_str());
@@ -2108,7 +2108,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=ui->confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -2122,9 +2122,9 @@ switch (chooser.show()) {
 		delete fpath;
 		if (!anyerrors) {
 			fl_message("Mix file saved successfully.");
-		} else {	
+		} else {
 			delete anyerrors;
-			fl_message("Could not write mix file. Access denied? Disk full?");	
+			fl_message("Could not write mix file. Access denied? Disk full?");
 		}
 		break;
 }
@@ -2148,13 +2148,13 @@ switch (chooser.show()) {
 	default:
 		if (chooser.filename()) {
 			string* cfilename=new string(chooser.filename());
-		
+
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
 			hd24utils::setlastdir("mixdir",fpath->c_str());
-			control->loadtrackmix(cfilename,control->selectedchannel());				
+			control->loadtrackmix(cfilename,control->selectedchannel());
 			delete fpath;
-			delete cfilename;			
+			delete cfilename;
 		}
 		break;
 }} {}
@@ -2181,7 +2181,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=ui->confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -2194,13 +2194,13 @@ switch (chooser.show()) {
 		delete strfile;
 		if (!anyerrors) {
 			fl_message("Mix file saved successfully.");
-		} else {	
+		} else {
 			delete anyerrors;
-			fl_message("Could not write mix file. Access denied? Disk full?");	
+			fl_message("Could not write mix file. Access denied? Disk full?");
 		}
 		delete fpath;
 		break;
 }
 delete mixdir;} {}
   }
-} 
+}
