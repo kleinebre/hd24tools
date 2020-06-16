@@ -1,14 +1,14 @@
 using namespace std;
 #include <iostream>
+#include <stdint.h>
 #include <portaudio.h>
 #include "portaudiotest.h"
 #define PA_FRAMESPERBUF 512
-#define __uint32 unsigned long
 
 int HD24UserInterface::portaudio_process(
 	const void *inputBuffer, 
 	void *outputBuffer, 
-	__uint32 nframes, 
+	uint32_t nframes, 
 	const PaStreamCallbackTimeInfo* timeinfo,
 	PaStreamCallbackFlags, 
 	void *userData)

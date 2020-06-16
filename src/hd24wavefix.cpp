@@ -3,9 +3,6 @@ using namespace std;
 #define FILTERBUFSIZE 6
 #define WEIGHTMULT 2
 #include "lib/config.h"
-#ifndef __uint32
-#define __uint32 unsigned int
-#endif
 #include <iostream>
 #include <algorithm>
 #include <cctype>
@@ -375,12 +372,12 @@ void simplecopyaudio(FILE* infile,FILE* outfile,int mask)
 	fseek(infile,HEADERSIZE,SEEK_SET);
 	int readcount;
 
-	__uint32 totbytes=0;
+	uint32_t totbytes=0;
 
-	__uint32 refsams[FILTERBUFSIZE];
+	uint32_t refsams[FILTERBUFSIZE];
 	int srefsam;
 	int dist;
-	__uint32 damagedsam;
+	uint32_t damagedsam;
 	int blocknum=0;
 	do {
 		shiftaudiobuf();
@@ -487,7 +484,7 @@ void simplecopyaudio(FILE* infile,FILE* outfile,int mask)
 			{
 				int testsam=damagedsam^(maskperm[perm]<<8);
 				if (testsam>0x7fffff) testsam-=0x1000000;
-				__uint32 diff=0;
+				uint32_t diff=0;
 				if (print) { printf("calc distance between %d (%x) with %d (%x)\n",(int)refsam,(int)refsam,(int)testsam,(int)testsam); }
 
 				int srefsam=refsam;
@@ -529,7 +526,7 @@ void simplecopyaudio(FILE* infile,FILE* outfile,int mask)
 			{
 				int testsam=damagedsam^(maskperm[perm]);
 				if (testsam>0x7fffff) testsam-=0x1000000;
-				__uint32 diff=0;
+				uint32_t diff=0;
 				if (print) { printf("calc distance between %d (%x) with %d (%x)\n",(int)refsam,(int)refsam,(int)testsam,(int)testsam); }
 
 				int srefsam=refsam;
@@ -578,8 +575,8 @@ void dropbadaudio(FILE* infile,FILE* outfile,int mask)
 {
 	fseek(infile,HEADERSIZE,SEEK_SET);
 	int readcount;
-	__uint32 refsam;
-	__uint32 damagedsam;
+	uint32_t refsam;
+	uint32_t damagedsam;
 	int blocknum=0;
 	do {
 		shiftaudiobuf();

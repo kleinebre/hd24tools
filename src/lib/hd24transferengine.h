@@ -93,14 +93,14 @@ private:
 	void setstatus(void* ui,string* message,double percent);
         void generatetimestamp();
 
-	void openbuffers(unsigned char** audiobuf,unsigned int channels,unsigned int bufsize);
+	void openbuffers(unsigned char** audiobuf,uint32_t channels,uint32_t bufsize);
 	double update_eta(const char* etamessage,uint64_t translen,
 				uint64_t currbytestransferred,
 				uint64_t totbytestransferred,
 				uint64_t totbytestotransfer,double oldpct);
-	void closebuffers(unsigned char** audiobuf,unsigned int channels);
+	void closebuffers(unsigned char** audiobuf,uint32_t channels);
 	void writerawbuf(hd24sndfile* filehandle,unsigned char* buf,long subblockbytes);
-	void flushbuffer(hd24sndfile** filehandle,unsigned char** buffer,uint32_t flushbytes,unsigned int channels);
+	void flushbuffer(hd24sndfile** filehandle,unsigned char** buffer,uint32_t flushbytes,uint32_t channels);
 
 
 	bool overwritegivesproblems(hd24song* thesong,int partnum);
@@ -175,12 +175,12 @@ public:
 	int64_t transfer_to_pc();
 	int64_t transfer_to_hd24();
 
-	bool openinputfiles(SNDFILE** filehandle,SF_INFO* sfinfoin,unsigned int channels);
-	void closeinputfiles(SNDFILE** filehandle,unsigned int channels);
-	bool dontopenoutputfiles(hd24sndfile** filehandle,unsigned int channels,unsigned int partnum,int prefix); //HACK
+	bool openinputfiles(SNDFILE** filehandle,SF_INFO* sfinfoin,uint32_t channels);
+	void closeinputfiles(SNDFILE** filehandle,uint32_t channels);
+	bool dontopenoutputfiles(hd24sndfile** filehandle,uint32_t channels,uint32_t partnum,int prefix); //HACK
 	
-	bool openoutputfiles(hd24sndfile** filehandle,unsigned int channels,unsigned int partnum,int prefix);
-	void closeoutputfiles(hd24sndfile** filehandle,unsigned int channels);
+	bool openoutputfiles(hd24sndfile** filehandle,uint32_t channels,uint32_t partnum,int prefix);
+	void closeoutputfiles(hd24sndfile** filehandle,uint32_t channels);
 	string* generate_filename(int tracknum,int partnum,int prefix);
 	void sizelimit(int64_t llsizelimit);
 	int64_t sizelimit();

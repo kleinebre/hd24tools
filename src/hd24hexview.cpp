@@ -89,9 +89,9 @@ void hd24seek(FSHANDLE devhd24, uint64_t seekpos)
 }
 
 // Calculate a 32-bit checksum for a block
-long unsigned int calcblockchecksum(hd24raw* rawdevice, unsigned long firstsector, unsigned long endsector)
+long uint32_t calcblockchecksum(hd24raw* rawdevice, unsigned long firstsector, unsigned long endsector)
 {
-	long unsigned int checksum32 = 0;
+	long uint32_t checksum32 = 0;
 	unsigned char origblock[5120];
 
 	for (unsigned long k = firstsector; k < endsector; k++)
@@ -208,7 +208,7 @@ string getbinstr(string tofind)
 		string binstr="";
 		string tmp="";
 		tofind+=" ";
-		unsigned int i;
+		uint32_t i;
 		for (i=0;i<tofind.length();i++) {
 			string onechar=tofind.substr(i,1);
 			if (onechar!=" ") {
@@ -315,9 +315,9 @@ long editbytes(unsigned char* bootblock,string editstr)
 
 void compareblock(hd24raw* rawdevice,unsigned long firstsector,unsigned long endsector,long current)
 {
-	unsigned int i;
-	unsigned int j;
-	unsigned int k;
+	uint32_t i;
+	uint32_t j;
+	uint32_t k;
 	unsigned char origblock[5120];
 	unsigned char destblock[5120];
 	string* startoff=Convert::int64tohex((uint64_t)firstsector*512);
@@ -388,7 +388,7 @@ void compareblock(hd24raw* rawdevice,unsigned long firstsector,unsigned long end
 
 long scanforblock(hd24raw* rawdevice,string tofind,unsigned long firstsector,unsigned long endsector,long current) 
 {
-	unsigned int i;
+	uint32_t i;
 	unsigned char bootblock[5120];
 	tofind=getbinstr(tofind);
 	if (tofind=="") return current;

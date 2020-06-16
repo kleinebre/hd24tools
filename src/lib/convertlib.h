@@ -18,7 +18,7 @@ class Convert
 		static double		str2dbl(string hexstr);
 		static long		hex2long(string hexstr);
 		static string*		byte2hex(unsigned char x);
-		static string*		int2str(int x,unsigned int pad,string padchar);
+		static string*		int2str(int x,uint32_t pad,string padchar);
 		static string*		int2str(int x);
 		static string*		int32tostr(uint32_t x);
 		static string*		int64tostr(int64_t x);
@@ -27,8 +27,8 @@ class Convert
 		static string*		readstring(unsigned char * orig,int offset,int len);
 		static string*		padright(string & strinput,int inlen,string strpad);
 		static string*		padleft(string & strinput,int inlen,string strpad);
-		static unsigned int	getint32(unsigned char * buf,int loc);
-		static unsigned int	getint24(unsigned char * buf,int loc);
+		static uint32_t	getint32(unsigned char * buf,int loc);
+		static uint32_t	getint24(unsigned char * buf,int loc);
 		static void		setint32(unsigned char * buf,int loc,uint32_t newval);
 		static void 		setfloat80(unsigned char * buf, int loc, uint32_t newval);	/* Only for use in AIFF files */
 		static unsigned char	hex2byte(string hexstr);
