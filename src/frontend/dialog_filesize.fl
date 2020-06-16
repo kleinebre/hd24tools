@@ -1,18 +1,18 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
-header_name {.h} 
+version 1.0110
+header_name {.h}
 code_name {.cxx}
 decl {\#include <hd24fs.h>} {public
-} 
+}
 
 decl {\#include <FL/fl_ask.H>} {public
-} 
+}
 
 class dialog_filesize {open
 } {
   decl {int buttonclicked;} {public
   }
-  decl {__uint32 lastsector;} {public
+  decl {uint32_t lastsector;} {public
   }
   decl {int imagetype;} {public
   }
@@ -30,22 +30,22 @@ class dialog_filesize {open
 //strncpy(&dest[0],currname->value(),64);
 //dest[64]='\\0';
 //itemname=new string(dest);
-__uint64 sizeval=strtol(filesize->value(),0,10);
+uint64_t sizeval=strtol(filesize->value(),0,10);
 switch (sizeunit->value()) {
 	case 0:
-		sizeval*=2048; 
+		sizeval*=2048;
 		break;
 	case 1:
-		sizeval*=1024*2048; 
+		sizeval*=1024*2048;
 		break;
-	default:	
+	default:
 		break;
 }
 sizeval--;
 if (sizeval>0xFFFFFFFF) {
 	sizeval=0xFFFFFFFF;
 }
-this->lastsector=(__uint32)(sizeval & 0xFFFFFFFF);
+this->lastsector=(uint32_t)(sizeval & 0xFFFFFFFF);
 Fl_Window * x = Fl::first_window();
 x->~Fl_Window();}
         xywh {185 110 70 20} labelsize 12
@@ -164,4 +164,4 @@ filesize->deactivate();}
       }
     }
   }
-} 
+}

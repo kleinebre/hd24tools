@@ -1,4 +1,4 @@
-#define UTILDEBUG 0
+#define UTILDEBUG 1
 #ifdef DARWIN
 #	define creat64 creat
 #	define open64 open
@@ -117,9 +117,9 @@ bool hd24utils::gencatalog_showlocs(hd24song* currentsong,string* strcatalog,
 		&& (locmode!=hd24utils::LOCMODE_NONZERO)
 	) return false;
 	bool havelocpoint=false;
-	for (__uint32 i=0;i<currentsong->locatepointcount();i++)
+	for (uint32_t i=0;i<currentsong->locatepointcount();i++)
 	{
-		__uint32 locpos=currentsong->getlocatepos(i);
+		uint32_t locpos=currentsong->getlocatepos(i);
 		if (locpos==0) {
 			if (locmode==hd24utils::LOCMODE_NONZERO)
 			{
@@ -172,7 +172,7 @@ bool hd24utils::gencatalog_showsongsize(hd24song* currentsong,string* strcatalog
 	
 	if ((sizemode & SIZEMODE_ACTUAL) == SIZEMODE_ACTUAL )
 	{
-            __uint64 i=currentsong->songsize_in_bytes();
+            uint64_t i=currentsong->songsize_in_bytes();
 	    i>>=20;
             string* songsize=Convert::int2str(i);
 	    string* loc2=Convert::padleft(*songsize,12," ");		
@@ -187,7 +187,7 @@ bool hd24utils::gencatalog_showsongsize(hd24song* currentsong,string* strcatalog
 	*strcatalog+="  ";
 	if ((sizemode & SIZEMODE_ALLOCATED) == SIZEMODE_ALLOCATED )
 	{
-	    __uint64 i=currentsong->bytes_allocated_on_disk();
+	    uint64_t i=currentsong->bytes_allocated_on_disk();
 	    i>>=20;
             string* songsize=Convert::int2str(i);
 	    string* loc2=Convert::padleft(*songsize,12," ");
@@ -436,19 +436,19 @@ string* hd24utils::printcatalog(hd24fs* currenthd24,int catalogoptions)
 
 
 void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* targetbuf,
-		__uint32 totbytes,__uint32 bytespersam,__uint32 trackwithingroup,__uint32 trackspergroup)
+		uint32_t totbytes,uint32_t bytespersam,uint32_t trackwithingroup,uint32_t trackspergroup)
 {
-	__uint32 samplenum;
-	__uint32 totsams=totbytes/bytespersam;
-	__uint32 trackoff=(trackwithingroup*bytespersam);
-	__uint32 q=0;
+	uint32_t samplenum;
+	uint32_t totsams=totbytes/bytespersam;
+	uint32_t trackoff=(trackwithingroup*bytespersam);
+	uint32_t q=0;
 	// unroll loop for bytespersam=1,2,3
 	switch (bytespersam) 
 	{
 		case 3:
 		for (samplenum=0;samplenum<totsams;samplenum++)
 		{
-			__uint32 samoff=(samplenum*bytespersam);
+			uint32_t samoff=(samplenum*bytespersam);
 			q=trackspergroup*samoff+trackoff;
 			targetbuf[q++]=sourcebuf[samoff];
 	                targetbuf[q++]=sourcebuf[samoff+1];
@@ -458,7 +458,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 		case 1:
 			for (samplenum=0;samplenum<totsams;samplenum++)
 			{
-				__uint32 samoff=(samplenum*bytespersam);
+				uint32_t samoff=(samplenum*bytespersam);
 				q=trackspergroup*samoff+trackoff;
 				targetbuf[q]=sourcebuf[samoff];
 			}	
@@ -466,7 +466,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 		case 2:
 			for (samplenum=0;samplenum<totsams;samplenum++)
 			{
-				__uint32 samoff=(samplenum*bytespersam);
+				uint32_t samoff=(samplenum*bytespersam);
 				q=trackspergroup*samoff+trackoff;
 				targetbuf[q++]=sourcebuf[samoff];
 	                        targetbuf[q++]=sourcebuf[samoff+1];
@@ -475,9 +475,9 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 		default:
 			for (samplenum=0;samplenum<totsams;samplenum++)
 			{
-				__uint32 samoff=(samplenum*bytespersam);
+				uint32_t samoff=(samplenum*bytespersam);
 				q=trackspergroup*samoff;
-				for (__uint32 j=0; j<bytespersam; j++) {
+				for (uint32_t j=0; j<bytespersam; j++) {
 				   targetbuf[q+j+trackoff]=sourcebuf[samoff+j];
 				}
 			}
@@ -580,7 +580,7 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 	#endif
 	if (hd24fs::isinvalidhandle(handle)) {
 #if (UTILDEBUG==1)
-		cout << "Cannot open file "<<filename <<" for writing. Access denied?" << endl;
+		cout << "Cannot open file "<<outputfilename <<" for writing. Access denied?" << endl;
 #endif
 		return 1;		
 	}
@@ -607,7 +607,7 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 			currenthd24->readsectors_noheader(currenthd24,i,bootblock,1); // raw reading 
 		}
 #if defined(LINUX) || defined(DARWIN)
-		__uint64 targetoff=i;
+		uint64_t targetoff=i;
 		targetoff-=firstsector;
 		targetoff*=512;
 		ssize_t byteswritten=0;
@@ -622,9 +622,9 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 #ifdef WINDOWS
 		//DWORD dummy;
 		//long bytes=0;
-		__uint64 targetoff=i;
+		uint64_t targetoff=i;
 		targetoff-=firstsector;
-		__uint64 byteswritten=0;
+		uint64_t byteswritten=0;
 		if (currenthd24!=NULL) {
 			byteswritten=currenthd24->writesectors(handle,targetoff,bootblock,1);
 			newi++;
@@ -681,7 +681,7 @@ int hd24utils::savedriveimage(hd24fs* currenthd24,string* imagefilename,char* me
 	return savedrivesectors(currenthd24,imagefilename,firstsector,endsector,message,cancel);
 }
 
-int hd24utils::newdriveimage(string* imagefilename,__uint32 endsector,char* message,int* cancel) {
+int hd24utils::newdriveimage(string* imagefilename,uint32_t endsector,char* message,int* cancel) {
 	if (endsector<1353963)
 	{
 		// min. number of sectors is 1353964
@@ -708,8 +708,7 @@ cout << "saved drive sectors, creating new fs object to format" <<endl;
 #endif
 	hd24fs* newfs=new hd24fs((const char*)NULL,hd24fs::MODE_RDWR,imagefilename,true);
 #if (UTILDEBUG==1)
-	cout << "Last sectornum of newly created fs=" << newfs->getlastsectornum() << endl
- << "write enabling fs" <<endl;
+	// cout << "Last sectornum of newly created fs=" << newfs->getlastsectornum() << endl << "write enabling fs" <<endl;
 #endif
 	newfs->write_enable();
 #if (UTILDEBUG==1)
@@ -774,6 +773,7 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 #endif
 	while (last==0)
 	{
+                cout << "." << endl;
 		unsigned int idx=strpath->find(pathsep->c_str());
 		if (idx==string::npos) {
 			last=1;

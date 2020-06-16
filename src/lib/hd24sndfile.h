@@ -1,7 +1,7 @@
 #ifndef __hd24sndfile_h__
 #define __hd24sndfile_h__
 class SoundFileWrapper;
-#include <config.h>
+#include <stdint.h>
 #include <fstream>
 using std::ofstream;
 #include <sharedlibs.h>
@@ -29,9 +29,9 @@ public:
 	void open(const char* filename,int filemode,SF_INFO* infoblock,
 			SoundFileWrapper* _soundfile);
 	void open(const char* filename,int filemode,SF_INFO* infoblock);
-	void writerawbuf(unsigned char* buf,__uint32 subblockbytes);
+	void writerawbuf(unsigned char* buf,uint32_t subblockbytes);
 	void close();
-	void write_float(float* buf,__uint32 frames);
+	void write_float(float* buf,uint32_t frames);
 };
 
 #endif

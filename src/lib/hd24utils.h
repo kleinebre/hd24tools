@@ -18,7 +18,7 @@
 #	define FSHANDLE_INVALID -1
 #endif
 
-#include <config.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string>
 #include <FL/FLTKstuff.H>
@@ -91,9 +91,9 @@ class hd24utils
 		static string* printcatalog(hd24fs* currenthd24,int locmode);
 		static int saveheader(hd24fs* currenthd24,string* headerfilename);
 		static int savedriveimage(hd24fs* currenthd24,string* imagefilename, char* message,int* cancel);
-		static int newdriveimage(string* imagefilename,__uint32 endsector,char* message,int* cancel);
+		static int newdriveimage(string* imagefilename,uint32_t endsector,char* message,int* cancel);
 		static int savedrivesectors(hd24fs* currenthd24,string* imagefilename,unsigned long startsector,unsigned long endsector,char* message,int* cancel);
-		static void interlacetobuffer(unsigned char* sourcebuf,unsigned char* targetbuf, __uint32 totbytes,__uint32 bytespersam,__uint32 trackwithingroup,__uint32 trackspergroup);
+		static void interlacetobuffer(unsigned char* sourcebuf,unsigned char* targetbuf, uint32_t totbytes,uint32_t bytespersam,uint32_t trackwithingroup,uint32_t trackspergroup);
 		static bool isdir(const char * name);
 		static bool isfile(const char * name);
 #ifdef WINDOWS

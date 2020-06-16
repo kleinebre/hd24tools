@@ -1,6 +1,6 @@
 #include "smpte.h"
 #include "memutils.h"
-SMPTEgenerator::SMPTEgenerator(__uint32 p_samplerate)
+SMPTEgenerator::SMPTEgenerator(uint32_t p_samplerate)
 {
 #if (SMPTE_DEBUG==1)
 	cout << "Construct SMPTE generator with samrate=" << p_samplerate << endl;
@@ -58,14 +58,14 @@ void SMPTEgenerator::recalcrates()
 
 }
 
-void SMPTEgenerator::setsamplerate(__uint32 p_samplerate)
+void SMPTEgenerator::setsamplerate(uint32_t p_samplerate)
 {
 	this->samplerate=p_samplerate;
 	this->recalcrates();
 	return;
 }
 
-void SMPTEgenerator::setframerate(__uint32 p_framerate)
+void SMPTEgenerator::setframerate(uint32_t p_framerate)
 {
 	this->framerate=p_framerate;
 	this->recalcrates();
@@ -188,24 +188,24 @@ int SMPTEgenerator::modulate(int currbitval,int bitnum,int halfbit)
 	return this->prevoutval;
 }
 
-int SMPTEgenerator::getbit(__uint32 insamnum)
+int SMPTEgenerator::getbit(uint32_t insamnum)
 {
 
 	this->samplesperbit=(int)((this->samplerate)/this->bitspersecond);
 	this->samplesperframe=(int)((this->samplerate)/framerate);
 
-	__uint32 sampleinsecond=insamnum % this->samplerate;
-	__uint32 currentsecond=(insamnum-sampleinsecond)/(this->samplerate);
-	__uint32 currenthour=int(currentsecond/3600);
+	uint32_t sampleinsecond=insamnum % this->samplerate;
+	uint32_t currentsecond=(insamnum-sampleinsecond)/(this->samplerate);
+	uint32_t currenthour=int(currentsecond/3600);
 	currentsecond-=3600*currenthour;
-	__uint32 currentminute=int(currentsecond/60);
+	uint32_t currentminute=int(currentsecond/60);
 	currentsecond-=60*currentminute;
 
-	__uint32 currentframe=(int)(sampleinsecond/this->samplesperframe);
-	__uint32 sampleinframe=sampleinsecond-(currentframe*this->samplesperframe);
-	__uint32 bitinframe=(int)(sampleinframe/this->samplesperbit);
-	__uint32 subbit=(int)(sampleinframe-(bitinframe*this->samplesperbit));
-	__uint32 halfbit=(this->samplesperbit/2);
+	uint32_t currentframe=(int)(sampleinsecond/this->samplesperframe);
+	uint32_t sampleinframe=sampleinsecond-(currentframe*this->samplesperframe);
+	uint32_t bitinframe=(int)(sampleinframe/this->samplesperbit);
+	uint32_t subbit=(int)(sampleinframe-(bitinframe*this->samplesperbit));
+	uint32_t halfbit=(this->samplesperbit/2);
 	if ((bitinframe==0)&&(subbit==0))
 	{	
 		this->haveframe=0;

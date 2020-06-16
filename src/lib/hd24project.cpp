@@ -8,20 +8,20 @@
 #define RESULT_FAIL 1
 #include <hd24utils.h>
 #include "memutils.h"
-void hd24project::initvars(hd24fs* p_parent,__sint32 p_myprojectid)
+void hd24project::initvars(hd24fs* p_parent,int32_t p_myprojectid)
 {
 	this->myprojectid=p_myprojectid;
 	this->parentfs = p_parent;
 	return;
 }
 
-__sint32 hd24project::projectid()
+int32_t hd24project::projectid()
 {
 	return this->myprojectid;
 }
 
-hd24project::hd24project(hd24fs* p_parent, __sint32 p_myprojectid,
-			__uint32 p_projectsector, const char* p_projectname,
+hd24project::hd24project(hd24fs* p_parent, int32_t p_myprojectid,
+			uint32_t p_projectsector, const char* p_projectname,
 			bool isnew) 
 {
 #if (PROJDEBUG == 1) 
@@ -56,7 +56,7 @@ hd24project::hd24project(hd24fs* p_parent, __sint32 p_myprojectid,
 	}
 }
 
-hd24project::hd24project(hd24fs* p_parent, __sint32 p_myprojectid) 
+hd24project::hd24project(hd24fs* p_parent, int32_t p_myprojectid) 
 {
 	// project id is 1-based
 #if (PROJDEBUG == 1) 
@@ -69,7 +69,7 @@ hd24project::hd24project(hd24fs* p_parent, __sint32 p_myprojectid)
 		return;
 	}
 	parentfs = p_parent;
-	__uint32 projsecnum=p_parent->getprojectsectornum(myprojectid);
+	uint32_t projsecnum=p_parent->getprojectsectornum(myprojectid);
 	if (projsecnum==0) {
 		for (int i=0;i<512;i++) {
 			buffer[i]=0;
@@ -125,12 +125,12 @@ void hd24project::projectname(string newname)
 	return;
 }
 
-unsigned long hd24project::maxsongs() 
+uint32_t hd24project::maxsongs() 
 {
 	return parentfs->maxsongsperproject();
 }
 
-unsigned long hd24project::getsongsectornum(int i) 
+uint32_t hd24project::getsongsectornum(int i) 
 {
 	unsigned int songsec = Convert::getint32(buffer, 
 		PROJINFO_SONGLIST + ((i - 1) * 4));
@@ -138,7 +138,7 @@ unsigned long hd24project::getsongsectornum(int i)
 	return songsec;
 }
 
-void hd24project::setsongsectornum(int i,__uint32 sector) 
+void hd24project::setsongsectornum(int i,uint32_t sector) 
 {
 	Convert::setint32(buffer, 
 		PROJINFO_SONGLIST + ((i - 1) * 4),sector);
@@ -146,7 +146,7 @@ void hd24project::setsongsectornum(int i,__uint32 sector)
 	return;
 }
 
-void hd24project::lastsongid(signed long songid)
+void hd24project::lastsongid(int32_t songid)
 {
 	if (songid<1)
 	{
@@ -170,7 +170,7 @@ void hd24project::lastsongid(signed long songid)
 	return;
 }
 
-signed long hd24project::lastsongid() 
+int32_t hd24project::lastsongid() 
 {
 	unsigned int lastsongsec = Convert::getint32(buffer, PROJINFO_LASTSONG);
 	
@@ -198,7 +198,7 @@ signed long hd24project::lastsongid()
 	return -1;
 }
 
-__uint32 hd24project::songcount() 
+uint32_t hd24project::songcount() 
 {
 	if (this==NULL)
 	{
@@ -211,7 +211,7 @@ __uint32 hd24project::songcount()
 	if (buffer==NULL) {
 		return 0;
 	}
-	__uint32 scount = Convert::getint32(buffer, PROJINFO_SONGCOUNT);
+	uint32_t scount = Convert::getint32(buffer, PROJINFO_SONGCOUNT);
 	
 	if (scount > 99)
 	{
@@ -221,7 +221,7 @@ __uint32 hd24project::songcount()
 	return scount;
 }
 
-hd24song* hd24project::getsong(unsigned long songid) 
+hd24song* hd24project::getsong(uint32_t songid) 
 {
 #if (PROJDEBUG == 1) 
 	cout << "get song " << songid << endl;
@@ -229,7 +229,7 @@ hd24song* hd24project::getsong(unsigned long songid)
 	return new hd24song(this,songid);
 }
 
-void hd24project::save(__uint32 projsector)
+void hd24project::save(uint32_t projsector)
 {
 #if (PROJDEBUG == 1) 
 	cout << "save project info to sector " << projsector << endl;
@@ -252,7 +252,7 @@ void hd24project::save()
 {
 	// This is capable of handling only 1-sector-per-project projects.
 	// save(projsector) is only intended for new projects.
-	__uint32 projsector=parentfs->getprojectsectornum(this->myprojectid);
+	uint32_t projsector=parentfs->getprojectsectornum(this->myprojectid);
 #if (PROJDEBUG == 1) 
 	cout << "save project info to sector " << projsector << endl;
 #endif	
@@ -263,16 +263,16 @@ void hd24project::save()
 	save(projsector);
 }
 
-__uint32 hd24project::getunusedsongslot()
+uint32_t hd24project::getunusedsongslot()
 {
 	// Find the first unused song slot in the current project.
-	__uint32 unusedsongslot=INVALID_SONGENTRY;
+	uint32_t unusedsongslot=INVALID_SONGENTRY;
 
 	int maxsongcount=this->maxsongs();
 	for (int j=1; j<=maxsongcount;j++) 
 	{
 		// get song sector info.
-		__uint32 songsector = getsongsectornum(j);
+		uint32_t songsector = getsongsectornum(j);
 		if (songsector==0) 
 		{
 			unusedsongslot=(j-1);
@@ -283,8 +283,8 @@ __uint32 hd24project::getunusedsongslot()
 	return unusedsongslot;
 }
 
-hd24song* hd24project::createsong(const char* songname,__uint32 logicaltrackcount,
-				  __uint32 samplerate)
+hd24song* hd24project::createsong(const char* songname,uint32_t logicaltrackcount,
+				  uint32_t samplerate)
 {
 	/* This creates a new song (with given songname)
 	   on the drive (if possible).
@@ -297,7 +297,7 @@ hd24song* hd24project::createsong(const char* songname,__uint32 logicaltrackcoun
 		// HD24 doesn't know how to handle over 12 tracks at 88k2+
 		return NULL;
 	}
-	__uint32 songslot=getunusedsongslot();
+	uint32_t songslot=getunusedsongslot();
 	if (songslot==INVALID_SONGENTRY) 
 	{
 		// project is full.
@@ -306,7 +306,7 @@ hd24song* hd24project::createsong(const char* songname,__uint32 logicaltrackcoun
 
 	// Project is not full so there must be unused song sectors
 	// (if not, something seriously fishy is going on).
-	__uint32 newsongsector=this->parentfs->getunusedsongsector();
+	uint32_t newsongsector=this->parentfs->getunusedsongsector();
 	if (newsongsector==0)
 	{
 		// no songsector found (0 is not a valid songsector)
@@ -327,7 +327,7 @@ hd24song* hd24project::createsong(const char* songname,__uint32 logicaltrackcoun
 
 	hd24song::samplerate((unsigned char*)songbuf,samplerate); 
 	hd24song::logical_channels((unsigned char*)songbuf,logicaltrackcount) ;// depends on samplerate
-	__uint32 songsector=newsongsector;
+	uint32_t songsector=newsongsector;
 
 	// - Create the empty song at the songsector 
 	// (2 sectors in size)
@@ -357,13 +357,13 @@ hd24song* hd24project::createsong(const char* songname,__uint32 logicaltrackcoun
 	return getsong(songslot+1);
 }
 
-__uint32 hd24project::deletesong(__uint32 songid) 
+uint32_t hd24project::deletesong(uint32_t songid) 
 {
 	hd24song* songtodel=this->getsong(songid);
 #if (PROJDEBUG == 1)
 	cout << "del song with id " << songid << endl;
 #endif
-	__uint32 songsector=getsongsectornum(songid);
+	uint32_t songsector=getsongsectornum(songid);
 #if (PROJDEBUG == 1)
 	cout << "sector " << songsector << endl;
 #endif
@@ -381,7 +381,7 @@ __uint32 hd24project::deletesong(__uint32 songid)
 
 	// delete song from project list by shifting left
 	// all other songs...
-	for (__uint32 i=songid;i<99;i++) 
+	for (uint32_t i=songid;i<99;i++) 
 	{
 #if (PROJDEBUG == 1)
 	cout << "set new sector for song id " << i <<" to " << getsongsectornum(i+1) << endl;
@@ -389,7 +389,7 @@ __uint32 hd24project::deletesong(__uint32 songid)
 		setsongsectornum(i,getsongsectornum(i+1));
 	}
 	setsongsectornum(99,0); // ...and clearing the last entry.
-	__uint32 scount = Convert::getint32(buffer, PROJINFO_SONGCOUNT);
+	uint32_t scount = Convert::getint32(buffer, PROJINFO_SONGCOUNT);
 	Convert::setint32(buffer,PROJINFO_SONGCOUNT,scount-1);
 #if (PROJDEBUG == 1)
 	cout << "set new song count to " << (scount-1) << endl;
@@ -464,8 +464,8 @@ void hd24project::sort()
 			if (compare>0)
               		{
 				// swap entries
-				__uint32 a=getsongsectornum(j+1);
-				__uint32 b=getsongsectornum(j+2);
+				uint32_t a=getsongsectornum(j+1);
+				uint32_t b=getsongsectornum(j+2);
 				setsongsectornum(j+2,a);
 				setsongsectornum(j+1,b);
 				string* tmp=songnames[j];

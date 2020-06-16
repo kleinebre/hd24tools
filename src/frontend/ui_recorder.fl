@@ -1,87 +1,87 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0110 
-header_name {.h} 
+version 1.0110
+header_name {.h}
 code_name {.cxx}
 decl {\#define MAXSAMRATE 48000} {public
-} 
+}
 
 decl {\#define AUDIOLIB_PORTAUDIO 1} {public
-} 
+}
 
 decl {\#define AUDIOLIB_JACK 2} {public
-} 
+}
 
 decl {\#define AUDIOLIB_SNDFILE 3} {public
-} 
+}
 
 decl {\#define Pi2 (2*3.1415926535897)} {public
-} 
+}
 
-decl {\#include <config.h>} {public
-} 
+decl {\#include <stdint.h>} {public
+}
 
 decl {\#include <string>} {public
-} 
+}
 
 decl {\#include <vector>} {public
-} 
+}
 
 decl {\#include <soundlibs.h>} {public
-} 
+}
 
 decl {\#include <iostream>} {public
-} 
+}
 
 decl {\#include <fstream>} {public
-} 
+}
 
 decl {\#include <FL/FLTKstuff.H>} {public
-} 
+}
 
 decl {\#include <FL/filename.H>} {public
-} 
+}
 
 decl {\#include <convertlib.h>} {public
-} 
+}
 
 decl {\#include <time.h>} {public
-} 
+}
 
 decl {\#include <math.h>} {public
-} 
+}
 
 decl {\#include <hd24fs.h>} {public
-} 
+}
 
 decl {\#include <ui_hd24connect.h>} {public
-} 
+}
 
 decl {\#include <ui_mixer.h>} {public
-} 
+}
 
 decl {class MixerControl;} {public
-} 
+}
 
 decl {\#include <sharedlibs.h>} {public
-} 
+}
 
 decl {class RecorderChannelData;} {public
-} 
+}
 
 decl {class RecorderChannelControl;} {public
-} 
+}
 
 decl {class RecorderChannelUI;} {public
-} 
+}
 
 decl {class RecorderData;} {public
-} 
+}
 
 decl {class RecorderControl;} {public
-} 
+}
 
 decl {class RecorderUI;} {public
-} 
+}
 
 class ScrubWheel {: {public Fl_Roller}
 } {
@@ -149,7 +149,7 @@ return oldval;} {}
   } {
     code {this->ui=p_ui;} {}
   }
-} 
+}
 
 class AudioSystem {open
 } {
@@ -158,9 +158,9 @@ class AudioSystem {open
   decl {\#define AUDIOSYS_FORMAT_INT16 2} {public
   }
   decl {AudioStorage* tape;} {}
-  decl {__uint32 samrate;} {public
+  decl {uint32_t samrate;} {public
   }
-  decl {__uint32 paSamFormat;} {public
+  decl {uint32_t paSamFormat;} {public
   }
   decl {bool closingdown;} {public
   }
@@ -175,8 +175,8 @@ class AudioSystem {open
   decl {PaStreamParameters* outputParameters;} {}
   decl {PaStream* portaudiostream;} {}
   decl {jack_client_t *jackclient;} {}
-  decl {__uint32 jackrate;} {}
-  decl {__uint32 portaudiooffset;} {public
+  decl {uint32_t jackrate;} {}
+  decl {uint32_t portaudiooffset;} {public
   }
   decl {int as_initialized;} {}
   decl {int portaudio_initialized;} {}
@@ -189,7 +189,7 @@ class AudioSystem {open
   decl {jack_port_t *input_port[24];} {}
   decl {long* mtsample;} {}
   decl {bool havestreamtime;} {}
-  decl {__sint64 streamtime;} {public
+  decl {int64_t streamtime;} {public
   }
   Function {AudioSystem(RecorderControl* rec)} {open
   } {
@@ -235,12 +235,12 @@ this->havestreamtime=false;
 
 this->paSamFormat=AUDIOSYS_FORMAT_FLOAT32;} {}
   }
-  Function {currentlocation(__uint32 newpos)} {open return_type void
+  Function {currentlocation(uint32_t newpos)} {open return_type void
   } {
     code {if (tape==NULL) return;
 tape->currentlocation(newpos);} {}
   }
-  Function {currentlocation()} {return_type __uint32
+  Function {currentlocation()} {return_type uint32_t
   } {
     code {if (tape==NULL) return 0;
 return tape->currentlocation();} {}
@@ -279,7 +279,7 @@ cout << "no libjack" << endl;
 	return 0;
 }
 
-if (!(audio->libjack->libloaded)) 
+if (!(audio->libjack->libloaded))
 {
 \#if (RECORDERDEBUG==1)
 	cout << "no jacklib" << endl;
@@ -304,30 +304,30 @@ if (mysong==NULL) return 0; /* nothing to do! */
 
 hd24fs* myfs=mysong->fs();
 
-__sint64 frame_time = (__sint64)(audio->libjack->jack_get_current_transport_frame(currjackclient));
+int64_t frame_time = (int64_t)(audio->libjack->jack_get_current_transport_frame(currjackclient));
 
 MixerChannelControl* mixerchannel[24];
 
-	
-for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+
+for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++)
 {
 	mixerchannel[tracknum]=mixer->parentui()->mixerchannel[tracknum]->control;
 }
-	
+
 unsigned int i;
-__sint64 intsamval=0;
+int64_t intsamval=0;
 mysong->golocatepos(frame_time);
 int jumpedloop=0;
-if (transport_state!=JackTransportStopped) 
+if (transport_state!=JackTransportStopped)
 {
-	__sint64 frpos=frame_time;
-	__sint64 posoffset=0;
-	for (i=0;i<nframes;i++) 
+	int64_t frpos=frame_time;
+	int64_t posoffset=0;
+	for (i=0;i<nframes;i++)
 	{
-		if ( mythis->loopmode()==1 ) 
+		if ( mythis->loopmode()==1 )
 		{
 			posoffset++;
-			if ((frpos+i)==(__sint64)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND))) 
+			if ((frpos+i)==(int64_t)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND)))
 			{
 				frpos=mysong->getlocatepos(hd24song::LOCATEPOS_LOOPSTART);
 				mysong->golocatepos(frpos);
@@ -341,35 +341,35 @@ if (transport_state!=JackTransportStopped)
 			hd24song::READMODE_REALTIME
 		);
 	}
-	if (jumpedloop==1) 
+	if (jumpedloop==1)
 	{
-		audio->hd24_transport_locate((__sint64)(frpos+posoffset));
+		audio->hd24_transport_locate((int64_t)(frpos+posoffset));
 	}
 }
 
-for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++)
 {
-	jack_default_audio_sample_t *out = 
+	jack_default_audio_sample_t *out =
 	(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_port[tracknum], nframes));
-	jack_default_audio_sample_t *in = 
+	jack_default_audio_sample_t *in =
 	(jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->input_port[tracknum], nframes));
-	for (i=0;i<nframes;i++) 
+	for (i=0;i<nframes;i++)
 	{
 		if (transport_state!=JackTransportStopped) {
  			long* xb=(long*)(&(audio->mtsample[i*25+tracknum]));
 			intsamval=xb[0];
-			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));			
+			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));
 			if (intsamval>=(1<<23)) {
 				intsamval-=(1<<24);
 			}
 			double samval=(intsamval/(double)0x800000);
 			out[i]=samval; // send pre-fader, pre-mixer channel output to JACK
-		} else {			
+		} else {
 			out[i]=0;
 		}
-		
+
 		mixerchannel[tracknum]->sample(i,out[i]);
-				
+
 		// ... except if we are monitoring input, in which case regular reading etc is
 		// still going on, but we will just copy the incoming signal to the output:
 		// (with the possible exception of tracks being recorded but that's for later)
@@ -383,15 +383,15 @@ for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++)
 	}
 }
 mixer->mix(nframes);
-jack_default_audio_sample_t *masterL = 
+jack_default_audio_sample_t *masterL =
 (jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_master[0], nframes));
-jack_default_audio_sample_t *masterR = 
+jack_default_audio_sample_t *masterR =
 (jack_default_audio_sample_t *)(audio->libjack->jack_port_get_buffer (audio->output_master[1], nframes));
-if ((masterL!=NULL)&&(masterR!=NULL)) {	
-	for (i=0;i<nframes;i++) 
+if ((masterL!=NULL)&&(masterR!=NULL)) {
+	for (i=0;i<nframes;i++)
 	{
-		masterL[i] = mixer->masterout(0,i); // left 
-		masterR[i] = mixer->masterout(1,i); // right	
+		masterL[i] = mixer->masterout(0,i); // left
+		masterR[i] = mixer->masterout(1,i); // right
 	}
 }
 \#endif
@@ -415,14 +415,14 @@ return;
   }
   Function {jackinit()} {open private return_type void
   } {
-    code {if (portaudio_initialized==1) 
+    code {if (portaudio_initialized==1)
 {
 \#if (RECORDERDEBUG==1)
 	cout << "not initializing jack because portaudio is active" << endl;
 \#endif
 	return;
 }
-if (!(libjack->libloaded)) 
+if (!(libjack->libloaded))
 {
 \#if (RECORDERDEBUG==1)
 	cout << "not initializing jack because its lib is not loaded" << endl;
@@ -448,14 +448,14 @@ if (jackclient==NULL) {
 		// error: jack open failed.
 \#if (RECORDERDEBUG==1)
 		cout << "error: jack open failed." << endl;
-\#endif		
+\#endif
 		return;
 	}
 	mtsample=(long *)memutils::mymalloc("jackinit",512000,1);
-	
+
 	libjack->jack_set_process_callback (
 		jackclient,
-		(int (*)(jack_nframes_t, void*))jack_process, 
+		(int (*)(jack_nframes_t, void*))jack_process,
 		recorder); // was: this (=audiosystem)
 	libjack->jack_on_shutdown (jackclient, jack_shutdown, this);
 	jackrate=libjack->jack_get_sample_rate (jackclient);
@@ -463,7 +463,7 @@ if (jackclient==NULL) {
 	for (i=1;i<=MAXCHANNELS;i++) {
 		string portnameout="output";
 		string portnamein="input";
-		
+
 		string* tracknum=Convert::int2str(i);
 		portnameout+=*tracknum;
 		portnamein+=*tracknum;
@@ -475,7 +475,7 @@ if (jackclient==NULL) {
 	string portnameout="master_out_L";
 	output_master[0]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 	portnameout="master_out_R";
-	output_master[1]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);	
+	output_master[1]=libjack->jack_port_register (jackclient, portnameout.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 	if (libjack->jack_activate(jackclient)) {
 \#if (RECORDERDEBUG==1)
 		cout << "cannot activate jack client" << endl;
@@ -499,17 +499,17 @@ return;
 \#endif
 \#ifdef LIBPORTAUDIO
 //if (currsong==NULL) return;
-//\#if (RECORDERDEBUG==1) 
-//cout << "Init portaudio" << endl; 
+//\#if (RECORDERDEBUG==1)
+//cout << "Init portaudio" << endl;
 //\#endif
 //mustdisplaytimer=true;
 PaError err;
 err=(*(portaudio->Pa_Initialize))();
-if (err!=paNoError) { 
+if (err!=paNoError) {
         this->portaudiostream=NULL;
-	(*(portaudio->Pa_Terminate))(); return; 
-\#if (RECORDERDEBUG==1) 
-cout << "Error during init portaudio" << endl; 
+	(*(portaudio->Pa_Terminate))(); return;
+\#if (RECORDERDEBUG==1)
+cout << "Error during init portaudio" << endl;
 \#endif
 }
 this->mustloop(false);
@@ -531,11 +531,11 @@ if (portaudio_initialized!=0) {
 }
 return false;} {}
   }
-  Function {paTestCallback(const void *inputBuffer, void *outputBuffer, __uint32 nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  Function {paTestCallback(const void *inputBuffer, void *outputBuffer, uint32_t nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
   } {
     code {return 0;} {}
   }
-  Function {portaudio_process(const void *inputBuffer, void *outputBuffer, __uint32 nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  Function {portaudio_process(const void *inputBuffer, void *outputBuffer, uint32_t nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
   } {
     code {RecorderControl* recordercontrol=(RecorderControl*)userData;
 
@@ -560,7 +560,7 @@ if (audio->portaudio==NULL)
 \#endif
 	return 0;
 }
-if (!(audio->portaudio->libloaded)) 
+if (!(audio->portaudio->libloaded))
 {
 \#if (RECORDERDEBUG==1)
 	cout << "no palib" << endl;
@@ -587,7 +587,7 @@ if (curr_pa_stream==NULL)
 \#endif
 	return 0; // paContinue;
 }
-if ((audio->mtsample)==NULL) 
+if ((audio->mtsample)==NULL)
 {
 \#if (RECORDERDEBUG==1)
 	cout << "no sample" << endl;
@@ -598,7 +598,7 @@ if ((audio->mtsample)==NULL)
 
 // TODO: connect audio system to mixer
 MixerControl* mixer=audio->mixer();
-if (mixer==NULL) 
+if (mixer==NULL)
 {
 \#if (RECORDERDEBUG==1)
 	cout << "no mixer" << endl;
@@ -606,7 +606,7 @@ if (mixer==NULL)
 	return 0; // paContinue;
 }
 
-if (audio->mustloop()) 
+if (audio->mustloop())
 {
 \#if (RECORDERDEBUG==1)
 	cout << "must loop" << endl;
@@ -615,7 +615,7 @@ if (audio->mustloop())
 }
 
 hd24song* mysong=recordercontrol->song();
-if (mysong == NULL) 
+if (mysong == NULL)
 {
 \#if (RECORDERDEBUG==1)
 	cout << "no song" << endl;
@@ -630,14 +630,14 @@ unsigned int tottracks=(unsigned int)mysong->logical_channels();
    To compensate for this, we must add our portaudio-offset,
    the offset of the songcursor when we pressed 'play'.
    We then record the absolute stream time in pa_streamtime. */
-__sint64 frame_time = audio->streamtime; 
-frame_time+=audio->portaudiooffset; 
+int64_t frame_time = audio->streamtime;
+frame_time+=audio->portaudiooffset;
 //audio->streamtime=frame_time;
 audio->streamtime+=nframes;
 MixerChannelControl* mixerchannel[24];
 
 unsigned int i;
-__sint64 intsamval=0;
+int64_t intsamval=0;
 bool hispeed=false;
 if (mysong->physical_channels()!=mysong->logical_channels())
 {
@@ -647,14 +647,14 @@ mysong->golocatepos(frame_time);
 int loopmode=recordercontrol->loopmode();
 int jumpedloop=0;
 
-	__sint64 frpos=frame_time;
-	__sint64 posoffset=0;
-	for (i=0;i<nframes;i++) 
+	int64_t frpos=frame_time;
+	int64_t posoffset=0;
+	for (i=0;i<nframes;i++)
 	{
-		if ( loopmode==1 ) 
+		if ( loopmode==1 )
 		{
 			posoffset++;
-			if ((frpos+i)==(__sint64)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND))) 
+			if ((frpos+i)==(int64_t)(mysong->getlocatepos(hd24song::LOCATEPOS_LOOPEND)))
 			{
 				frpos=mysong->getlocatepos(hd24song::LOCATEPOS_LOOPSTART);
 				mysong->golocatepos(frpos);
@@ -668,15 +668,15 @@ int jumpedloop=0;
 			hd24song::READMODE_REALTIME
 		);
 		// if sample rate is high speed, skip next sample.
-		if (hispeed) 
+		if (hispeed)
 		{
 			mysong->getmultitracksample(
 				(long*)((&audio->mtsample[i*25])),
 				hd24song::READMODE_REALTIME
-			);		
+			);
 		}
 	}
-	if (jumpedloop==1) 
+	if (jumpedloop==1)
 	{
 		audio->as_looppos=frpos+posoffset;
 		audio->mustloop(true);
@@ -686,21 +686,21 @@ int jumpedloop=0;
 			audio->muststop(true);
 		}
 	}
-	
 
-	
-	for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++) 
+
+
+	for (unsigned int tracknum=0;tracknum<MAXCHANNELS;tracknum++)
 	{
-		mixerchannel[tracknum]=mixer->parentui()->mixerchannel[tracknum]->control;	
+		mixerchannel[tracknum]=mixer->parentui()->mixerchannel[tracknum]->control;
 	}
-	
-	for (unsigned int tracknum=0;tracknum<tottracks;tracknum++) 
+
+	for (unsigned int tracknum=0;tracknum<tottracks;tracknum++)
 	{
 		recordercontrol->data->trackpeak[tracknum]=0;
 	}
-	
 
-	for (i=0;i<nframes;i++) 
+
+	for (i=0;i<nframes;i++)
 	{
 		double samvaltot=0;
 		if (inputBuffer!=NULL) {
@@ -710,24 +710,24 @@ int jumpedloop=0;
 			samleft=0;
 			samright=0;
 		}
-		// depending on input mode, mix these to mono, set right to be equal to 
+		// depending on input mode, mix these to mono, set right to be equal to
 		// left, swap them or set left to be equal to right.
 		float subsamval;
-		for (unsigned int tracknum=0;tracknum<tottracks;tracknum++) 
+		for (unsigned int tracknum=0;tracknum<tottracks;tracknum++)
 		{
  			long* xb=(long*)(&(audio->mtsample[i*25+tracknum]));
 			intsamval=xb[0];
-			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));			
+			intsamval=((intsamval>>16)+((intsamval%256)<<16)+(intsamval & 0xff00));
 			if (intsamval>=(1<<23)) {
 				intsamval-=(1<<24);
 			}
-			
 
-			if (mysong->istrackmonitoringinput(tracknum+1)) 
-			{				
+
+			if (mysong->istrackmonitoringinput(tracknum+1))
+			{
 				subsamval=((tracknum%2)==0)?(samleft):(samright);
-			} 
-			else 
+			}
+			else
 			{
 				subsamval=(intsamval/(double)0x800000);
 			}
@@ -735,7 +735,7 @@ int jumpedloop=0;
 			if (fabs(subsamval) > recordercontrol->data->trackpeak[tracknum]) {
 				recordercontrol->data->trackpeak[tracknum]=fabs(subsamval);
 			}
-			
+
 			mixerchannel[tracknum]->sample(i,subsamval);
 
 		}
@@ -746,25 +746,25 @@ int jumpedloop=0;
 		}
 		/*
 		if (outputBuffer!=NULL) {
-			((float*)outputBuffer)[i*2] = samval; // left 
+			((float*)outputBuffer)[i*2] = samval; // left
 			((float*)outputBuffer)[i*2+1] = samval; // right
 		}*/
 
 	}
 	mixer->mix(nframes);
-	
+
 	if (outputBuffer!=NULL) {
-		
-		for (i=0;i<nframes;i++) 
+
+		for (i=0;i<nframes;i++)
 		{
-			((float*)outputBuffer)[i*2] = mixer->masterout(0,i); // left 
-			((float*)outputBuffer)[i*2+1] = mixer->masterout(1,i); // right	
+			((float*)outputBuffer)[i*2] = mixer->masterout(0,i); // left
+			((float*)outputBuffer)[i*2+1] = mixer->masterout(1,i); // right
 		}
 	}
 
 return 0; // paContinue;} {}
   }
-  Function {getBestPaFormat(__uint32 samrate)} {open return_type int
+  Function {getBestPaFormat(uint32_t samrate)} {open return_type int
   } {
     code {if (portaudio==NULL) return -1;
 
@@ -775,8 +775,8 @@ if (playbackrate>=88200) playbackrate/=2;
 
 PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
 // TODO: set i init back to 0 to allow paFloat32!!!
-for (i=0;i<1;i++) 
-{    
+for (i=0;i<1;i++)
+{
 
 	switch(i)
 	{
@@ -790,7 +790,7 @@ for (i=0;i<1;i++)
         outputParameters->device = outdev;
         outputParameters->channelCount= 2; // stereo output
         outputParameters->sampleFormat     = testformat;
-        outputParameters->suggestedLatency 
+        outputParameters->suggestedLatency
             = (*(portaudio->Pa_GetDeviceInfo))(outputParameters->device )->defaultLowInputLatency;
         outputParameters->hostApiSpecificStreamInfo = NULL;
 	PaError err = (*(portaudio->Pa_OpenStream))(
@@ -816,23 +816,23 @@ return -1;} {}
 return 0;
 }
 
-\#if (RECORDERDEBUG==1) 
-cout << "portaudio transport start" << endl; 
+\#if (RECORDERDEBUG==1)
+cout << "portaudio transport start" << endl;
 \#endif
 if (!isportaudioinitialized())
 {
 	PaError err=(*(portaudio->Pa_Initialize))();
-	if (err != paNoError) 
+	if (err != paNoError)
 	{
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 		cout << "Cannot initialize portaudio- exiting." << endl;
 \#endif
-		
+
 	}
 }
 if (isportaudioinitialized() && (portaudiostream!=NULL)) {
-\#if (RECORDERDEBUG==1) 
-cout << "already have stream- done starting" << endl; 
+\#if (RECORDERDEBUG==1)
+cout << "already have stream- done starting" << endl;
 \#endif
 	return 1;
 }
@@ -841,7 +841,7 @@ this->mustloop(false);
 this->as_looppos=0;
 PaDeviceIndex indev=(*(portaudio->Pa_GetDefaultInputDevice))();
 PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 cout << "default input device="<<indev<< endl
      << "default output device="<<outdev<<endl;
 \#endif
@@ -852,17 +852,17 @@ if (inputParameters!=NULL)
 
 int PaFormat;
 PaFormat=this->getBestPaFormat(this->samplerate());
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 cout << PaFormat << endl;
 \#endif
 if (PaFormat==-1)
 {
 	fl_message("HD24connect could not start the audio stream.\\n"
 	           "Unless your audio adapter is currently in use\\n"
-	           "by another application, it is likely that none\\n" 
+	           "by another application, it is likely that none\\n"
 	           "of the audio formats that HD24connect supports\\n"
 	           "is also supported by your sound card driver.");
-	(*(portaudio->Pa_Terminate))(); 
+	(*(portaudio->Pa_Terminate))();
 	return 0;
 }
 this->paSamFormat=PaFormat;
@@ -886,7 +886,7 @@ if (indev!=-1)
    inputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( inputParameters->device )->defaultLowInputLatency;
 }
 inputParameters->hostApiSpecificStreamInfo = NULL;
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 cout << "Input params set" << endl
  << "Device=" << indev << endl
  << "Channelcount=" << inputParameters->channelCount << endl
@@ -917,9 +917,9 @@ default:
 if (outdev==-1)
 {
 	fl_message("Output device unavailable");
-	(*(portaudio->Pa_Terminate))(); 
-	return 0; 
-} 
+	(*(portaudio->Pa_Terminate))();
+	return 0;
+}
 
 outputParameters->device=outdev;
 if (outdev!=-1)
@@ -927,7 +927,7 @@ if (outdev!=-1)
 outputParameters->suggestedLatency = (*(portaudio->Pa_GetDeviceInfo))( outputParameters->device )->defaultLowOutputLatency;
 }
 outputParameters->hostApiSpecificStreamInfo = NULL;
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 cout << "Output params set" << endl
  << "Device=" << outdev << endl
  << "Channelcount=" << outputParameters->channelCount << endl
@@ -942,7 +942,7 @@ if (mtsample==NULL)
 
 double playbackrate=this->samplerate();
 if (playbackrate>=88200) playbackrate/=2;
-\#if (RECORDERDEBUG==1) 
+\#if (RECORDERDEBUG==1)
 cout << "trying samrate="<<samrate<<endl
  << "framesperbuf=" << PA_FRAMESPERBUF << endl;
 \#endif
@@ -971,14 +971,14 @@ portaudio_process,
 this->havestreamtime=false;
 this->streamtime=0;
 
-if (err!=paNoError) { 
-\#if (RECORDERDEBUG==1) 
+if (err!=paNoError) {
+\#if (RECORDERDEBUG==1)
 cout << "Error opening stream" << endl
  << portaudio->Pa_GetErrorText(err) << endl
  << "playbackrate=" << playbackrate << endl;
 \#endif
 	if (err==paUnanticipatedHostError)
-	{    
+	{
 		const PaHostErrorInfo* herr;
 		herr=portaudio->Pa_GetLastHostErrorInfo();
 		// starting stream failed, revert to stopping transport.
@@ -992,28 +992,28 @@ cout << "Error opening stream" << endl
 	} else {
      		fl_message("%s",portaudio->Pa_GetErrorText(err));
 	}
-	
+
 	if (recorder)
 	{
 		recorder->button_stop_call();
-	}			
-	(*(portaudio->Pa_Terminate))(); 
-	return 0; 
+	}
+	(*(portaudio->Pa_Terminate))();
+	return 0;
 }
 \#if (RECORDERDEBUG==1)
-cout << "Stream opened, going to start it now..." << endl; 
+cout << "Stream opened, going to start it now..." << endl;
 \#endif
 err=(*(portaudio->Pa_StartStream))(portaudiostream);
-if (err!=paNoError) { 
+if (err!=paNoError) {
 \#if (RECORDERDEBUG==1)
 cout << "Error starting stream" << endl
  << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
-	(*(portaudio->Pa_Terminate))(); 
-	return 0; 
+	(*(portaudio->Pa_Terminate))();
+	return 0;
 }
 \#if (RECORDERDEBUG==1)
-cout << "Stream started" << endl; 
+cout << "Stream started" << endl;
 \#endif
 
 
@@ -1029,7 +1029,7 @@ portaudiostream=NULL;
 
 PaError err = (*(portaudio->Pa_StopStream))( pstream );
 
-if (err!=paNoError) { 
+if (err!=paNoError) {
 \#if (RECORDERDEBUG==1)
        cout << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
@@ -1037,7 +1037,7 @@ if (err!=paNoError) {
 
 err = (*(portaudio->Pa_CloseStream))( pstream );
 
-if (err!=paNoError) { 
+if (err!=paNoError) {
 \#if (RECORDERDEBUG==1)
    cout << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
@@ -1050,8 +1050,8 @@ if (err!=paNoError) {
     code {if (portaudio==NULL) return;
 if (!(portaudio->libloaded)) return;
 
-\#if (RECORDERDEBUG==1) 
-cout << "portaudio transport stop" << endl;   
+\#if (RECORDERDEBUG==1)
+cout << "portaudio transport stop" << endl;
 \#endif
 // TODO: only stop stream if not monitoring input.
 stopPAstream();
@@ -1061,13 +1061,13 @@ portaudiooffset+=streamtime;
 \#if (RECORDERDEBUG==1)
 cout << "portaudiooffset at stop=" << portaudiooffset << endl;
 \#endif
-if (mtsample!=NULL) 
+if (mtsample!=NULL)
 {
     memutils::myfree("portaudio_transport_stop",mtsample);
     mtsample=NULL;
 }} {}
   }
-  Function {hd24_transport_goloc(__uint32 frames)} {open return_type void
+  Function {hd24_transport_goloc(uint32_t frames)} {open return_type void
   } {
     code {if (libjack!=NULL)
 {
@@ -1076,23 +1076,23 @@ if (mtsample!=NULL)
 
 			jackinit();
 			if (jackclient!=NULL) {
-				hd24_transport_locate((__sint64)frames);
+				hd24_transport_locate((int64_t)frames);
 				return;
 			}
-		}	
+		}
 	}
 }
 
 if (portaudio!=NULL)
 {
-	if (portaudio->libloaded) 
+	if (portaudio->libloaded)
 	{
-		hd24_transport_locate((__sint64)frames);
+		hd24_transport_locate((int64_t)frames);
 		return;
 	}
 }} {}
   }
-  Function {hd24_transport_locate(__sint64 i)} {open return_type void
+  Function {hd24_transport_locate(int64_t i)} {open return_type void
   } {
     code {\#if (RECORDERDEBUG==1)
 cout << "Request to transport locate to " << i << endl;
@@ -1122,8 +1122,8 @@ if (portaudio!=NULL)
 		cout << "will have to do portaudio locate." << endl;
 \#endif
 		bool streamwasinitialized=true;
-		if (!(isportaudioinitialized())) 
-		{	
+		if (!(isportaudioinitialized()))
+		{
 \#if (RECORDERDEBUG==1)
 			cout << "No previous stream, init a new one "<< endl;
 \#endif
@@ -1142,12 +1142,12 @@ if (portaudio!=NULL)
 \#if (RECORDERDEBUG==1)
   			cout << "set portaudiooffset, streamtime to " << i << endl;
 \#endif
-  			return; // <-- see if this does the trick- no previous 
+  			return; // <-- see if this does the trick- no previous
   				// stream, no new one.
 		}
-	
+
 		PaError err;
-		if (portaudiostream!=NULL) 
+		if (portaudiostream!=NULL)
 		{
 \#if (RECORDERDEBUG==1)
 			cout << "Still have a stream that needs stopping first." << endl;
@@ -1156,31 +1156,31 @@ if (portaudio!=NULL)
 \#if (RECORDERDEBUG==1)
 			cout << "Returned from stopstream." << endl;
 \#endif
-			if (err!=paNoError) 
+			if (err!=paNoError)
 			{
 				// maybe another program owns the stream.
 \#if (RECORDERDEBUG==1)
             			cout << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
         		}
-        				
+
 			PaStream* oldportaudiostream=portaudiostream;
 			portaudiostream=NULL;
-			err = (*(portaudio->Pa_CloseStream))( oldportaudiostream );        
+			err = (*(portaudio->Pa_CloseStream))( oldportaudiostream );
 		}
-		
+
 		portaudiooffset=i; // still ok even without active stream
 		streamtime=i; // old portaudio V18 legacy
 
 		bool streamnolongerinitialized=false;
-		if (!(isportaudioinitialized())) 
+		if (!(isportaudioinitialized()))
 		{
 			if (streamwasinitialized)
-			{ 
+			{
 				streamnolongerinitialized=true;
 			}
 		}
-		
+
 		if (streamnolongerinitialized)
 		{
 			/* if closing stream means no longer initialized,
@@ -1191,12 +1191,12 @@ if (portaudio!=NULL)
 \#if (RECORDERDEBUG==1)
 		cout << "open a fresh stream" << endl;
 \#endif
-		
+
 		PaDeviceIndex indev=(*(portaudio->Pa_GetDefaultInputDevice))();
 		PaDeviceIndex outdev=(*(portaudio->Pa_GetDefaultOutputDevice))();
 		if (inputParameters!=NULL)
 		{
-			memset(inputParameters,'\\0',sizeof(*inputParameters));		
+			memset(inputParameters,'\\0',sizeof(*inputParameters));
 
 			this->inputParameters->device=indev;
 			this->inputParameters->channelCount=2;
@@ -1222,7 +1222,7 @@ if (portaudio!=NULL)
 			this->outputParameters->hostApiSpecificStreamInfo = NULL;
 		}
 
-		__uint32 playbackrate=this->samplerate();
+		uint32_t playbackrate=this->samplerate();
 		if (playbackrate>=88200) playbackrate/=2;
 \#if (RECORDERDEBUG==1)
 		cout << " sample rate for new stream is " << samrate << endl;
@@ -1231,7 +1231,7 @@ if (portaudio!=NULL)
 		{
 			return;
 		}
-		
+
 		err=(*(portaudio->Pa_OpenStream))(
 			&portaudiostream,
 			NULL,/*this->inputParameters,*/
@@ -1243,8 +1243,8 @@ if (portaudio!=NULL)
 			this->recorder);
 		this->havestreamtime=false;
 		this->streamtime=0;
-	
-		if (err!=paNoError) { 
+
+		if (err!=paNoError) {
 \#if (RECORDERDEBUG==1)
             		cout << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
@@ -1253,7 +1253,7 @@ if (portaudio!=NULL)
 
 
 		err=(*(portaudio->Pa_StartStream))(portaudiostream);
-		if (err!=paNoError) { 
+		if (err!=paNoError) {
 \#if (RECORDERDEBUG==1)
             		cout << portaudio->Pa_GetErrorText(err) << endl;
 \#endif
@@ -1261,14 +1261,14 @@ if (portaudio!=NULL)
 \#if (RECORDERDEBUG==1)
         	cout << "stream appears to have started successfully" << endl;
 \#endif
-		        	
+
 		return;
 	}
 }} {}
   }
-  Function {hd24_transport_locate(__uint32 i)} {open return_type void
+  Function {hd24_transport_locate(uint32_t i)} {open return_type void
   } {
-    code {this->hd24_transport_locate((__sint64)i);} {}
+    code {this->hd24_transport_locate((int64_t)i);} {}
   }
   Function {hd24_transport_start()} {open return_type int
   } {
@@ -1285,9 +1285,9 @@ if (portaudio!=NULL)
 
 if (portaudio!=NULL)
 {
-	if (portaudio->libloaded) 
+	if (portaudio->libloaded)
 	{
-		if (!(isportaudioinitialized())) 
+		if (!(isportaudioinitialized()))
 		{
 			portaudioinit();
 		}
@@ -1312,26 +1312,26 @@ return 0;} {}
 
 if (libjack!=NULL)
 {
-	if (libjack->libloaded) 
+	if (libjack->libloaded)
 	{
 		jackinit();
-		if (jackclient!=NULL) 
+		if (jackclient!=NULL)
 		{
 			libjack->jack_transport_stop(jackclient);
-			return;			
+			return;
 		}
 	}
 }
 
 if (portaudio!=NULL)
 {
-	if (portaudio->libloaded) 
+	if (portaudio->libloaded)
 	{
-		if (!(isportaudioinitialized())) 
+		if (!(isportaudioinitialized()))
 		{
 			portaudioinit();
 		}
-		if (isportaudioinitialized()) 
+		if (isportaudioinitialized())
 		{
 			portaudio_transport_stop();
 			return;
@@ -1341,18 +1341,18 @@ if (portaudio!=NULL)
   }
   Function {hd24_transport_ffwd(long int frames)} {open return_type void
   } {
-    code {if (portaudio_initialized!=1) 
+    code {if (portaudio_initialized!=1)
 {
 	if (libjack!=NULL)
 	{
-		if (libjack->libloaded) 
+		if (libjack->libloaded)
 		{
 			jackinit();
-			if (jackclient!=NULL) 
+			if (jackclient!=NULL)
 			{
-			__sint64 frame_time = /* currentlocation() */
-				(__sint64)(libjack->jack_get_current_transport_frame(jackclient));
-			hd24_transport_locate((__sint64)(frame_time+frames));
+			int64_t frame_time = /* currentlocation() */
+				(int64_t)(libjack->jack_get_current_transport_frame(jackclient));
+			hd24_transport_locate((int64_t)(frame_time+frames));
 			return;
 			}
 		}
@@ -1361,10 +1361,10 @@ if (portaudio!=NULL)
 
 if (portaudio!=NULL)
 {
-	if (portaudio->libloaded) 
+	if (portaudio->libloaded)
 	{
-		__sint64 frame_time=currentlocation();
-		hd24_transport_locate((__sint64)(frame_time+frames));
+		int64_t frame_time=currentlocation();
+		hd24_transport_locate((int64_t)(frame_time+frames));
 
 //string* dur=currsong->display_cursor();
 //setstatus(*dur);
@@ -1378,23 +1378,23 @@ if (portaudio!=NULL)
   } {
     code {if (libjack!=NULL)
 {
-	if (libjack->libloaded) 
+	if (libjack->libloaded)
 	{
-		if (portaudio_initialized!=1) 
-		{	
-			jackinit();	
-			if (jackclient!=NULL) 
+		if (portaudio_initialized!=1)
+		{
+			jackinit();
+			if (jackclient!=NULL)
 			{
-				__sint64 frame_time = 
-					(__sint64)(libjack->jack_get_current_transport_frame(jackclient));
+				int64_t frame_time =
+					(int64_t)(libjack->jack_get_current_transport_frame(jackclient));
 				if (frames>frame_time) {
-			   	    hd24_transport_locate((__sint64)0);
+			   	    hd24_transport_locate((int64_t)0);
 				} else {
-				    hd24_transport_locate((__sint64)(frame_time-frames));
+				    hd24_transport_locate((int64_t)(frame_time-frames));
 				}
-				return;	
+				return;
 			}
-		}	
+		}
 	}
 }
 
@@ -1402,17 +1402,17 @@ if (portaudio!=NULL)
 {
 	if (portaudio->libloaded) {
 
-		__sint64 frame_time=currentlocation();
+		int64_t frame_time=currentlocation();
 		if (frames>frame_time) {
-		    hd24_transport_locate((__sint64)0);
+		    hd24_transport_locate((int64_t)0);
 		} else {
-		    hd24_transport_locate((__sint64)(frame_time-frames));
+		    hd24_transport_locate((int64_t)(frame_time-frames));
 		}
 
-		hd24_transport_locate((__sint64)(frame_time-frames));
+		hd24_transport_locate((int64_t)(frame_time-frames));
 
 		return;
-	}	
+	}
 }} {}
   }
   Function {isinitialized()} {return_type bool
@@ -1443,29 +1443,29 @@ return false;} {}
   } {
     code {this->as_muststop=yesno;} {}
   }
-  Function {samplerate()} {return_type __uint32
+  Function {samplerate()} {return_type uint32_t
   } {
-    code {return this->samrate; 
+    code {return this->samrate;
 /*(double)(currsong->samplerate()/(currsong->physical_channels()/currsong->logical_channels())); */} {}
   }
-  Function {samplerate(__uint32 newrate)} {return_type void
+  Function {samplerate(uint32_t newrate)} {return_type void
   } {
     code {this->samrate=newrate;} {}
   }
-  Function {looppos()} {return_type __uint32
+  Function {looppos()} {return_type uint32_t
   } {
     code {return this->as_looppos;} {}
   }
-  Function {looppos(__uint32 newpos)} {return_type void
+  Function {looppos(uint32_t newpos)} {return_type void
   } {
     code {this->as_looppos=newpos;} {}
   }
-  Function {locatepoint(int locpointnum,__uint32 locatepos)} {return_type void
+  Function {locatepoint(int locpointnum,uint32_t locatepos)} {return_type void
   } {
     code {if (tape==NULL) return;
 tape->setlocatepos(locpointnum,locatepos);} {}
   }
-  Function {locatepoint(int locpointnum)} {return_type __uint32
+  Function {locatepoint(int locpointnum)} {return_type uint32_t
   } {
     code {if (tape==NULL) return 0;
 return tape->getlocatepos(locpointnum);} {}
@@ -1485,7 +1485,7 @@ if (whichlib==AUDIOLIB_JACK)
 	this->libjack=(JackWrapper*)libptr;
 \#if (RECORDERDEBUG==1)
 cout << "set jack lib to " << libptr << endl;
-\#endif	
+\#endif
 	return;
 }
 if (whichlib==AUDIOLIB_SNDFILE)
@@ -1493,7 +1493,7 @@ if (whichlib==AUDIOLIB_SNDFILE)
 	this->soundfile=(SoundFileWrapper*)libptr;
 \#if (RECORDERDEBUG==1)
 cout << "set soundfile lib to " << libptr << endl;
-\#endif		
+\#endif
 }} {}
   }
   Function {audiolib(int whichlib)} {open return_type {void*}
@@ -1548,7 +1548,7 @@ if (store!=NULL)
   } {
     code {return this->mixercontrol;} {}
   }
-} 
+}
 
 class RecorderData {open
 } {
@@ -1556,7 +1556,7 @@ class RecorderData {open
   }
   decl {float trackpeak[24];} {public
   }
-} 
+}
 
 class RecorderControl {open
 } {
@@ -1621,12 +1621,12 @@ if (ui!=NULL)
     code {if (mycontrol->audio==NULL) return;
 // we could get the current transport pos here; ....
 if (amount>0) {
-mycontrol->audio->hd24_transport_ffwd((__uint32)(300*amount));
+mycontrol->audio->hd24_transport_ffwd((uint32_t)(300*amount));
 } else {
-mycontrol->audio->hd24_transport_rew((__uint32)(-300*amount));
+mycontrol->audio->hd24_transport_rew((uint32_t)(-300*amount));
 }
-// ... then the new transport pos here; read the snippet 
-// of audio that is spanned by the difference, stretch 
+// ... then the new transport pos here; read the snippet
+// of audio that is spanned by the difference, stretch
 // it to the audio buffer size, then play it.
 // Alternatively, a visual-only representation could be fine.} {}
   }
@@ -1676,7 +1676,7 @@ if (canstart!=0)
 		ui->button_up(ui->button_rec);
 	}
 	ui->button_down(ui->button_play);
-} 
+}
 else
 {
        ui->button_light((void*)(ui->button_stop),1);
@@ -1723,7 +1723,7 @@ this->audio->hd24_transport_stop();
   } {
     code {ui->highlight_setbuttons(value);} {}
   }
-  Function {hd24_transport_goloc(__uint32 frames)} {open return_type void
+  Function {hd24_transport_goloc(uint32_t frames)} {open return_type void
   } {
     code {if (audio==NULL)
 {
@@ -1735,23 +1735,23 @@ audio->hd24_transport_goloc(frames);} {}
   } {
     code {return;} {}
   }
-  Function {handlelocatebutton(__uint32 locpoint)} {return_type void
+  Function {handlelocatebutton(uint32_t locpoint)} {return_type void
   } {
     code {// either set or jumpto locate point
 
-if (ui->button_setlocate->value()==1) 
+if (ui->button_setlocate->value()==1)
 {
    // set locate point
    ui->button_setlocate->value(0);
    highlight_setbuttons(ui->button_setlocate->value());
    // set loop start to current song cursor
    if (audio==NULL) return;
-   audio->locatepoint(locpoint,audio->currentlocation());   
+   audio->locatepoint(locpoint,audio->currentlocation());
 //   ui->populate_locatepoints(currsong,ui->locatepoints);
 } else {
    // jump to locate point
    if (audio==NULL) return;
-   audio->hd24_transport_locate((__sint64)(audio->locatepoint(locpoint)));
+   audio->hd24_transport_locate((int64_t)(audio->locatepoint(locpoint)));
 }} {}
   }
   Function {disable()} {} {
@@ -1772,7 +1772,7 @@ this->ui->activate();} {}
   } {
     code {ui->dispwrite(line,message);} {}
   }
-  Function {dispwrite(unsigned int line,const char* message,__uint32 timeout_msec)} {return_type void
+  Function {dispwrite(unsigned int line,const char* message,uint32_t timeout_msec)} {return_type void
   } {
     code {ui->dispwrite(line,message,timeout_msec);} {}
   }
@@ -1823,7 +1823,7 @@ else
 	}
 	delete dummy3;
 	string* disp2=Convert::padright(disp,16," ");
-	
+
 	string* dur=store->display_duration();
 
 	*disp2+=dur->substr(0,8);
@@ -1853,12 +1853,12 @@ cout << "Returning." << endl;} {}
   } {
     code {return (hd24song*)audio->audiostore();} {}
   }
-  Function {toggletrackarmed(__uint32 base1tracknum)} {open return_type void
+  Function {toggletrackarmed(uint32_t base1tracknum)} {open return_type void
   } {
     code {AudioStorage* astore=(hd24song*)(this->audio->audiostore());
 astore->trackarmed(base1tracknum,!astore->trackarmed(base1tracknum));} {}
   }
-} 
+}
 
 class RecorderUI {open : {public Fl_Group}
 } {
@@ -1909,7 +1909,7 @@ for (unsigned int i=1; i<=MAXCHANNELS; i++) {
    }
 
 }
-   
+
 
 trackinfo[0]->position(8*23+15,starty+10);
 trackinfo[1]->position(16*23+33,starty+10);} {}
@@ -1967,15 +1967,15 @@ if (max>(16*(2-line))) {
 }
 
 for (unsigned int i=0;i<max;i++) {
-    if (i==16) { line++; }    
+    if (i==16) { line++; }
     unsigned int currchar=(unsigned int)((unsigned char)(message[i]));
-    if (savedisp) 
+    if (savedisp)
     {
     	olddisp[(i%16)+(16*line)]=currchar;
     }
     this->dispcell[i%16][line]->image(dispfont[currchar]->image());
     this->dispcell[i%16][line]->redraw();
-    
+
 }
 fl_check();} {}
   }
@@ -1991,7 +1991,7 @@ dispwritecountdown=0;} {}
     code {dispwrite_raw(0,&olddisp[0],false);
 dispwritecountdown=0;} {}
   }
-  Function {dispwrite(unsigned int line,const char* message,__uint32 timeout_msec)} {return_type void
+  Function {dispwrite(unsigned int line,const char* message,uint32_t timeout_msec)} {return_type void
   } {
     code {dispwrite_raw(line,message,false);
     dispwritecountdown=(int)(1000*TIMEOUT);} {}
@@ -2639,7 +2639,7 @@ if (currsong==NULL) return;
 this->slidermoved=3; // a countdown (to prevent unneeded locate commands?)
 long long newpos=(long long)currsong->songlength_in_wamples();
 newpos*=(int)(o->value());
-newpos=(__uint32)(newpos/1000);
+newpos=(uint32_t)(newpos/1000);
 control->hd24_transport_goloc(newpos);}
         xywh {10 208 595 17} type Horizontal selection_color 41 labelsize 12 align 4 maximum 1000 step 1
         code0 {this->slidermoved=0;}
@@ -2705,7 +2705,7 @@ control->hd24_transport_goloc(newpos);}
       }
       Fl_Button button_locate0 {
         label {LOC 0}
-        callback {control->audio->hd24_transport_locate((__sint64)0);}
+        callback {control->audio->hd24_transport_locate((int64_t)0);}
         tooltip {Locate 0} xywh {420 250 50 20} box FLAT_BOX color 16 selection_color 18 labelfont 1 labelsize 9 labelcolor 7 align 5
         code0 {o->up_image(button_lrc_up->image()); o->down_image(button_lrc_dn->image());}
         class Fl_Image_Button
@@ -3547,7 +3547,7 @@ mode}
 for (unsigned int i=0;i<MAXCHANNELS;i++) {
 	this->trackchan[i]->peakmode(this->currpeakmode);
 }
-switch (this->currpeakmode) 
+switch (this->currpeakmode)
 {
 	case 0: // "No" "Peak Hold"
 		dispwrite(0,"       No       "
@@ -3562,7 +3562,7 @@ switch (this->currpeakmode)
                             "   Peak Hold    ",2000);
 		break;
 	default:
-		// ???????	
+		// ???????
 	        break;
 }}
         tooltip arm xywh {10 375 50 30} color 8 selection_color 8 labelfont 1 labelsize 10 labelcolor 7
@@ -3696,7 +3696,7 @@ cout << "recorderpoll " << mythis->recorderpollcount << endl;
 \#endif
 int visible=0;
       if (mythis->recordergroup->visible())
-      { 
+      {
 	visible=1;
      } else {
         visible=0;
@@ -3724,7 +3724,7 @@ if (mythis->busy!=1) {
 
 	Fl_Image* oldimg;
 	Fl_Image* newimg=NULL;
-	 
+
 	string* dur=NULL;
                hd24song* mycurrsong=mythis->control->song();
 	if (mycurrsong!=NULL) {
@@ -3733,40 +3733,40 @@ if (mythis->busy!=1) {
 		dur=new string("00:00:00.00");
 	   }
 
-	   
-	   oldimg=mythis->ho1->image(); 
+
+	   oldimg=mythis->ho1->image();
 	   mythis->ho1->image(mythis->i7seg[dur->c_str()[0]-'0']->image());
 	   if (newimg!=oldimg) mythis->ho1->redraw();
-	
-	   oldimg=mythis->ho2->image(); 
+
+	   oldimg=mythis->ho2->image();
 	   mythis->ho2->image(mythis->i7seg[dur->c_str()[1]-'0']->image());
 	   if (newimg!=oldimg) mythis->ho2->redraw();
-	
-	   oldimg=mythis->mi1->image(); 
+
+	   oldimg=mythis->mi1->image();
 	   mythis->mi1->image(mythis->i7seg[dur->c_str()[3]-'0']->image());
 	   if (newimg!=oldimg) mythis->mi1->redraw();
 
-	   oldimg=mythis->mi2->image(); 
+	   oldimg=mythis->mi2->image();
 	   mythis->mi2->image(mythis->i7seg[dur->c_str()[4]-'0']->image());
 	   if (newimg!=oldimg) mythis->mi2->redraw();
-	
-	   oldimg=mythis->se1->image(); 
+
+	   oldimg=mythis->se1->image();
 	   mythis->se1->image(mythis->i7seg[dur->c_str()[6]-'0']->image());
 	   if (newimg!=oldimg) mythis->se1->redraw();
 
-	   oldimg=mythis->se2->image(); 
+	   oldimg=mythis->se2->image();
 	   mythis->se2->image(mythis->i7seg[dur->c_str()[7]-'0']->image());
 	   if (newimg!=oldimg) mythis->se2->redraw();
-	   oldimg=mythis->fr1->image(); 
+	   oldimg=mythis->fr1->image();
 	   mythis->fr1->image(mythis->i7seg[dur->c_str()[9]-'0']->image());
 	   if (newimg!=oldimg) mythis->fr1->redraw();
 
-	   oldimg=mythis->fr2->image(); 
+	   oldimg=mythis->fr2->image();
 	   mythis->fr2->image(mythis->i7seg[dur->c_str()[10]-'0']->image());
 	   if (newimg!=oldimg) mythis->fr2->redraw();
 	   if (mycurrsong !=NULL)
-	   {	     
-		__uint32 currloc=mycurrsong->cursorpos();
+	   {
+		uint32_t currloc=mycurrsong->cursorpos();
 		if (mycurrsong->songlength_in_wamples() >0) {
 		    currloc=mycurrsong->cursorpos()/(mycurrsong->songlength_in_wamples()/1000);
 		} else {
@@ -3776,9 +3776,9 @@ if (mythis->busy!=1) {
 		   mythis->slidermoved--;
 		} else {
 		   mythis->locationslider->value(currloc);
-		}	
+		}
 	   }
-	   delete (dur);         
+	   delete (dur);
 	}
 
 }
@@ -3792,13 +3792,13 @@ AudioSystem* audio=mythis->control->audio;
 
 if (!audio->isinitialized()) return;
 if (!audio->mustloop()) {
-	if (audio->muststop()) 
-	{		
+	if (audio->muststop())
+	{
 		mythis->control->button_stop_call();
 	}
 	return;
 }
-audio->hd24_transport_locate((__sint64)(audio->looppos()));
+audio->hd24_transport_locate((int64_t)(audio->looppos()));
 audio->mustloop(false);
 audio->looppos(0);} {}
   }
@@ -3827,12 +3827,12 @@ if (((Fl_Image_Button*)button)==button_stop)
 	if (lit==1)
 	{
 		button_stop->up_image(button_stop_uplit->image());
-		button_stop->down_image(button_stop_dn->image());	
+		button_stop->down_image(button_stop_dn->image());
 	}
 	else
 	{
 		button_stop->up_image(button_stop_up->image());
-		button_stop->down_image(button_stop_dn->image());		
+		button_stop->down_image(button_stop_dn->image());
 	}
 	button_stop->redraw();
 	return;
@@ -3850,25 +3850,25 @@ if ((void*)button==(void*)button_stop)
 	button_stop->value(0);
 	button_stop->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_play)
 {
 	button_play->value(0);
 	button_play->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_rec)
 {
 	button_rec->value(0);
 	button_rec->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_rew)
 {
 	button_rew->value(0);
 	button_rew->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_ffwd)
 {
 	button_ffwd->value(0);
@@ -3888,25 +3888,25 @@ if ((void*)button==(void*)button_stop)
 	button_stop->value(1);
 	button_stop->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_play)
 {
 	button_play->value(1);
 	button_play->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_rec)
 {
 	button_rec->value(1);
 	button_rec->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_rew)
 {
 	button_rew->value(1);
 	button_rew->redraw();
 	return;
-}	
+}
 if ((void*)button==(void*)button_ffwd)
 {
 	button_ffwd->value(1);
@@ -3914,4 +3914,4 @@ if ((void*)button==(void*)button_ffwd)
 	return;
 }} {}
   }
-} 
+}

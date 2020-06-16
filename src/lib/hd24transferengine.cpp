@@ -1,5 +1,5 @@
 #include "hd24transferengine.h"
-#include <config.h>
+#include <stdint.h>
 #include <hd24fs.h>
 #include <hd24sndfile.h>
 
@@ -173,7 +173,7 @@ void hd24transferjob::sourcefilename(int base1tracknum,const char* filename)
 	{
 		return;
 	}
-	__uint32 n=strlen(filename);
+	uint32_t n=strlen(filename);
 	if (n==0)
 	{
 		return;
@@ -194,43 +194,43 @@ char* hd24transferengine::sourcefilename(int base1tracknum)
 	return job->sourcefilename(base1tracknum);
 }
 
-void hd24transferjob::startoffset(__uint32 newoff)
+void hd24transferjob::startoffset(uint32_t newoff)
 {
 	m_startoffset=newoff;
 }
 
-void hd24transferjob::endoffset(__uint32 newoff)
+void hd24transferjob::endoffset(uint32_t newoff)
 {
 	m_endoffset=newoff;
 }
 
-__uint32 hd24transferjob::startoffset()
+uint32_t hd24transferjob::startoffset()
 {
 	return m_startoffset;
 }
 
-__uint32 hd24transferjob::endoffset()
+uint32_t hd24transferjob::endoffset()
 {
 	return m_endoffset;
 }
 
-void hd24transferjob::reeloffset(__uint32 newoff)
+void hd24transferjob::reeloffset(uint32_t newoff)
 {
 	m_reeloffset=newoff;
 }
 
-__uint32 hd24transferjob::reeloffset()
+uint32_t hd24transferjob::reeloffset()
 {
 	return m_reeloffset;
 }
 
-__uint32 hd24transferengine::reeloffset()
+uint32_t hd24transferengine::reeloffset()
 {
 	if (job==NULL) return 0;
 	return job->reeloffset();
 }
 
-void hd24transferengine::reeloffset(__uint32 newoff)
+void hd24transferengine::reeloffset(uint32_t newoff)
 {
 	if (job==NULL) return;
 	job->reeloffset(newoff);
@@ -512,7 +512,7 @@ int hd24transferengine::supportedformatcount()
 	return formatcount;
 }
 
-void hd24transferengine::trackselected(__uint32 base0tracknum,bool selected)
+void hd24transferengine::trackselected(uint32_t base0tracknum,bool selected)
 {
 	if (base0tracknum<0) return;
 	if (base0tracknum>=MAXPHYSICALCHANNELS) return;
@@ -526,7 +526,7 @@ void hd24transferengine::trackselected(__uint32 base0tracknum,bool selected)
 	return;
 }
 
-bool hd24transferengine::trackselected(__uint32 base0tracknum)
+bool hd24transferengine::trackselected(uint32_t base0tracknum)
 {
 	if (base0tracknum<0) return false;
 	if (base0tracknum>=MAXPHYSICALCHANNELS) return false;
@@ -564,7 +564,7 @@ void hd24transferengine::closebuffers(unsigned char** audiobuf,unsigned int chan
 #if (HD24TRANSFERDEBUG==1) 
 	cout << "hd24transferengine::closebuffers" << endl; 
 #endif
-	for (__uint32 handle=0;handle<channels;handle++) 
+	for (uint32_t handle=0;handle<channels;handle++) 
 	{
 		if (!trackselected(handle)) {
 			// channel not selected for export
@@ -606,7 +606,7 @@ bool hd24transferengine::openinputfiles(SNDFILE** filehandle,SF_INFO* sfinfoin,u
 #endif				
 			continue;
 		}
-		__uint32 filelen=strlen(currsourcefilename);
+		uint32_t filelen=strlen(currsourcefilename);
 		if (filelen==0) {
 #if (HD24TRANSFERDEBUG!=0)
 		cout << "Channel "
@@ -926,7 +926,7 @@ bool hd24transferengine::dontopenoutputfiles(hd24sndfile** filehandle,unsigned i
 	}
 	return (cannotopen==0); // return true if successful, false otherwise
 }
-void hd24transferengine::flushbuffer(hd24sndfile** filehandle,unsigned char** buffer,__uint32 flushbytes,unsigned int channels)
+void hd24transferengine::flushbuffer(hd24sndfile** filehandle,unsigned char** buffer,uint32_t flushbytes,unsigned int channels)
 {
 	#if (HD24TRANSFERDEBUG==1) 
 	cout << "Flushbuffer " << flushbytes << " bytes" <<endl; 
@@ -942,10 +942,10 @@ void hd24transferengine::flushbuffer(hd24sndfile** filehandle,unsigned char** bu
 	#endif
 }
 
-void hd24transferengine::prepare_transfer_to_pc(__uint32 songnum,
-			__uint32 totsongs,__sint64 totbytestotransfer,
-			__sint64 totbytestransferred,
-			int p_wantsplit,__uint32 prefix)
+void hd24transferengine::prepare_transfer_to_pc(uint32_t songnum,
+			uint32_t totsongs,int64_t totbytestotransfer,
+			int64_t totbytestransferred,
+			int p_wantsplit,uint32_t prefix)
 {
 	// set properties as needed
 #if (HD24TRANSFERDEBUG==1) 
@@ -1014,14 +1014,14 @@ void hd24transferengine::generatetimestamp()
 	//////////////
 }
 
-__sint64 hd24transferengine::transfer_to_pc()
+int64_t hd24transferengine::transfer_to_pc()
 {
 	// function returns bytes transferred for the transfer of only the current file.
 
-	__sint64 totsamcount;  /* Total number of samples exported */
-	__sint64 partsamcount; /* When splitting up the song into multiple parts, 
+	int64_t totsamcount;  /* Total number of samples exported */
+	int64_t partsamcount; /* When splitting up the song into multiple parts, 
 		                   number of samples exported to current part */
-	__sint64 blockcount;	/* Allows us to keep a write buffer as cache for
+	int64_t blockcount;	/* Allows us to keep a write buffer as cache for
 		                   better export performance */
 	if (job->sourcesong()==NULL) 
 	{
@@ -1038,7 +1038,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 	}
 
 	// limit which tracks need to be actually read from HD24 disk
-	for (__uint32 i=1;i<=MAXPHYSICALCHANNELS;i++)
+	for (uint32_t i=1;i<=MAXPHYSICALCHANNELS;i++)
 	{
 		if (job->trackselected[i-1]==1) 
 		{
@@ -1065,13 +1065,13 @@ __sint64 hd24transferengine::transfer_to_pc()
 	#if (HD24TRANSFERDEBUG==1) 
 	    cout << "start export 1" << endl; 
 	#endif
-	__uint32 lastremain=0xffffffff; //a
-	__uint32 songlen_wam=job->sourcesong()->songlength_in_wamples();
-	__uint32 logical_channels=job->sourcesong()->logical_channels();
-	__uint32 bytespersam=(job->sourcesong()->bitdepth()/8);
-	__uint32 chanmult=job->sourcesong()->chanmult();
+	uint32_t lastremain=0xffffffff; //a
+	uint32_t songlen_wam=job->sourcesong()->songlength_in_wamples();
+	uint32_t logical_channels=job->sourcesong()->logical_channels();
+	uint32_t bytespersam=(job->sourcesong()->bitdepth()/8);
+	uint32_t chanmult=job->sourcesong()->chanmult();
 	int mustdeinterlace=chanmult-1;
-	__uint32 oldmixersamplerate=0;
+	uint32_t oldmixersamplerate=0;
 	if (mustmixdown)
 	{
 		if (transfermixer!=NULL) {
@@ -1097,8 +1097,8 @@ __sint64 hd24transferengine::transfer_to_pc()
 		filehandle[i]=new hd24sndfile(m_format_outputformat[selectedformat()],soundfile);
 	}
 
-	__uint32 partnum=0;
-	__uint64 MAXBYTES=job->sizelimit();
+	uint32_t partnum=0;
+	uint64_t MAXBYTES=job->sizelimit();
 
 	/*
 		if total number of samples is likely to overflow 
@@ -1124,12 +1124,12 @@ __sint64 hd24transferengine::transfer_to_pc()
 	   is in the timecode.
 	   Because of this, if startoffset>0 is given, we
 	   can ignore this. */
-	__uint64 translen;
-	__uint64 tottranslen=0; // for percentage calc in multi-song exports
+	uint64_t translen;
+	uint64_t tottranslen=0; // for percentage calc in multi-song exports
 	signed int stepsize;
 	if (job->startoffset()>job->endoffset()) 
 	{
-		__uint32 tempoffset=job->startoffset();
+		uint32_t tempoffset=job->startoffset();
 		job->startoffset(job->endoffset());
 		job->endoffset(tempoffset);
 	}
@@ -1218,7 +1218,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 	unsigned char* interlacedata=(unsigned char*)memutils::mymalloc("ftransfer_to_pc",blocksize,1); 
 
 
-	__uint32 samplesperlogicalchannel=(blocksize/logical_channels)/bytespersam;
+	uint32_t samplesperlogicalchannel=(blocksize/logical_channels)/bytespersam;
 	float* outputBuffer=NULL;
 	SF_INFO infoblock;
 	hd24sndfile* mixdownfile=NULL;
@@ -1259,7 +1259,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 	}
 
 
-	__uint32 samplesinfirstblock=samplesperlogicalchannel;
+	uint32_t samplesinfirstblock=samplesperlogicalchannel;
 	if (job->startoffset()!=0) {
 		if (job->startoffset()>=samplesperlogicalchannel) {
 			samplesinfirstblock=samplesperlogicalchannel-(job->startoffset()%samplesperlogicalchannel);
@@ -1275,18 +1275,18 @@ __sint64 hd24transferengine::transfer_to_pc()
 	cout << "got to startoffset " << job->startoffset() << endl
 	 << "translen= " << translen << endl;
 #endif
-	__uint32 bytesperlogicalchannel=samplesperlogicalchannel*bytespersam;
-	__uint32 samsincurrblock=samplesinfirstblock;
+	uint32_t bytesperlogicalchannel=samplesperlogicalchannel*bytespersam;
+	uint32_t samsincurrblock=samplesinfirstblock;
 	if (translen<samplesperlogicalchannel) 
 	{
 		samplesinfirstblock=translen;
 	}
 
-	__sint64 difseconds=0;
-	__sint64 olddifseconds=0;
-	__uint64 currbytestransferred=0;
+	int64_t difseconds=0;
+	int64_t olddifseconds=0;
+	uint64_t currbytestransferred=0;
 
-	for (__uint32 samplenum=0;
+	for (uint32_t samplenum=0;
 		samplenum<translen;
 		samplenum+=samsincurrblock)
 	{
@@ -1297,7 +1297,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 				break;
 			}
 		}
-		__uint32 subblockbytes=bytesperlogicalchannel;	
+		uint32_t subblockbytes=bytesperlogicalchannel;	
 		if (translen==samplesinfirstblock) 
 		{
 	#if (HD24TRANSFERDEBUG==1) 
@@ -1342,7 +1342,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 	#endif	
 		if (job->wantsplit==1) 
 		{	
-			__uint64 filesize=partsamcount;
+			uint64_t filesize=partsamcount;
 			filesize+=samsincurrblock;
 			filesize*=bytespersam;
 			if (filesize>MAXBYTES) /// total filesize reached for current part
@@ -1361,11 +1361,11 @@ __sint64 hd24transferengine::transfer_to_pc()
 			cout << "Mixing " << endl;
 #endif									
 			
-			for (__uint32 tracknum=0;tracknum<logical_channels;tracknum++) 
+			for (uint32_t tracknum=0;tracknum<logical_channels;tracknum++) 
 			{
 				unsigned char* currsam=&whattowrite[tracknum*bytesperlogicalchannel
 						 +((mustdeinterlace+1)*skipsams*bytespersam)];
-				for (__uint32 samnum=0;samnum<subblockbytes;samnum+=3)
+				for (uint32_t samnum=0;samnum<subblockbytes;samnum+=3)
 				{
 					float subsamval=currsam[samnum+0]
 						  +(currsam[samnum+1]<<8)
@@ -1383,7 +1383,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 			if (outputBuffer!=NULL) 
 			{		
 				// if stereo output, interlace (TODO: check if this is what we want)
-				for (__uint32 i=0;i<(subblockbytes/3);i++) 
+				for (uint32_t i=0;i<(subblockbytes/3);i++) 
 				{
 					((float*)outputBuffer)[i*2] = transfermixer->masterout(0,i); // left 
 					((float*)outputBuffer)[i*2+1] = transfermixer->masterout(1,i); // right	
@@ -1393,7 +1393,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 		}
 		// when mixing down, let's not export raw files as well.
 					
-		for (__uint32 tracknum=0;tracknum<logical_channels;tracknum++) 
+		for (uint32_t tracknum=0;tracknum<logical_channels;tracknum++) 
 		{	
 			if (job->trackselected[tracknum]==0) 
 			{
@@ -1459,7 +1459,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 		partsamcount+=(subblockbytes/bytespersam);
 	//	totsamcount+=subblockbytes;
 	
-		__uint32 pct; // to use for display percentage
+		uint32_t pct; // to use for display percentage
 		double dblpct; // to use for ETA calculation
 	#if (HD24TRANSFERDEBUG==1) 
 	 cout << "about to calc pct" << endl
@@ -1503,7 +1503,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 			    )			    
 			);		
 	}
-	pct=(__uint32)(dblpct);
+	pct=(uint32_t)(dblpct);
 	
 	#if (HD24TRANSFERDEBUG==1) 
 	 cout << "about to calc pct2" << endl;
@@ -1551,14 +1551,14 @@ __sint64 hd24transferengine::transfer_to_pc()
 			if (pct>0)
 			{
 				long long int tdifseconds=(long long int)difftime(endtime,transferstarttime);		
-				__uint32 estimated_seconds=(__uint32)((tdifseconds*100)/dblpct);
-				__uint32 remaining_seconds=estimated_seconds-tdifseconds;
+				uint32_t estimated_seconds=(uint32_t)((tdifseconds*100)/dblpct);
+				uint32_t remaining_seconds=estimated_seconds-tdifseconds;
 
 				lastremain=remaining_seconds;
 				
-				__uint32 seconds=(lastremain%60);
-				__uint32 minutes=(lastremain-seconds)/60;
-				__uint32 hours=0;
+				uint32_t seconds=(lastremain%60);
+				uint32_t minutes=(lastremain-seconds)/60;
+				uint32_t hours=0;
 				
 				*pctmsg+=" Time remaining: ";
 
@@ -1597,7 +1597,7 @@ __sint64 hd24transferengine::transfer_to_pc()
 		}
 	}
 	// from now on we'll read all tracks again
-	for (__uint32 i=1;i<=MAXPHYSICALCHANNELS;i++)
+	for (uint32_t i=1;i<=MAXPHYSICALCHANNELS;i++)
 	{
 		if (job->trackselected[i-1]==1) 
 		{
@@ -1906,22 +1906,22 @@ string* hd24transferengine::generate_filename(int tracknum,int partnum,int prefi
 	return fname;
 }
 
-void hd24transferjob::sizelimit(__sint64 p_sizelimit)
+void hd24transferjob::sizelimit(int64_t p_sizelimit)
 {
 	this->llsizelimit=p_sizelimit;
 }
 
-__sint64 hd24transferjob::sizelimit()
+int64_t hd24transferjob::sizelimit()
 {
 	return this->llsizelimit;
 }
 
-void hd24transferengine::sizelimit(__sint64 p_sizelimit)
+void hd24transferengine::sizelimit(int64_t p_sizelimit)
 {
 	job->sizelimit(p_sizelimit);
 }
 
-__sint64 hd24transferengine::sizelimit()
+int64_t hd24transferengine::sizelimit()
 {
 	return job->sizelimit();
 }
@@ -1930,7 +1930,7 @@ bool hd24transferengine::anyfilesexist(hd24song* thesong)
 {
 	bool anyexist=false;
 	struct stat fi;
-	__uint32 channels=thesong->logical_channels();
+	uint32_t channels=thesong->logical_channels();
 	for (unsigned int q=0; q<100; q++)
 	{
 		for (unsigned int handle=0;handle<channels;handle++) 
@@ -2034,22 +2034,22 @@ hd24song* hd24transferengine::sourcesong()
 	return this->job->sourcesong();
 }
 
-void hd24transferengine::startoffset(__uint32 newoff)
+void hd24transferengine::startoffset(uint32_t newoff)
 {
 	job->startoffset(newoff);	
 }
 
-void hd24transferengine::endoffset(__uint32 newoff)
+void hd24transferengine::endoffset(uint32_t newoff)
 {
 	job->endoffset(newoff);
 }
 
-__uint32 hd24transferengine::startoffset()
+uint32_t hd24transferengine::startoffset()
 {
 	return job->startoffset();
 }
 
-__uint32 hd24transferengine::endoffset()
+uint32_t hd24transferengine::endoffset()
 {
 	return job->endoffset();
 }
@@ -2072,16 +2072,16 @@ hd24song* hd24transferengine::targetsong()
 	return job->targetsong();
 }
 
-__uint32 hd24transferengine::requiredsonglength_in_wamples(hd24song* tsong,SF_INFO* sfinfoin)
+uint32_t hd24transferengine::requiredsonglength_in_wamples(hd24song* tsong,SF_INFO* sfinfoin)
 {
 	/* a 10 ksample 96k song requires only 5k wamples (word-samples)
 	   because the each wample is 2 samples interleaved across 2 tracks. */
 	
-	__uint32 maxlen_in_wamples=tsong->songlength_in_wamples();
+	uint32_t maxlen_in_wamples=tsong->songlength_in_wamples();
 	
 	for (int i=0;i<MAXPHYSICALCHANNELS;i++) {
 		if (job->filehandle[i]==NULL) continue;
-		__sint64 framecount=(__sint64)sfinfoin[i].frames;
+		int64_t framecount=(int64_t)sfinfoin[i].frames;
 		if (tsong->chanmult()==2)
 		{
 			if ((framecount%2)==1)
@@ -2091,24 +2091,24 @@ __uint32 hd24transferengine::requiredsonglength_in_wamples(hd24song* tsong,SF_IN
 			framecount/=2;
 		}
 
-		if (((__sint64)framecount) > (__sint64)maxlen_in_wamples) 
+		if (((int64_t)framecount) > (int64_t)maxlen_in_wamples) 
 		{			
-			maxlen_in_wamples=(__uint32)framecount;
+			maxlen_in_wamples=(uint32_t)framecount;
 		}
 	}
 	
 	return maxlen_in_wamples;
 }
 /*
-void hd24transferengine::_generate_smpte(__uint32 wamplesperlogicalchannel,__uint32 wamsincurrblock,__uint32 samplenum,unsigned char* audiodata)
+void hd24transferengine::_generate_smpte(uint32_t wamplesperlogicalchannel,uint32_t wamsincurrblock,uint32_t samplenum,unsigned char* audiodata)
 {
 	hd24song* tsong=job->targetsong(); // should exist as was verified by transfer_to_hd24()
 	if (tsong==NULL) return; // just in case it's destructed+cleared.
 
-	__uint32 bytespersam=(tsong->bitdepth()/8);
-	__uint32 logical_channels=tsong->logical_channels();
+	uint32_t bytespersam=(tsong->bitdepth()/8);
+	uint32_t logical_channels=tsong->logical_channels();
 	//  Fill audio buffer for tracks that need SMPTE striping 
-	for (__uint32 tracknum=0;tracknum<logical_channels;tracknum++) 
+	for (uint32_t tracknum=0;tracknum<logical_channels;tracknum++) 
 	{
 		if (!(tsong->trackarmed(tracknum+1)))
 		{
@@ -2122,12 +2122,12 @@ void hd24transferengine::_generate_smpte(__uint32 wamplesperlogicalchannel,__uin
 			continue;
 		}
 		// TODO: samsincurrblock instead of samplesperlogicalchannel?
-		__uint32 firstbyte=tracknum*samplesperlogicalchannel*bytespersam;
-		__uint32 bytenum=firstbyte;
+		uint32_t firstbyte=tracknum*samplesperlogicalchannel*bytespersam;
+		uint32_t bytenum=firstbyte;
 
-		for (__uint32 samnum=0;samnum<samsincurrblock;samnum++) {
+		for (uint32_t samnum=0;samnum<samsincurrblock;samnum++) {
 			// smpte stripe:
-			__uint32 samval=((job->smptegen->getbit(samplenum+samnum)*2)-1)*2000000;
+			uint32_t samval=((job->smptegen->getbit(samplenum+samnum)*2)-1)*2000000;
 			
 			audiodata[bytenum]=(unsigned char)samval & 0xff;
 			audiodata[bytenum+1]=(unsigned char)(samval>>8) & 0xff;
@@ -2138,16 +2138,16 @@ void hd24transferengine::_generate_smpte(__uint32 wamplesperlogicalchannel,__uin
 }
 */
 
-void hd24transferengine::_generate_silence(__uint32 wamplesperlogicalchannel,__uint32 wamsincurrblock,__uint32 wamplenum,unsigned char* audiodata)
+void hd24transferengine::_generate_silence(uint32_t wamplesperlogicalchannel,uint32_t wamsincurrblock,uint32_t wamplenum,unsigned char* audiodata)
 {
 	// TODO: join this with _generate_smpte?
 	hd24song* tsong=job->targetsong(); // should exist as was verified by transfer_to_hd24()
 	if (tsong==NULL) return; // just in case it's destructed+cleared.
 
-	__uint32 bytesperwam=(tsong->bitdepth()/8)*tsong->chanmult();
-	__uint32 logical_channels=tsong->logical_channels();
+	uint32_t bytesperwam=(tsong->bitdepth()/8)*tsong->chanmult();
+	uint32_t logical_channels=tsong->logical_channels();
 	/* Fill audio buffer for tracks that need SMPTE striping */
-	for (__uint32 tracknum=0;tracknum<logical_channels;tracknum++) 
+	for (uint32_t tracknum=0;tracknum<logical_channels;tracknum++) 
 	{
 		if (!(tsong->trackarmed(tracknum+1)))
 		{
@@ -2162,9 +2162,9 @@ void hd24transferengine::_generate_silence(__uint32 wamplesperlogicalchannel,__u
 		}
 		// TODO: samsincurrblock instead of samplesperlogicalchannel?
 		// No clever (de)interlacing here, as we're doing silence only.
-		__uint32 firstbyte=tracknum*wamplesperlogicalchannel*bytesperwam;
-		__uint32 bytenum=firstbyte;
-		for (__uint32 wamnum=0;wamnum<wamsincurrblock;wamnum++) {
+		uint32_t firstbyte=tracknum*wamplesperlogicalchannel*bytesperwam;
+		uint32_t bytenum=firstbyte;
+		for (uint32_t wamnum=0;wamnum<wamsincurrblock;wamnum++) {
 			audiodata[bytenum]=0;
 			audiodata[bytenum+1]=0;
 			audiodata[bytenum+2]=0;
@@ -2178,17 +2178,17 @@ void hd24transferengine::_generate_silence(__uint32 wamplesperlogicalchannel,__u
 		}
 	}
 }
-double hd24transferengine::update_eta(const char* etamessage,__uint64 translen,
-				__uint64 currbytestransferred,
-				__uint64 totbytestransferred,
-				__uint64 totbytestotransfer,double oldpct)
+double hd24transferengine::update_eta(const char* etamessage,uint64_t translen,
+				uint64_t currbytestransferred,
+				uint64_t totbytestransferred,
+				uint64_t totbytestotransfer,double oldpct)
 {
 	/* TODO: We could probably store the numeric info in the job object
 	   and use this method for transfers in both directions. */	
 	double dblpct; // to use for ETA calculation
-	__uint32 lastremain=0xffffffff; //a		
-	__sint64 difseconds=0;
-	__sint64 olddifseconds=0;
+	uint32_t lastremain=0xffffffff; //a		
+	int64_t difseconds=0;
+	int64_t olddifseconds=0;
 
 #if (HD24TRANSFERDEBUG==1) 
  cout << "about to calc pct" << endl
@@ -2208,7 +2208,7 @@ double hd24transferengine::update_eta(const char* etamessage,__uint64 translen,
 	}
 	oldpct=dblpct;
 	
-	__uint32 pct=(__uint32)dblpct;
+	uint32_t pct=(uint32_t)dblpct;
 
 #if (HD24TRANSFERDEBUG==1) 
 	cout << "pct=" << pct << " oldpct="<<oldpct<<endl
@@ -2241,14 +2241,14 @@ double hd24transferengine::update_eta(const char* etamessage,__uint64 translen,
 		if (pct>0)
 		{
 			long long int tdifseconds=(long long int)difftime(endtime,transferstarttime);		
-			__uint32 estimated_seconds=(__uint32)((tdifseconds*100)/dblpct);
-			__uint32 remaining_seconds=estimated_seconds-tdifseconds;
+			uint32_t estimated_seconds=(uint32_t)((tdifseconds*100)/dblpct);
+			uint32_t remaining_seconds=estimated_seconds-tdifseconds;
 
 			lastremain=remaining_seconds;
 			
-			__uint32 seconds=(lastremain%60);
-			__uint32 minutes=(lastremain-seconds)/60;
-			__uint32 hours=0;
+			uint32_t seconds=(lastremain%60);
+			uint32_t minutes=(lastremain-seconds)/60;
+			uint32_t hours=0;
 			
 			*pctmsg+=" Time remaining: ";
 
@@ -2279,23 +2279,23 @@ double hd24transferengine::update_eta(const char* etamessage,__uint64 translen,
 	return dblpct;
 }
 
-void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
-					__uint32 wamsincurrblock,
-					__uint32 wamplenum,
+void hd24transferengine::_prepare_audio(uint32_t wamplesperlogicalchannel,
+					uint32_t wamsincurrblock,
+					uint32_t wamplenum,
 					unsigned char* audiodata,
 					SF_INFO* sfinfoin, int* sfeof
 )
 {
 	hd24song* tsong=job->targetsong(); // should exist as was verified by transfer_to_hd24()
 	if (tsong==NULL) return; // just in case it's destructed+cleared.
-	__uint32 bytespersam=(tsong->bitdepth()/8);
+	uint32_t bytespersam=(tsong->bitdepth()/8);
 
-	__uint32 samsread=0; // these come from file so they're actually samples rather than wamples.
-	__uint32 logchans=tsong->logical_channels();
-	__uint32 chanmult=tsong->chanmult();
-	__uint32 halfchansize=0;
+	uint32_t samsread=0; // these come from file so they're actually samples rather than wamples.
+	uint32_t logchans=tsong->logical_channels();
+	uint32_t chanmult=tsong->chanmult();
+	uint32_t halfchansize=0;
 #if (HD24TRANSFERDEBUG==1)
-	__uint32 physchans=tsong->physical_channels();
+	uint32_t physchans=tsong->physical_channels();
 	cout << "logchans="<<logchans <<", physchans="<<physchans << endl;  // PRAGMA allowed
 #endif
 	if (chanmult==2)
@@ -2305,7 +2305,7 @@ void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
 		cout << "HALFCHANSIZE=" << halfchansize << endl;
 #endif
 	}
-	for (__uint32 logtracknum=0;logtracknum<logchans;logtracknum++) 
+	for (uint32_t logtracknum=0;logtracknum<logchans;logtracknum++) 
 	{
 		if (!(tsong->trackarmed(logtracknum+1)))
 		{
@@ -2332,14 +2332,14 @@ void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
 		   For high samplerate audio, we use twice the HD24 channels and thus
 		   need to read twice as many samples from audio file. */
 
-		__uint32 trackchans=sfinfoin[logtracknum].channels;
+		uint32_t trackchans=sfinfoin[logtracknum].channels;
 		
 		if (sfeof[logtracknum]==1)
 		{
 			samsread=0;
 /*
-			__uint32 blen=wamsincurrblock*trackchans*chanmult*sizeof(int);
-			for (__uint32 silentsam=0;silentsam<blen;silentsam++)
+			uint32_t blen=wamsincurrblock*trackchans*chanmult*sizeof(int);
+			for (uint32_t silentsam=0;silentsam<blen;silentsam++)
 			{
 				audiobuf[logtracknum][silentsam]=0;
 			}
@@ -2364,9 +2364,9 @@ void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
 			sfeof[logtracknum]=1;				
 			// TODO: clear rest of block (or should we?)
 /*
-			__uint32 bstart=samsread*trackchans*chanmult*sizeof(int);
-			__uint32 blen=wamsincurrblock*trackchans*chanmult*sizeof(int);
-			for (__uint32 silentsam=bstart;silentsam<blen;silentsam++)
+			uint32_t bstart=samsread*trackchans*chanmult*sizeof(int);
+			uint32_t blen=wamsincurrblock*trackchans*chanmult*sizeof(int);
+			for (uint32_t silentsam=bstart;silentsam<blen;silentsam++)
 			{
 				audiobuf[logtracknum][silentsam]=0;
 			}
@@ -2376,11 +2376,11 @@ void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
 		/*
 			Now either select a track or mixdown to mono
 		*/
-		__uint32 firstbyte=logtracknum*wamsincurrblock*bytespersam*chanmult;
-		__uint32 whichbyte=firstbyte;
+		uint32_t firstbyte=logtracknum*wamsincurrblock*bytespersam*chanmult;
+		uint32_t whichbyte=firstbyte;
 	
 		int samval;
-		__uint32 maxcount=wamsincurrblock*trackchans*chanmult;
+		uint32_t maxcount=wamsincurrblock*trackchans*chanmult;
 		int evenodd=0;	
 #if (HD24TRANSFERDEBUG==1)
 		cout << "Writing file audio to HD24 buffer, "
@@ -2447,10 +2447,10 @@ void hd24transferengine::_prepare_audio(__uint32 wamplesperlogicalchannel,
 				whichbyte+=bytespersam;
 			}
 		} // end for (unsigned int sam=0;sam<maxcount;sam+=trackchans)
-	} // end for (__uint32 logtracknum=0;logtracknum<logical_channels;logtracknum++)
+	} // end for (uint32_t logtracknum=0;logtracknum<logical_channels;logtracknum++)
 }
 
-__uint32 hd24transferengine::_lengthen_song_as_needed(hd24song* tsong,SF_INFO* sfinfoin)
+uint32_t hd24transferengine::_lengthen_song_as_needed(hd24song* tsong,SF_INFO* sfinfoin)
 {
 /////////////// START: ALLOCATE AUDIO SPACE ON DRIVE ///////////////
 	// Find file with largest number of samples;
@@ -2458,14 +2458,14 @@ __uint32 hd24transferengine::_lengthen_song_as_needed(hd24song* tsong,SF_INFO* s
 	// Note: if nonzero start offset is specified, add this offset 
 	// to each file length.
 
-	__uint32 maxlen_wamples=this->requiredsonglength_in_wamples(tsong,sfinfoin) ;
+	uint32_t maxlen_wamples=this->requiredsonglength_in_wamples(tsong,sfinfoin) ;
 #if (HD24TRANSFERDEBUG==1) 
 	cout << "required songlength in wamples is " << maxlen_wamples
 		<< "=" << (maxlen_wamples*tsong->chanmult()) 
 		<<" samples." << endl
 	 << "(already compensated for high samplerate mode as appropriate)" << endl;
 #endif
-	__uint32 translen_wamples=0; 
+	uint32_t translen_wamples=0; 
 	if (maxlen_wamples > (tsong->songlength_in_wamples())) 
 	{
 		string* lengthening=new string("Lengthening song... ");
@@ -2501,7 +2501,7 @@ __uint32 hd24transferengine::_lengthen_song_as_needed(hd24song* tsong,SF_INFO* s
 	return translen_wamples;
 }
 
-__sint64 hd24transferengine::transfer_to_hd24()
+int64_t hd24transferengine::transfer_to_hd24()
 {
 	if (soundfile==NULL)
 	{
@@ -2520,7 +2520,7 @@ __sint64 hd24transferengine::transfer_to_hd24()
 
 	double oldpct=0; // to use for display percentage
 	
-	__sint64 currbytestransferred=0;
+	int64_t currbytestransferred=0;
 
 	/* Even at high sample rates we null all 24 audio buffer pointers.
 	   Later on we might only use 12 if we work with higher sample rates,
@@ -2560,7 +2560,7 @@ __sint64 hd24transferengine::transfer_to_hd24()
 	}
 /////// END: OPEN INPUT FILES ///////////////
 
-	__uint32 newsonglen=this->_lengthen_song_as_needed(tsong,(SF_INFO*)&sfinfoin[0]);
+	uint32_t newsonglen=this->_lengthen_song_as_needed(tsong,(SF_INFO*)&sfinfoin[0]);
 	if (newsonglen==0)
 	{
 		/* either lenghtening failed or total transfer size equals zero.
@@ -2580,10 +2580,10 @@ __sint64 hd24transferengine::transfer_to_hd24()
 //	ui->stop_transfer->show();
 
 	audiodata=(unsigned char*)memutils::mymalloc("button_transfertohd24",audioblocksizebytes,1);
-	__uint32 logical_channels=tsong->logical_channels();
-	__uint32 bytespersam=(tsong->bitdepth()/8);
-	__uint32 samplesperlogicalchannel=(audioblocksizebytes/logical_channels)/bytespersam;
-	__uint32 wamplesperlogicalchannel=(samplesperlogicalchannel/tsong->chanmult());
+	uint32_t logical_channels=tsong->logical_channels();
+	uint32_t bytespersam=(tsong->bitdepth()/8);
+	uint32_t samplesperlogicalchannel=(audioblocksizebytes/logical_channels)/bytespersam;
+	uint32_t wamplesperlogicalchannel=(samplesperlogicalchannel/tsong->chanmult());
 
 //////// END: GET SONG/FS METRICS //////////////
 
@@ -2609,8 +2609,8 @@ __sint64 hd24transferengine::transfer_to_hd24()
 		int action=job->trackaction(fh+1);
 		sfeof[fh]=0;
 		if ((job->filehandle[fh]!=NULL)||(action<=1 /* erase, SMPTE stripe */)) {
-			__uint32 chans=((action==0)||(action==1))?(1):(sfinfoin[fh].channels);
-			__uint32 bytestoalloc=chans*samplesperlogicalchannel*sizeof(int);
+			uint32_t chans=((action==0)||(action==1))?(1):(sfinfoin[fh].channels);
+			uint32_t bytestoalloc=chans*samplesperlogicalchannel*sizeof(int);
 			audiobuf[fh]=(int*)memutils::mymalloc(
 			"button_transfertohd24 audiobuf",bytestoalloc,1
 			);
@@ -2618,14 +2618,14 @@ __sint64 hd24transferengine::transfer_to_hd24()
 			if (action == 0) {
 				// clear erase buffer once
 				int* buf=audiobuf[fh];
-				for (__uint32 samnum=0;samnum<samplesperlogicalchannel;samnum++) {
+				for (uint32_t samnum=0;samnum<samplesperlogicalchannel;samnum++) {
 					buf[samnum]=0;
 				}
 			}
 			if (action == 1) {
 				// clear SMPTE buffer once (mostly for debugging purposes)
 				int* buf=audiobuf[fh];
-				for (__uint32 samnum=0;samnum<samplesperlogicalchannel;samnum++) {
+				for (uint32_t samnum=0;samnum<samplesperlogicalchannel;samnum++) {
 					buf[samnum]=1;
 				}
 			}
@@ -2638,21 +2638,21 @@ __sint64 hd24transferengine::transfer_to_hd24()
 
 	// number of samples in current block- equal to block samples for full song
 	// transfer
-	__uint32 bytesperlogicalchannel=samplesperlogicalchannel*bytespersam;
+	uint32_t bytesperlogicalchannel=samplesperlogicalchannel*bytespersam;
 
 	#if (HD24TRANSFERDEBUG==1)    
 	 cout << "Log.Channels="<<logical_channels << endl; 
 	#endif
-	__uint32 startoffset=0;
-	//__uint32 endoffset=currsong->songlength_in_samples();
-	__uint32 wamplesinfirstblock=wamplesperlogicalchannel;
+	uint32_t startoffset=0;
+	//uint32_t endoffset=currsong->songlength_in_samples();
+	uint32_t wamplesinfirstblock=wamplesperlogicalchannel;
 
 	tsong->getlocatepos(25); // 25= virtual endpoint of song
 	// calc number of samples to transfer.
 	// (for partial transfers, which are not supported at this time, the 
 	// number of samples is based on (endoffset-startoffset) instead of songlength
-	__uint32 translen_wamples=tsong->songlength_in_wamples();
-	__uint64 totbytestotransfer=translen_wamples*tsong->chanmult()*bytespersam;
+	uint32_t translen_wamples=tsong->songlength_in_wamples();
+	uint64_t totbytestotransfer=translen_wamples*tsong->chanmult()*bytespersam;
 	//transfer_to_hd24();
 
 	if (startoffset!=0) {
@@ -2671,15 +2671,15 @@ __sint64 hd24transferengine::transfer_to_hd24()
 	 << "translen= " << translen_wamples << " wamples " << endl;
 	#endif
 
-	__uint32 wamsincurrblock=wamplesinfirstblock;
+	uint32_t wamsincurrblock=wamplesinfirstblock;
 	if (translen_wamples<wamplesperlogicalchannel)
 	{
 		wamplesinfirstblock=translen_wamples;
 	}
 
-	__uint64 totbytestransferred=0; // only for multi song transfer- does not apply.
+	uint64_t totbytestransferred=0; // only for multi song transfer- does not apply.
 	//deactivate_ui();	
-	for (__uint32 wamplenum=0;
+	for (uint32_t wamplenum=0;
 		wamplenum<translen_wamples;
 		wamplenum+=wamsincurrblock)
 	{
@@ -2694,7 +2694,7 @@ __sint64 hd24transferengine::transfer_to_hd24()
 	#if (HD24TRANSFERDEBUG==1) 
 	 cout << "wamnum= " << wamplenum << endl;
 	#endif	
-		__uint32 subblockbytes=bytesperlogicalchannel;
+		uint32_t subblockbytes=bytesperlogicalchannel;
 		if (translen_wamples==wamplesinfirstblock) 
 		{
 	#if (HD24TRANSFERDEBUG==1) 
@@ -2771,7 +2771,7 @@ __sint64 hd24transferengine::transfer_to_hd24()
 		oldpct=update_eta("Transferring audio to HD24...",
 			translen_wamples,currbytestransferred,totbytestransferred,
 			totbytestotransfer,oldpct);  // recalculate/show progress
-	} // end for (__uint32 samplenum=0; 	((__uint64)samplenum)<translen_wamples;		samplenum+=samsincurrblock)
+	} // end for (uint32_t samplenum=0; 	((uint64_t)samplenum)<translen_wamples;		samplenum+=samsincurrblock)
 
 	if (job->smptegen!=NULL)
 	{

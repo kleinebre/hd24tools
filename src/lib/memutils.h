@@ -2,12 +2,11 @@
 #define __memutils_h__
 
 using namespace std;
-#include "config.h"
 
 class memutils
 {
 public:
-		static void* mymalloc(const char* wherefrom,__uint32 elcount,__uint32 elsize);
+		static void* mymalloc(const char* wherefrom,uint32_t elcount,uint32_t elsize);
 		static void myfree(const char* wherefrom,void* freewhat);
 };
 

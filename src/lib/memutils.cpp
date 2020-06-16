@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "memutils.h"
-void* memutils::mymalloc(const char* wherefrom,__uint32 elcount,__uint32 elsize)
+void* memutils::mymalloc(const char* wherefrom,uint32_t elcount,uint32_t elsize)
 {
 	void* q=calloc(elcount,elsize);
 #if (MEMDEBUG==1) 

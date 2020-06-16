@@ -142,7 +142,7 @@ void hd24sndfile::open(const char* filename,int filemode,SF_INFO* infoblock)
 	
 	}
 }
-void hd24sndfile::writerawbuf(unsigned char* buf,__uint32 subblockbytes)
+void hd24sndfile::writerawbuf(unsigned char* buf,uint32_t subblockbytes)
 {
 #if (HD24SNDFILEDEBUG==1)
 	cout << "writerawbuf(buf,subblockbytes="<<subblockbytes<<")"<<endl;
@@ -151,7 +151,7 @@ void hd24sndfile::writerawbuf(unsigned char* buf,__uint32 subblockbytes)
 	if ((sf_format & 0xFF0000) ==SF_FORMAT_AIFF)
 	{
 		// and we're doing 24 bits.
-		for (__uint32 i=0;i<subblockbytes;i+=3)
+		for (uint32_t i=0;i<subblockbytes;i+=3)
 		{
 			char a=buf[i];
 			buf[i]=buf[i+2];
@@ -269,7 +269,7 @@ void hd24sndfile::close()
 	}
 }
 
-void hd24sndfile::write_float(float* buf,__uint32 frames)
+void hd24sndfile::write_float(float* buf,uint32_t frames)
 {
 	if (sndfilehandle != NULL)
 	{

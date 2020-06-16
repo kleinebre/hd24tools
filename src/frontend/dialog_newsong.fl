@@ -1,12 +1,12 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
-header_name {.h} 
+version 1.0107
+header_name {.h}
 code_name {.cxx}
 decl {\#include <hd24fs.h>} {public
-} 
+}
 
 decl {\#include <convertlib.h>} {public
-} 
+}
 
 class dialog_newsong {open
 } {
@@ -16,9 +16,9 @@ class dialog_newsong {open
   }
   decl {unsigned long songlength_in_wamples;} {public
   }
-  decl {__uint32 samplerate;} {public
+  decl {uint32_t samplerate;} {public
   }
-  decl {__uint32 trackcount;} {public
+  decl {uint32_t trackcount;} {public
   }
   decl {int mode;} {public
   }
@@ -47,7 +47,7 @@ x->~Fl_Window();}
       Fl_Button button_cancel {
         label Cancel
         callback {buttonclicked=2; //Cancel
-useasrange=0; 
+useasrange=0;
 Fl_Window * x = Fl::first_window();
 x->~Fl_Window();}
         xywh {420 155 70 20} labelsize 12
@@ -84,24 +84,24 @@ mode=(mode+1)%3;
 switch(mode) {
 	case 0:
 	{
-		o->label("Sec/100"); 
+		o->label("Sec/100");
 		subsecmax=99;
 		break;
 	}
 	case 1:
-	{		
+	{
 
 		if ((pchan /lchan)==2) {
-			o->label("2*Sams"); 		
-		} else { 
-			o->label("Samples"); 		
+			o->label("2*Sams");
+		} else {
+			o->label("Samples");
 		}
 		subsecmax=samplerate/(pchan/lchan);
 		break;
 	}
-	case 2: 
+	case 2:
 	{
-		o->label("Frames"); 
+		o->label("Frames");
 		subsecmax=29;
 		break;
 	}
@@ -130,19 +130,19 @@ int src=0;
 int filtered=0;
 for (int i=0;i<x;i++) {
  	if (
- 	   (o->value()[i]=='\\\\') 
- 	|| (o->value()[i]=='/') 
- 	|| (o->value()[i]==':') 
- 	|| (o->value()[i]=='*') 
- 	|| (o->value()[i]=='?') 
- 	|| (o->value()[i]=='"') 
- 	|| (o->value()[i]=='<') 
- 	|| (o->value()[i]=='>') 
- 	|| (o->value()[i]=='\\\\') 
+ 	   (o->value()[i]=='\\\\')
+ 	|| (o->value()[i]=='/')
+ 	|| (o->value()[i]==':')
+ 	|| (o->value()[i]=='*')
+ 	|| (o->value()[i]=='?')
+ 	|| (o->value()[i]=='"')
+ 	|| (o->value()[i]=='<')
+ 	|| (o->value()[i]=='>')
+ 	|| (o->value()[i]=='\\\\')
  	|| (o->value()[i]=='|'))
  	{
  		filtered=1;
- 		continue; 	
+ 		continue;
  	}
 	filteredname[src]=o->value()[i];
 	src++;
@@ -276,7 +276,7 @@ if (samplerate>=88200)
       }
     }
   }
-  Function {setuiloc(__uint32 offset)} {open return_type void
+  Function {setuiloc(uint32_t offset)} {open return_type void
   } {
     code {setplchan();
 unsigned int chmult=(pchan/lchan);
@@ -321,7 +321,7 @@ if (this->samplerate>=88200) {
   }
   decl {int pchan;} {}
   decl {int lchan;} {}
-  Function {getsonglen()} {open return_type __uint32
+  Function {getsonglen()} {open return_type uint32_t
   } {
     code {setplchan();
 unsigned int chmult=(pchan/lchan);
@@ -334,19 +334,19 @@ switch(mode) {
    case 2: frames=30; break;
 }
 
-__uint64 mylocpoint=((__uint64)3600* (__uint64)strtol( hr->value(),0,10) )
-	           +((__uint64)  60* (__uint64)strtol(min->value(),0,10) )
-	           +((__uint64)   1* (__uint64)strtol(sec->value(),0,10) )
+uint64_t mylocpoint=((uint64_t)3600* (uint64_t)strtol( hr->value(),0,10) )
+	           +((uint64_t)  60* (uint64_t)strtol(min->value(),0,10) )
+	           +((uint64_t)   1* (uint64_t)strtol(sec->value(),0,10) )
 	           ;
-	
-mylocpoint=(__uint64)((__uint64)realrate*(__uint64)mylocpoint);
 
-mylocpoint+=(__uint64)(strtol(subsec->value(),0,10)*samplerate/(frames*chmult));
+mylocpoint=(uint64_t)((uint64_t)realrate*(uint64_t)mylocpoint);
+
+mylocpoint+=(uint64_t)(strtol(subsec->value(),0,10)*samplerate/(frames*chmult));
 
 if (mylocpoint>0xFFFFFFFF) {
-	mylocpoint=0xFFFFFFFF;	
-}	
-return (__uint32)mylocpoint;} {selected
+	mylocpoint=0xFFFFFFFF;
+}
+return (uint32_t)mylocpoint;} {selected
     }
   }
-} 
+}

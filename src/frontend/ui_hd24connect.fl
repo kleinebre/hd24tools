@@ -1,168 +1,168 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
-header_name {.h} 
+version 1.0107
+header_name {.h}
 code_name {.cxx}
 decl {class HD24TrackChannel;} {public
-} 
+}
 
 decl {class TrackInfo;} {public
-} 
+}
 
 decl {class HD24UserInterface;} {public
-} 
+}
 
 decl {class MixerUI;} {public
-} 
+}
 
 decl {class RecorderUI;} {public
-} 
+}
 
 decl {class PortAudioWrapper;} {public
-} 
+}
 
 decl {class JackWrapper;} {public
-} 
+}
 
 decl {class hd24transferengine;} {public
-} 
+}
 
 decl {\#define BLINKRATE 25} {public
-} 
+}
 
 decl {\#define PA_FRAMESPERBUF 512} {public
-} 
+}
 
 decl {\#define MAXCHANNELS 24} {public
-} 
+}
 
 decl {\#define UIREFRESH 1 /* 1=best, 10=1/10 refresh rate */} {public
-} 
+}
 
 decl {\#define HD24MODE hd24fs::MODE_RDWR} {public
-} 
+}
 
 decl {\#define TIMEOUT 0.03} {public
-} 
+}
 
-decl {\#define SPLITFILESIZE_BYTES ((__uint64)(1024*1024*1024))} {public
-} 
+decl {\#define SPLITFILESIZE_BYTES ((uint64_t)(1024*1024*1024))} {public
+}
 
-decl {\#include <config.h>} {public
-} 
+decl {\#include <stdint.h>} {public
+}
 
 decl {\#include <string>} {public
-} 
+}
 
 decl {\#include <vector>} {public
-} 
+}
 
 decl {\#include <portwin.h>} {public
-} 
+}
 
 decl {\#include <soundlibs.h> /* portaudio, libjack */} {public
-} 
+}
 
 decl {\#include <iostream>} {public
-} 
+}
 
 decl {\#include <FL/FLTKstuff.H>} {public
-} 
+}
 
 decl {\#include <FL/Fl_Menu_Bar.H>} {public
-} 
+}
 
 decl {\#include <FL/Fl_File_Chooser.H>} {public
-} 
+}
 
 decl {\#include <FL/filename.H>} {public
-} 
+}
 
 decl {\#include <xplat_dlfcn.h>} {public
-} 
+}
 
 decl {\#include <sndfile.h>} {public
-} 
+}
 
 decl {\#include <convertlib.h>} {public
-} 
+}
 
 decl {\#include <memutils.h>} {public
-} 
+}
 
 decl {\#include <hd24fs.h>} {public
-} 
+}
 
 decl {\#include <hd24utils.h>} {public
-} 
+}
 
 decl {\#include <hd24transferengine.h>} {public
-} 
+}
 
 decl {\#include <hd24driveimage.h>} {public
-} 
+}
 
 decl {\#include <smpte.h>} {public
-} 
+}
 
 decl {\#include <WidgetPDial.h>} {public
-} 
+}
 
 decl {\#include <dialog_newproject.h>} {public
-} 
+}
 
 decl {\#include <dialog_newsong.h>} {public
-} 
+}
 
 decl {\#include <dialog_setlocate.h>} {public
-} 
+}
 
 decl {\#include <dialog_filesize.h>} {public
-} 
+}
 
 decl {\#include <dialog_setlength.h>} {public
-} 
+}
 
 decl {\#include <dialog_format.h>} {public
-} 
+}
 
 decl {\#include <dialog_fromto.h>} {public
-} 
+}
 
 decl {\#include <dialog_rename.h>} {public
-} 
+}
 
 decl {\#include <dialog_options.h>} {public
-} 
+}
 
 decl {\#include <dialog_choosedevice.h>} {public
-} 
+}
 
 decl {\#include <ui_help_about.h>} {public
-} 
+}
 
 decl {\#include <ui_mixer.h>} {public
-} 
+}
 
 decl {\#include <time.h>} {public
-} 
+}
 
 decl {\#include <math.h>} {public
-} 
+}
 
 decl {\#include <ui_hd24trackchannel.h>} {public
-} 
+}
 
 decl {\#include <ui_recorder.h>} {public
-} 
+}
 
 decl {class HD24UserInterface;} {public
-} 
+}
 
 decl {class HD24control;} {public
-} 
+}
 
 decl {class SoundFileWrapper;} {public
-} 
+}
 
 class HD24data {open
 } {
@@ -172,7 +172,7 @@ class HD24data {open
   }
   decl {bool fswriteenabled;} {public
   }
-} 
+}
 
 class HD24control {open
 } {
@@ -216,7 +216,7 @@ class HD24control {open
    if (parentui()!=NULL)
    {
    parentui()->drivesafety_readonly->value(1);
-   parentui()->drivesafety_readwrite->value(0);   
+   parentui()->drivesafety_readwrite->value(0);
    }
 }
 
@@ -224,7 +224,7 @@ if (parentui()!=NULL)
 {
 	parentui()->drivename_callback(parentui()->drivename,parentui());
 	parentui()->refresh(parentui()->drivesafety_readwrite);
-	parentui()->refresh(parentui()->drivesafety_readonly);	
+	parentui()->refresh(parentui()->drivesafety_readonly);
 }} {}
   }
   Function {fswriteenabled()} {open return_type bool
@@ -235,10 +235,10 @@ if (strcmp(y->c_str(),"1")==0) { writeen=true; }
 delete y; y=NULL;
 return writeen;} {}
   }
-} 
+}
 
 decl {\#include <hd24sndfile.h>} {public
-} 
+}
 
 class HD24UserInterface {open
 } {
@@ -283,7 +283,7 @@ return openmode;} {}
   }
   Function {transferstatus(void* ui,const char* message,double pct)} {open return_type {static void}
   } {
-    code {// show status message. Percentage is given as parameter to allow 
+    code {// show status message. Percentage is given as parameter to allow
 // drawing a progress bar later on; the actual message string
 // given should already be in the right output format.
 if (ui==NULL) return;
@@ -349,11 +349,11 @@ menufile->activate();
 menuhelp->activate();} {}
   }
   Function {addsongtodropdown(int i)} {} {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 		cout << "addsongtodropdown " << i << endl;
 \#endif
     hd24song* song=currproj->getsong(i);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "song is set" << endl;
 \#endif
     string* strsongname=Convert::int2str(i);
@@ -362,7 +362,7 @@ menuhelp->activate();} {}
     *strsongname+=*actualname;
     delete actualname;
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "song is set2" << endl;
 \#endif
     songname->add(strsongname->c_str(),0,(void (*)(Fl_Widget*,void*))(&(songname_cb)),(void*)this);
@@ -405,12 +405,12 @@ select_project(projectid);} {}
   } {
     code {int i;
 int numsongs=currproj->songcount();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "populate_songlist" << endl;
 \#endif
-if (numsongs==0) 
+if (numsongs==0)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "no songs" << endl;
 \#endif
 	for (i=0;i<=100;i++) {
@@ -422,7 +422,7 @@ if (numsongs==0)
 	return;
 }
 songname->activate();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "clear songlist" << endl;
 \#endif
 for (i=0;i<=100;i++) {
@@ -431,7 +431,7 @@ for (i=0;i<=100;i++) {
 
 songname->add("-- All songs --",0,(void (*)(Fl_Widget*,void*))(&(songname_cb)),(void*)this);
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "Add songs to dropdown" << endl;
 \#endif
 for (i=1; i<=numsongs; i++) {
@@ -439,15 +439,15 @@ for (i=1; i<=numsongs; i++) {
 }
 control->ready(1);
 this->busy=0;
-    
-\#if (HD24DEBUG==1) 
+
+\#if (HD24DEBUG==1)
 	cout << "about to select last used song" << endl;
 \#endif
 signed long lastsong=currproj->lastsongid();
 if (lastsong<1) {
 	lastsong=0;
 }
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "got last song id:" << lastsong << endl;
 \#endif
 if (lastsong==0) {
@@ -466,18 +466,18 @@ for (unsigned int q=0;q<=99;q++) {
 }
 // find out how many ADAT drives are detected.
 unsigned int devcount=defaulthd24->hd24devicecount();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "devcount=" << devcount << endl;
 \#endif
 unsigned int usedevcount=devcount;
-if (devcount==0) usedevcount=1; // we are using a file image. 
-for (unsigned int devnum=0;devnum<usedevcount;devnum++) 
+if (devcount==0) usedevcount=1; // we are using a file image.
+for (unsigned int devnum=0;devnum<usedevcount;devnum++)
 {
-\#if (HD24DEBUG==1) 
-cout << "devnum" << devnum << endl; 
+\#if (HD24DEBUG==1)
+cout << "devnum" << devnum << endl;
 \#endif
         // currhd24 is not a spelling error. it is for local use.
-       	string* idir=hd24utils::getlastdir("driveimagedir"); 
+       	string* idir=hd24utils::getlastdir("driveimagedir");
 	// this->openmode was defaulthd24->mode()
 	hd24fs* currhd24 = new hd24fs(idir->c_str(),this->openmode(),devnum);
 	delete idir;
@@ -486,30 +486,30 @@ cout << "devnum" << devnum << endl;
 			disable_program_controls();
 		}
 	}
-\#if (HD24DEBUG==1) 
-cout << "newfs" << devnum << endl; 
+\#if (HD24DEBUG==1)
+cout << "newfs" << devnum << endl;
 \#endif
-	
+
 	string* drivename1=Convert::int2str(devnum+1);
-	
+
 	*drivename1+=": ";
 	string* volname;
-	
-\#if (HD24DEBUG==1) 
-cout << "getvolname" << devnum << endl; 
+
+\#if (HD24DEBUG==1)
+cout << "getvolname" << devnum << endl;
 \#endif
-	
-	if (devcount!=usedevcount) 
+
+	if (devcount!=usedevcount)
 	{
 		volname=currenthd24->volumename();
 	} else {
 		volname=currhd24->volumename();
 	}
-	
-\#if (HD24DEBUG==1) 
-cout << "gotvolname" << devnum << endl; 
+
+\#if (HD24DEBUG==1)
+cout << "gotvolname" << devnum << endl;
 \#endif
-	
+
 	*drivename1+=*volname;
 	// NULL=callback
 	drivename->add(drivename1->c_str(),0,(void (*)(Fl_Widget*,void*))(&(drivename_cb)),(void*)this);
@@ -519,7 +519,7 @@ cout << "gotvolname" << devnum << endl;
 }
 
 /* Set drive info */
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "set drivename dropdown value to " << driveid << endl;
 \#endif
 drivename->value(driveid);} {}
@@ -528,17 +528,17 @@ drivename->value(driveid);} {}
   } {
     code {int i;
 int numpoints=0;
-if (locsong!=NULL) 
+if (locsong!=NULL)
 {
  	numpoints=locsong->locatepointcount();
 }
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "populate_lpoints" << endl;
 \#endif
-if (numpoints==0) 
+if (numpoints==0)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "no locate points." << endl;
 \#endif
 	for (i=0;i<=99;i++) {
@@ -549,7 +549,7 @@ if (numpoints==0)
 	return numpoints;
 }
 lpoints->activate();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "clear lpoints" << endl;
 \#endif
 for (i=0;i<=99;i++) {
@@ -557,17 +557,17 @@ for (i=0;i<=99;i++) {
 }
 for (i=0; i<numpoints+1; i++) {
 	// locatepoint (max+1) is a virtual locate point 'END'.
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "set locate point" << endl;
 \#endif
-	__uint32 locatepos=locsong->getlocatepos(i);
-\#if (HD24DEBUG==1) 
+	uint32_t locatepos=locsong->getlocatepos(i);
+\#if (HD24DEBUG==1)
 		cout << "locate pos "<<i<<" is " << locatepos << endl;
 \#endif
     	string* locname1;
 	if ((i==0)||(i==numpoints)) {
 		locname1=locsong->getlocatename(i);
-		
+
 		if ((locname1->length())>0) {
 			while (locname1->substr(0,1)==" ") {
 			  *locname1=locname1->substr(1,locname1->length()-1);
@@ -591,19 +591,19 @@ for (i=0; i<numpoints+1; i++) {
 		string* dur=locsong->display_duration(locatepos);
 		*locname1+=*dur;
 		delete (dur);
-		*locname1+="  ";		
+		*locname1+="  ";
 		string* lni=locsong->getlocatename(i);
 		*locname1+=*lni;
 		delete(lni);
 	}
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "add lpoints" << endl;
 \#endif
 	lpoints->add(locname1->c_str(),0,NULL,(void*)this);
 	delete locname1;
 	lpoints->redraw();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "added lpoints" << endl;
 \#endif
 }
@@ -618,8 +618,8 @@ return numpoints;} {}
     code {\#if (HD24DEBUG == 1)
 cout << "init_vars" << endl;
 \#endif
-//jackclient=NULL; 
-//jackmtsample=NULL; 
+//jackclient=NULL;
+//jackmtsample=NULL;
 currsong=NULL;
 currproj=NULL;
 //portaudiostream=NULL;
@@ -643,8 +643,8 @@ Fl::add_timeout(TIMEOUT,poll_callback,this);} {}
   }
   Function {update_catalog()} {open return_type void
   } {
-    code {string* x=hd24utils::getconfigvalue("catalog_locpoints","1"); 
-int locmode=x->c_str()[0]-48; 
+    code {string* x=hd24utils::getconfigvalue("catalog_locpoints","1");
+int locmode=x->c_str()[0]-48;
 if (locmode<0) { locmode=1; }
 if (locmode>2) { locmode=1; }
 
@@ -659,7 +659,7 @@ string* cat=new string("");
 if (hd24utils::gencatalog(this->currenthd24,cat,locmode+(sizemode<<2))==0) {
 	this->catalogbuffer->remove(0,this->catalogbuffer->length()-1);
 	this->catalogbuffer->append(cat->c_str());
-	
+
 //	if (this->catalog->buffer()!=NULL) {
 //		free(this->catalog->buffer());
 //	}
@@ -677,9 +677,9 @@ if (refreshingui>1) return;
 refreshingui++;
 
 // init dropdown lists.
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "==TRIGGER GUI REFRESH FROM "<<orig << "==" << endl
- << "going to clear dropdown lists" << endl; 
+ << "going to clear dropdown lists" << endl;
 \#endif
 for (unsigned int q=0;q<=99;q++) {
 	projectname->remove(0);
@@ -694,8 +694,8 @@ if ((currenthd24!=NULL)&&(currenthd24!=defaulthd24))
 		devid=0;
 	}
 }
-\#if (HD24DEBUG==1) 
-cout << "going to populate drive list (" << devid << ")" << endl; 
+\#if (HD24DEBUG==1)
+cout << "going to populate drive list (" << devid << ")" << endl;
 \#endif
 
 populate_drivelist(devid);
@@ -703,16 +703,16 @@ drivename->damage();
 drivename->redraw();
 
 // following uses fsys (the default drive)
-\#if (HD24DEBUG==1) 
-cout << "get projcount then?" << endl; 
+\#if (HD24DEBUG==1)
+cout << "get projcount then?" << endl;
 \#endif
 string* nump=Convert::int2str(currenthd24->projectcount());
-\#if (HD24DEBUG==1) 
-cout << "got projcount=" << *nump <<  endl; 
+\#if (HD24DEBUG==1)
+cout << "got projcount=" << *nump <<  endl;
 \#endif
 number_of_projects->value(nump->c_str());
 delete (nump);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "last project id=" << currenthd24->lastprojectid() << endl;
 \#endif
 
@@ -720,12 +720,12 @@ populate_projectlist(currenthd24->lastprojectid());
 
 update_catalog();
 
-\#if (HD24DEBUG==1) 
-cout << "get version" << endl; 
+\#if (HD24DEBUG==1)
+cout << "get version" << endl;
 \#endif
 string* version1=currenthd24->version();
-\#if (HD24DEBUG==1) 
-cout << "got version" << endl; 
+\#if (HD24DEBUG==1)
+cout << "got version" << endl;
 \#endif
 fsversion->value(version1->c_str());
 delete(version1);
@@ -739,7 +739,7 @@ refreshingui--;} {}
   } {
     code {// int drive is for multi drive support.
 
-// deselect all tracks on ' copy to hd24 tab' 
+// deselect all tracks on ' copy to hd24 tab'
 for (unsigned int i=1; i<=MAXCHANNELS; i++) {
    trackselected[i-1]=0;
 }
@@ -748,22 +748,22 @@ for (unsigned int i=1; i<=MAXCHANNELS; i++) {
 recorder->control->disable();
 recorder->control->audio->mixer(this->mixer->control);
 
-\#if (HD24DEBUG==1) 
-	cout << "init_gui" << endl; 
+\#if (HD24DEBUG==1)
+	cout << "init_gui" << endl;
 \#endif
 Fl::remove_timeout(poll_callback);
 ui_refresh("init gui");
 Fl::add_timeout(TIMEOUT,poll_callback,this);
 
 populate_formats();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "formats populated" << endl;
 \#endif
 fromtime->value("START");
 totime->value("END");
 refresh(fromtime);
 refresh(totime);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "init gui complete" << endl;
 \#endif
 
@@ -775,7 +775,7 @@ setstatus("Ready.");} {}
   }
   Function {drivename_cb(Fl_Widget* w, void* data)} {return_type {static void}
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "drivename_cb" << endl;
 \#endif
 HD24UserInterface *o=(HD24UserInterface *)data;
@@ -783,16 +783,16 @@ o->drivename_callback(w,data);} {}
   }
   Function {drivename_callback(Fl_Widget* w, void* data)} {open return_type void
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "drivename_callback" << endl;
 \#endif
 int choicemade=((Fl_Choice*)(w))->value();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "chose drive " << choicemade+1 << endl;
 \#endif
 
 
-string* idir=hd24utils::getlastdir("driveimagedir"); 
+string* idir=hd24utils::getlastdir("driveimagedir");
 // this->openmode() was defaulthd24->mode()
 
 hd24fs* newcurrenthd=new hd24fs(idir->c_str(),this->openmode(),choicemade);
@@ -804,7 +804,7 @@ init_gui(choicemade);} {}
   }
   Function {trackaction_callback(Fl_Widget* w, void* data)} {return_type void
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "trackaction_callback" << endl;
 \#endif
 int choicemade=((Fl_Choice*)(w))->value();
@@ -813,13 +813,13 @@ if (choicemade==0) {
 } else {
 	((Fl_Choice*)(w))->color(7);
 }
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "chose item " << choicemade << endl;
 \#endif} {}
   }
   Function {projectname_cb(Fl_Widget* w, void* data)} {return_type {static void}
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "projectname_cb" << endl;
 \#endif
 HD24UserInterface *o=(HD24UserInterface *)data;
@@ -827,7 +827,7 @@ o->projectname_callback(w,data);} {}
   }
   Function {projectname_callback(Fl_Widget* w, void* data)} {return_type void
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "projectname_callback" << endl;
 \#endif
 int choicemade=((Fl_Choice*)(w))->value();
@@ -843,7 +843,7 @@ o->songname_callback(w,data);} {}
   }
   Function {songname_callback(Fl_Widget* w, void* data)} {open return_type void
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "songname_callback" << endl;
 \#endif
 int choicemade=((Fl_Choice*)(w))->value();
@@ -854,10 +854,10 @@ select_song(choicemade); // song id=choicemade} {}
   }
   Function {refresh(Fl_Widget * w)} {open return_type void
   } {
-    code {return; 
+    code {return;
 /*
 probably not needed anymore.
-let's see if we encounter any strange behaviour. 
+let's see if we encounter any strange behaviour.
 if (w==NULL) return; w->deactivate();
 w->activate();
 */} {}
@@ -865,8 +865,8 @@ w->activate();
   decl {time_t starttime,endtime} {}
   Function {calcspace()} {return_type void
   } {
-    code {__uint32 rate;
-__uint32 tracks;
+    code {uint32_t rate;
+uint32_t tracks;
 
 switch (atrate->value()) {
     case 0: rate=44100; break;
@@ -916,45 +916,45 @@ Fl::add_timeout(.25,savemessage_callback,user);
   }
   Function {countfiletracks(const char* filename)} {open return_type int
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "About to count tracks of file " << filename << endl;
 \#endif
 
 SF_INFO sfinfo;
 SNDFILE* infile=NULL;
-if (strlen(filename)==0) 
+if (strlen(filename)==0)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "No filename, can't count tracks." << endl;
 \#endif
 	return 0;
 }
 if (soundfile==NULL)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "No soundfile reading library, can't count tracks." << endl;
 \#endif
 	return 0;
 }
 if (!(soundfile->libloaded))
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "Soundfile library not loaded, can't count tracks." << endl;
 \#endif
 	return 0;
 }
 
 infile=soundfile->sf_open(filename,SFM_READ,&sfinfo);
-if (!infile) 
+if (!infile)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "File open failed, can't count tracks." << endl;
 \#endif
 	return 0;
 }
 int numchans=sfinfo.channels;
 soundfile->sf_close(infile);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "File channels= " << numchans << endl;
 \#endif
 return numchans;} {}
@@ -992,7 +992,7 @@ if (numtracks>1) {
 ((Fl_Choice*)o)->redraw();
 fl_check();} {}
   }
-  Function {populate_trackactionbyfile(__uint32 slotnum,int trackchoice)} {open return_type void
+  Function {populate_trackactionbyfile(uint32_t slotnum,int trackchoice)} {open return_type void
   } {
     code {if (slotnum<0) return;
 if (slotnum>23) return;
@@ -1021,33 +1021,33 @@ o->redraw();
 
 fl_check();} {}
   }
-  Function {moveselected(__sint32 direction)} {open return_type void
+  Function {moveselected(int32_t direction)} {open return_type void
   } {
-    code {__uint32 firsttrack=0;
-__uint32 lasttrack=0;
-if (currsong==NULL) 
+    code {uint32_t firsttrack=0;
+uint32_t lasttrack=0;
+if (currsong==NULL)
 {
 	return;
 }
-if (direction==-1) 
+if (direction==-1)
 {
 	firsttrack=1;
 	lasttrack=currsong->logical_channels();
-	if (trackselected[0]==1) 
+	if (trackselected[0]==1)
 	{
 		// move up, but first track is selected
 		// and already upper choice- cannot move up
 		return;
 	}
-} 
-else 
+}
+else
 {
 	if (direction==1)
 	{
 		lasttrack=1;
 		firsttrack=currsong->logical_channels();
-		
-		if (trackselected[currsong->logical_channels()-1]==1) 
+
+		if (trackselected[currsong->logical_channels()-1]==1)
 		{
 			return;
 		}
@@ -1056,26 +1056,26 @@ else
 // we need to move stuff.
 if (firsttrack==0) return; // direction==0, don't move.
 
-__uint32 tracknum=firsttrack;
-while (tracknum!=lasttrack) 
+uint32_t tracknum=firsttrack;
+while (tracknum!=lasttrack)
 {
-	if (trackselected[tracknum-1]!=trackselected[tracknum-1-direction]) 
+	if (trackselected[tracknum-1]!=trackselected[tracknum-1-direction])
 	{
 		int dummy=trackselected[tracknum-1];
 		string* trackval=new string(filename[tracknum-1]->value());
-		
-		trackselected[tracknum-1]=trackselected[tracknum-1-direction];		
+
+		trackselected[tracknum-1]=trackselected[tracknum-1-direction];
 		trackselected[tracknum-1-direction]=dummy;
-		
+
 		int a=((Fl_Choice*)(trackaction[tracknum-1]))->value();
 		int b=((Fl_Choice*)(trackaction[tracknum-1-direction]))->value();
-		
-		filename[tracknum-1]->value(filename[tracknum-1-direction]->value());		
-		filename[tracknum-1-direction]->value(trackval->c_str());		
-		
+
+		filename[tracknum-1]->value(filename[tracknum-1-direction]->value());
+		filename[tracknum-1-direction]->value(trackval->c_str());
+
 		populate_trackactionbyfile(tracknum-1,b);
 		populate_trackactionbyfile(tracknum-1-direction,a);
-		
+
 		delete trackval;
 	}
 	tracknum-=direction;
@@ -1085,7 +1085,7 @@ redrawtracks();} {}
   }
   Function {trackaction_cb(Fl_Widget* w, void* data)} {open return_type {static void}
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "trackaction_cb" << endl;
 \#endif
 HD24UserInterface *o=(HD24UserInterface *)data;
@@ -1098,7 +1098,7 @@ if (currsong==NULL) {
 	return;
 }
 
-for (unsigned int tracknum=1;tracknum<=MAXCHANNELS;tracknum++) 
+for (unsigned int tracknum=1;tracknum<=MAXCHANNELS;tracknum++)
 {
 	if (currsong->logical_channels()>=tracknum) {
 		track_active=true;
@@ -1108,7 +1108,7 @@ for (unsigned int tracknum=1;tracknum<=MAXCHANNELS;tracknum++)
 		((Fl_Output*)filename[tracknum-1])->color(7);
 		filename[tracknum-1]->deactivate();
 	}
-	
+
 	if (track_active) {
 		if (trackselected[tracknum-1]==1) {
 			((Fl_Output*)filename[tracknum-1])->color(3);
@@ -1123,7 +1123,7 @@ for (unsigned int tracknum=1;tracknum<=MAXCHANNELS;tracknum++)
   decl {/* ===UI stuff ===================================================== */} {}
   Function {populate_formats()} {open return_type void
   } {
-    code {\#if (HD24DEBUG==1) 
+    code {\#if (HD24DEBUG==1)
 	cout << "populate_formats" << endl;
 \#endif
 
@@ -1142,9 +1142,9 @@ win->end();
 win->show();
 
 while (win->visible()) { Fl::wait(); }
-//__uint32 lastsector=0;
+//uint32_t lastsector=0;
 
-if (ui_format->buttonclicked!=1) 
+if (ui_format->buttonclicked!=1)
 {
 	delete ui_format;
 	return;
@@ -1193,7 +1193,7 @@ if ((*drivetype=="PC drive") || (*drivetype=="Macintosh HD"))
     "Now, I'll gladly comply and format it, just be aware that\\n"
     "by proceeding you may be erasing computer data BEYOND RECOVERY.\\n\\n"
     "Are you really, REALLY sure you want to proceed with formatting the drive?\\n";
-    
+
     bool wantformat=confirm(sorry->c_str());
     delete sorry;
     if (!wantformat) return;
@@ -1207,7 +1207,7 @@ currenthd24->quickformat(NULL); // NULL = message callback handler
 currenthd24->setvolumename(*(ui_format->volumelabel));
 currenthd24->savedriveinfo();
 currenthd24->commit();
-// there's no point in re-enabling write 
+// there's no point in re-enabling write
 // protection again now, is there?
 
 ui_refresh("format");
@@ -1239,7 +1239,7 @@ this->filename[tracknum-1]->redraw();} {}
 	delete tmpproj;
 }
 currproj=currenthd24->getproject(projectid);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "select_project \#" << projectid << endl;
 \#endif
 currenthd24->lastprojectid(projectid);
@@ -1248,14 +1248,14 @@ int currsongcount=0;
 if (currproj==NULL)
 {
     delete_project->deactivate();
-} 
+}
 else
 {
     delete_project->activate();
     currsongcount=currproj->songcount();
 }
 
-if (currsongcount==0) 
+if (currsongcount==0)
 {
 	number_of_songs->value("0");
 	populate_songlist(0); // shows -- EMPTY PROJECT --
@@ -1267,13 +1267,13 @@ if (currsongcount==0)
 
 string* nums=Convert::int2str(currproj->songcount());
 number_of_songs->value(nums->c_str());
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "number of songs=" << currproj->songcount() << endl;
 \#endif
 delete(nums);
 
 int lastsongid=currproj->lastsongid();
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "lastsongid=" << lastsongid << endl;
 \#endif
 populate_songlist(lastsongid);} {}
@@ -1282,8 +1282,8 @@ populate_songlist(lastsongid);} {}
   } {
     code {unsigned int i;
 button_setlocatepoint->deactivate();
-\#if (HD24DEBUG==1) 
-cout << "select_song \#" << songid << endl; 
+\#if (HD24DEBUG==1)
+cout << "select_song \#" << songid << endl;
 \#endif
 
 
@@ -1293,11 +1293,11 @@ if (songid==0) {
 	// This represents the choice "all songs"
 	if (currsong!=NULL) {
 		hd24song* tmpsong=currsong;
-		currsong=NULL;		
+		currsong=NULL;
 		delete tmpsong;
 	}
 	transfersource->value("(All songs in the current project)");
-	if (number_of_tracks==NULL) 
+	if (number_of_tracks==NULL)
 	{
 		return; // ui not yet initialized?
 	}
@@ -1323,17 +1323,17 @@ if (songid==0) {
 	button_loadlocatepoints->deactivate();
 	button_savelocatepoints->deactivate();
 	button_invert_tracks->deactivate();
-	choice_startloc=0; // use default 
+	choice_startloc=0; // use default
 	// disable locatepoint dropdown:
-	choice_endloc=populate_locatepoints(currsong,locatepoints);	
+	choice_endloc=populate_locatepoints(currsong,locatepoints);
 	choice_endloc=0;
-	update_fromto();	
+	update_fromto();
 	fromto->deactivate();
 	refresh (tab_tohd24);
 	return;
 
 } else {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "activate buttons" << endl;
 \#endif
 	delete_song->activate();
@@ -1354,15 +1354,15 @@ cout << "activate buttons" << endl;
 	refresh (bitdepth);
 	refresh (duration);
 	refresh (tab_tohd24);
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "deselect old song" << endl;
 \#endif
 	if (currsong!=NULL) {
-		recorder->control->song(NULL); /* tell recorder that the song is gone */			
+		recorder->control->song(NULL); /* tell recorder that the song is gone */
 		delete currsong;
 		currsong=NULL;
-	}	
-\#if (HD24DEBUG==1) 
+	}
+\#if (HD24DEBUG==1)
 cout << "currprojgetsong" << endl;
 \#endif
 	currsong=currproj->getsong(songid);
@@ -1383,7 +1383,7 @@ cout << "currprojgetsong" << endl;
 					}
 				}
 			}
-		}			
+		}
 		else
 		{
 			ui_refresh("selectsong");
@@ -1395,7 +1395,7 @@ cout << "currprojgetsong" << endl;
 }
 
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "songname->value" << endl;
 \#endif
 
@@ -1408,7 +1408,7 @@ delete currsongname;
 transfersource->value(dummy->c_str());
 delete dummy;
 
-/* This should al be done by the recorder.... 
+/* This should al be done by the recorder....
 string disp="S";
 string* idstr=Convert::int2str(songid,2,"0");
 disp+=*idstr;
@@ -1453,7 +1453,7 @@ delete disp2;
  ............. until this point */
 recorder->control->song(currsong); /* load song into recorder */
 
-redrawtracks(); // enable/disable tracks for export to HD24	
+redrawtracks(); // enable/disable tracks for export to HD24
 string* strtracks=Convert::int2str(currsong->logical_channels());
 number_of_tracks->value(strtracks->c_str());
 number_of_tracks->activate();
@@ -1477,7 +1477,7 @@ duration->activate();
 delete(dur);
 
 if (currsong->iswriteprotected()) {
-   writeprotected->value(1); 
+   writeprotected->value(1);
 } else {
    writeprotected->value(0);
 }
@@ -1500,7 +1500,7 @@ for (i=currsong->logical_channels();i<MAXCHANNELS;i++) {
     trackled[i]->hide();
 }
 
-choice_startloc=0; // use default 
+choice_startloc=0; // use default
 choice_endloc=populate_locatepoints(currsong,locatepoints);
 button_golocatepoint->activate();
 button_loadlocatepoints->activate();
@@ -1568,12 +1568,12 @@ delete (strto);} {}
     currenthd24=NULL;
 }
 
-string* idir=hd24utils::getlastdir("driveimagedir"); 
+string* idir=hd24utils::getlastdir("driveimagedir");
 // this->openmode() was hd24fs::MODE_RDWR
 currenthd24=new hd24fs(idir->c_str(),this->openmode());
 delete idir;
 defaulthd24=currenthd24;
-if (!(currenthd24->isOpen())) 
+if (!(currenthd24->isOpen()))
 {
    fl_message("Sorry, during detection no valid HD24 drive was found connected to the system.\\nPlease switch on and connect the drive, or try another File menu option.");
 }
@@ -1597,19 +1597,19 @@ switch (chooser.show()) {
 	default:
 		if (chooser.filename()) {
 			string* cfilename=new string(chooser.filename());
-		
+
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
 			hd24utils::setlastdir("driveimagedir",fpath->c_str());
-					
-			// this->openmode was hd24fs::MODE_RDWR 
+
+			// this->openmode was hd24fs::MODE_RDWR
 			hd24fs* sysob=new hd24fs(fpath->c_str(),this->openmode(),cfilename,false);
 			delete cfilename;
-			if (currenthd24!=NULL) 
+			if (currenthd24!=NULL)
 			{
 				currenthd24->~hd24fs();
 			}
-			if (defaulthd24!=NULL) 
+			if (defaulthd24!=NULL)
 			{
 				if (defaulthd24!=currenthd24)
 				{
@@ -1618,30 +1618,30 @@ switch (chooser.show()) {
 			}
 			currenthd24=sysob;
 			defaulthd24=sysob;
-			
-			if (!(currenthd24->isOpen())) 
+
+			if (!(currenthd24->isOpen()))
 			{
 	  		   bool choice=confirm(
 				"File does not appear to be a valid HD24 device image.\\nDo you want to try using it anyway?\\nWarning: Choosing 'Yes' may result in\\ncrashes and other unpredictable behavior."
 				);
-			
+
 			   if (choice) {
 			        if (sysob!=NULL) {
 				   	delete (sysob);
 				}
 				bool wantheader=confirm("Do you want to load a header file?");
-				
+
 				cfilename=new string(chooser.filename());
-       				string* idir=hd24utils::getlastdir("driveimagedir"); 
+       				string* idir=hd24utils::getlastdir("driveimagedir");
 				// this->openmode() was hd24fs::MODE_RDWR
 			   	sysob=new hd24fs(idir->c_str(),this->openmode(),cfilename,true); //force
 				delete idir;
 				delete cfilename;
-				if (currenthd24!=NULL) 
+				if (currenthd24!=NULL)
 				{
 					currenthd24->~hd24fs();
 				}
-				if (defaulthd24!=NULL) 
+				if (defaulthd24!=NULL)
 				{
 					if (defaulthd24!=currenthd24)
 					{
@@ -1649,7 +1649,7 @@ switch (chooser.show()) {
 					}
 
 				}
-				
+
 				currenthd24=sysob;
 				defaulthd24=sysob;
 				if (currenthd24->isOpen()) {
@@ -1661,10 +1661,10 @@ switch (chooser.show()) {
 				}
 				fl_message("Cannot open HD24 device image.");
 			   }
-			   
+
 			   return;
 			}
-			ui_restart();			
+			ui_restart();
 		}
 		break;
 }}
@@ -1692,7 +1692,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -1708,7 +1708,7 @@ switch (chooser.show()) {
 			fl_message("Drive image created successfully.");
 			setstatus("Done.");
 		} else {
-			fl_message("Could not write drive image to file. Access denied? Disk full?");	
+			fl_message("Could not write drive image to file. Access denied? Disk full?");
 		}
 		this->mustdispsavemessage=false;
 		break;
@@ -1731,8 +1731,8 @@ chooser.title("Export disk catalog to file");
 chooser.directory(catdir->c_str());
 chooser.options(Fl_Native_File_Chooser::NEW_FOLDER);
 chooser.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
-string* x=hd24utils::getconfigvalue("catalog_locpoints","1"); 
-int locmode=x->c_str()[0]-48; 
+string* x=hd24utils::getconfigvalue("catalog_locpoints","1");
+int locmode=x->c_str()[0]-48;
 delete x;
 
 switch (chooser.show()) {
@@ -1745,7 +1745,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -1756,9 +1756,9 @@ switch (chooser.show()) {
 		delete strfile;
 		if (anyerrors==NULL) {
 			fl_message("Catalog file created successfully.");
-		} else {	
+		} else {
 			delete anyerrors;
-			fl_message("Could not write catalog file. Access denied? Disk full?");	
+			fl_message("Could not write catalog file. Access denied? Disk full?");
 		}
 		break;
 }
@@ -1767,13 +1767,13 @@ delete catdir;}
                 }
                 MenuItem {} {
                   label {&Print catalog}
-                  callback {string* x=hd24utils::getconfigvalue("catalog_locpoints","1"); 
-int locmode=x->c_str()[0]-48; 
+                  callback {string* x=hd24utils::getconfigvalue("catalog_locpoints","1");
+int locmode=x->c_str()[0]-48;
 delete x;
 string* result=hd24utils::printcatalog(currenthd24,locmode);
-if (result!=NULL) 
+if (result!=NULL)
 {
-	if (strlen(result->c_str())!=0) 
+	if (strlen(result->c_str())!=0)
 	{
 		fl_message("%s",result->c_str());
 	}
@@ -1815,7 +1815,7 @@ delete result;}
 Fl_Double_Window* w=chooser->make_window(currenthd24);
 w->end();
 w->show();
-while (w->visible()) { 
+while (w->visible()) {
 Fl::wait();
 }
 string* cfilename;
@@ -1825,25 +1825,25 @@ switch (chooser->buttonclicked) {
 	case 1:
 		// OK
 		cfilename=new string(chooser->devicename->c_str());
-		idir=hd24utils::getlastdir("driveimagedir"); 
+		idir=hd24utils::getlastdir("driveimagedir");
 		// this->openmode was hd24fs::HD24_RDWR
 		sysob=new hd24fs(idir->c_str(),this->openmode(),cfilename,false);
 		delete idir; idir=NULL;
 
 		currenthd24=sysob;
 		defaulthd24=sysob;
-			
-		if (!(currenthd24->isOpen())) 
+
+		if (!(currenthd24->isOpen()))
 		{
 	  	   bool choice=confirm(
 			"Device does not appear to be a valid HD24 device.\\nDo you want to try using it anyway?\\nWarning: Choosing 'Yes' may result in\\ncrashes and other unpredictable behavior."
 		   );
-		
+
 		   if (choice) {
 		        if (sysob!=NULL) {
 			   	delete (sysob);
 			}
-       			string* idir=hd24utils::getlastdir("driveimagedir"); 
+       			string* idir=hd24utils::getlastdir("driveimagedir");
 			// this->openmode() was hd24fs::MODE_RDWR
 		   	sysob=new hd24fs(idir->c_str(),this->openmode(),cfilename,true); //force
 			delete idir;
@@ -1856,7 +1856,7 @@ switch (chooser->buttonclicked) {
 				if (wantheader) {
 				   loadheaderfile();
 				}
-			
+
 				ui_restart();
 				delete cfilename;
 				return;
@@ -1870,8 +1870,8 @@ switch (chooser->buttonclicked) {
 		   delete cfilename;
 		   break;
 		}
-		ui_restart();			
-		delete cfilename;		
+		ui_restart();
+		delete cfilename;
 		break;
 	case 2:
 		// cancel
@@ -1909,20 +1909,20 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
 		string* fpath=new string("");
 		*fpath+=strfile->substr(0,strlen(strfile->c_str())-strlen(fl_filename_name(strfile->c_str())));
 		hd24utils::setlastdir("headerdir",fpath->c_str());
-		
+
 		int result=hd24utils::saveheader(currenthd24,strfile);
 		delete strfile;
 		if (result==0) {
 			fl_message("Header file created successfully.");
 		} else {
-			fl_message("Could not write header file. Access denied? Disk full?");		
+			fl_message("Could not write header file. Access denied? Disk full?");
 		}
 		break;
 }}
@@ -1947,15 +1947,15 @@ while (win->visible()) { Fl::wait(); }
 if (ui_setlength->buttonclicked==1) {
 	// TODO:
 	// - create header file
-	//   getuserdatapath. 
-	//    
-	
+	//   getuserdatapath.
+	//
+
 	char userdatapath[FL_PATH_MAX];
 	Fl_Preferences* prefs=new Fl_Preferences(Fl_Preferences::USER,"HD24","HD24connect");
 	prefs->getUserdataPath(userdatapath,FL_PATH_MAX);
 	delete prefs;
 	string* headerfilename=new string(userdatapath);
-	
+
 	// add OS directory slash if forgotten
 \#ifdef WINDOWS
 \#define OSSLASH '\\\\'
@@ -1964,15 +1964,15 @@ if (ui_setlength->buttonclicked==1) {
 \#endif
 const char* x=headerfilename->c_str();
 int q=strlen(x);
-if (q>0) 
+if (q>0)
 {
-	if (x[q-1]!=OSSLASH) 
+	if (x[q-1]!=OSSLASH)
   	{
   		*headerfilename+=OSSLASH;
   	}
-}		
+}
 *headerfilename+="livefix.h24";
-	
+
 	int createtempheaderresult=hd24utils::savedrivesectors(currenthd24,headerfilename,0,0x10c76,NULL,NULL);
 
 	if (createtempheaderresult!=0)
@@ -1982,7 +1982,7 @@ if (q>0)
 		return;
 	}
 	// header was created successfully.
-	currenthd24->useheaderfile(*headerfilename);	
+	currenthd24->useheaderfile(*headerfilename);
 
 	// - use header file
 	// - this makes sure any writes go to header file
@@ -2012,20 +2012,20 @@ switch (chooser.show()) {
 	case 1: break; //cancel
 	default:
 	{
-		if (chooser.filename()) 
+		if (chooser.filename())
 		{
-			string* cfilename=new string(chooser.filename());		
+			string* cfilename=new string(chooser.filename());
 
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
-			hd24utils::setlastdir("wavefixdir",fpath->c_str());				
+			hd24utils::setlastdir("wavefixdir",fpath->c_str());
 			delete cfilename;
-			for (int n = 0; n < chooser.count(); n++ ) 
+			for (int n = 0; n < chooser.count(); n++ )
 			{
 				string* cfilename=new string(chooser.filename(n));
 				this->setstatus(chooser.filename(n));
 				int currfiletracks=countfiletracks(cfilename->c_str());
-				if (currfiletracks!=1) 
+				if (currfiletracks!=1)
 				{
 					fl_message("Only mono files are supported!");
 					delete cfilename;
@@ -2248,19 +2248,19 @@ ui_rename=new dialog_rename();
 string* currname=currenthd24->volumename();
 string* strname=new string("Rename project");
 Fl_Window* win=ui_rename->make_window(currname,strname);
-if (strname!=NULL) 
-{ 
+if (strname!=NULL)
+{
  	delete strname;
 }
 if (currname!=NULL)
-{	
+{
 	delete currname;
 }
 win->end();
 win->show();
 
 while (win->visible()) { Fl::wait(); }
-if (ui_rename->buttonclicked==1) 
+if (ui_rename->buttonclicked==1)
 {
   // OK clicked
   if (confirm("Do you wish to write the changes to disk?")) {
@@ -2268,7 +2268,7 @@ if (ui_rename->buttonclicked==1)
   	currenthd24->savedriveinfo();
 	populate_drivelist(1+drivename->value());
 	drivename->redraw();
-  }  
+  }
 }
 delete ui_rename;
 ui_refresh("ren proj");}
@@ -2358,7 +2358,7 @@ ui_refresh("ren proj");}
                         "Do you wish to open the drive format dialog instead?");
 	if (wantdelete)
 	{
-		openformatdialog();		
+		openformatdialog();
 	}
 	return;
 }
@@ -2385,9 +2385,9 @@ win->end();
 win->show();
 
 while (win->visible()) { Fl::wait(); }
-__uint32 lastsector=0;
+uint32_t lastsector=0;
 
-if (ui_filesize->buttonclicked!=1) 
+if (ui_filesize->buttonclicked!=1)
 {
 	delete ui_filesize;
 	return;
@@ -2417,7 +2417,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);			
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -2427,15 +2427,15 @@ switch (chooser.show()) {
 		this->transfer_cancel=0;
 		this->mustdispsavemessage=true;
 		Fl::add_timeout(.25,savemessage_callback,this);
-//		__uint32 lastsector=2097151; // 1 GiB
+//		uint32_t lastsector=2097151; // 1 GiB
 		int result=0;
                 if (imagetype==0)
-                {                
+                {
 		   result=hd24utils::newdriveimage(strfile,lastsector,&this->savemessage[0],&this->transfer_cancel);
 		} else {
 		   hd24driveimage* smartimage=new hd24driveimage();
 		   smartimage->initimage(strfile,lastsector);
-	           hd24fs* testfs=new hd24fs((const char*)NULL,hd24fs::MODE_RDWR,strfile,false); // use newly created file as FS, no force.           
+	           hd24fs* testfs=new hd24fs((const char*)NULL,hd24fs::MODE_RDWR,strfile,false); // use newly created file as FS, no force.
 	           testfs->quickformat(NULL);
 	           delete testfs;
 	           delete smartimage;
@@ -2448,15 +2448,15 @@ switch (chooser.show()) {
 			int wantopen=confirm("Drive image created successfully.\\nDo you want to open it now?");
 			if (wantopen==1)
 			{
-       				string* idir=hd24utils::getlastdir("driveimagedir"); 
+       				string* idir=hd24utils::getlastdir("driveimagedir");
 				// this->openmode was hd24fs::MODE_RDWR
 				hd24fs* sysob=new hd24fs(idir->c_str(),this->openmode(),strfile,false);
 				delete idir;
-				if (currenthd24!=NULL) 
+				if (currenthd24!=NULL)
 				{
 					currenthd24->~hd24fs();
 				}
-				if (defaulthd24!=NULL) 
+				if (defaulthd24!=NULL)
 				{
 					if (defaulthd24!=currenthd24)
 					{
@@ -2467,11 +2467,11 @@ switch (chooser.show()) {
 				currenthd24=sysob;
 				defaulthd24=sysob;
 			}
-			
+
 		} else {
-			fl_message("Could not write drive image to file. Access denied? Disk full?");	
+			fl_message("Could not write drive image to file. Access denied? Disk full?");
 		}
-		delete strfile;		
+		delete strfile;
 		break;
 }
 setstatus("Done.");
@@ -2499,7 +2499,7 @@ if (currenthd24->isdevicefile())
 {
 *strdriveinfo+="Volume is a physical device. ";
 }
-else 
+else
 {
 *strdriveinfo+="Volume is a drive image. ";
 }
@@ -2509,7 +2509,7 @@ if (currenthd24->commit_ok())
 {
 *strdriveinfo+="File system header matches backup.";
 }
-else 
+else
 {
 *strdriveinfo+="File system header differs from backup.";
 }
@@ -2661,7 +2661,7 @@ win->end();
 win->show();
 
 while (win->visible()) { Fl::wait(); }
-if (ui_rename->buttonclicked==1) 
+if (ui_rename->buttonclicked==1)
 {
   // OK clicked
   if (confirm("Do you wish to write the changes to disk?")) {
@@ -2703,17 +2703,17 @@ populate_locatepoints(currsong,locatepoints);
 locatepoints->value(currlocchoice);
 
 if (ui_setlocate->useasrange==1) {
-   if (currlocchoice==1) 
+   if (currlocchoice==1)
    {
-	choice_startloc=1;	
+	choice_startloc=1;
    }
-   if (currlocchoice==2) 
+   if (currlocchoice==2)
    {
    	choice_endloc=2;
    }
 }
 currsong->save();
-	
+
 update_fromto();
 delete ui_setlocate;}
                 xywh {370 280 85 20} labelsize 12 align 16 deactivate
@@ -2770,26 +2770,26 @@ ui_rename=new dialog_rename();
 string* currname=currproj->projectname();
 string* strproject=new string("Rename project");
 Fl_Window* win=ui_rename->make_window(currname,strproject);
-if (strproject!=NULL) 
-{ 
+if (strproject!=NULL)
+{
  	delete strproject;
 }
 win->end();
 win->show();
 
 while (win->visible()) { Fl::wait(); }
-if (ui_rename->buttonclicked==1) 
+if (ui_rename->buttonclicked==1)
 {
   // OK clicked
   if (confirm("Do you wish to write the changes to disk?")) {
 	currproj->projectname(*(ui_rename->itemname));
   	currproj->save();
 	populate_projectlist(1+projectname->value());
-  }  
-  
+  }
 
-  
-  
+
+
+
 }
 delete ui_rename;
 ui_refresh("ren proj 2");}
@@ -2816,8 +2816,8 @@ ui_refresh("ren proj 2");}
                 label Delete
                 callback {bool wantdel=confirm("Are you sure you want to delete this project, all songs in it and their recorded audio?\\nThis operation cannot be undone!");
 if (!wantdel) return;
-__sint32 projtodel=currproj->projectid();
-__uint32 result=currenthd24->deleteproject(projtodel);
+int32_t projtodel=currproj->projectid();
+uint32_t result=currenthd24->deleteproject(projtodel);
 result++; result--; // ignore for now
 ui_refresh("del proj");}
                 xywh {455 105 55 20} labelsize 12 align 16
@@ -2829,8 +2829,8 @@ if (currsong==NULL) return;
 
 bool wantdel=confirm("Are you sure you want to delete this song and its recorded audio?\\nThis operation cannot be undone!");
 if (!wantdel) return;
-__uint32 songtodel=currsong->songid();
-__uint32 result=currproj->deletesong(songtodel);
+uint32_t songtodel=currsong->songid();
+uint32_t result=currproj->deletesong(songtodel);
 result++; result--; //ignore for now
 ui_refresh("del song");}
                 xywh {455 180 55 20} labelsize 12 align 16
@@ -2842,7 +2842,7 @@ ui_refresh("del song");}
 	return;
 }
 
-if (currenthd24->projectcount() == currenthd24->maxprojects()) 
+if (currenthd24->projectcount() == currenthd24->maxprojects())
 {
 	fl_message("Cannot create project.\\nThe maximum number of projects is already in use!");
 	return;
@@ -2857,7 +2857,7 @@ win->show();
 
 while (win->visible()) { Fl::wait(); }
 
-if (ui_newproject->buttonclicked!=1) 
+if (ui_newproject->buttonclicked!=1)
 {
 	delete ui_newproject;
 	return;
@@ -2869,16 +2869,16 @@ for (int i=0;i<65;i++) {
 hd24project* newproj=currenthd24->createproject(
 (const char*)strncpy(projname,ui_newproject->projectname,64)
 );
-if (newproj==NULL) 
+if (newproj==NULL)
 {
     fl_message("Could not create the project. Access denied?");
     delete ui_newproject;
-    return;    
+    return;
 }
 
 //if (ui_newsong->buttonclicked==1) {
 //	lastsector=ui_filesize->lastsector;
-//} 
+//}
 ui_refresh("createproj");
 delete ui_newproject;}
                 xywh {360 105 95 20} labelsize 12 align 16
@@ -2892,13 +2892,13 @@ delete ui_newproject;}
 
 if (currproj==NULL) {
 	fl_message("No project is currently selected.");
-	return;	
+	return;
 }
 
-if (currproj->songcount() == currproj->maxsongs()) 
+if (currproj->songcount() == currproj->maxsongs())
 {
 	fl_message("Cannot create song.\\nThe maximum number of songs is already in use!");
-	return;	
+	return;
 }
 savemessage[0]='\\0';
 transfer_cancel=0;
@@ -2918,12 +2918,12 @@ while (win->visible()) { Fl::wait(); }
 
 
 
-//__uint32 lastsector=0;
+//uint32_t lastsector=0;
 
-if (ui_newsong->buttonclicked!=1) 
+if (ui_newsong->buttonclicked!=1)
 {
 	mustdispsavemessage=false;
-	transfer_cancel=1;	
+	transfer_cancel=1;
 	delete ui_newsong;
 	return;
 }
@@ -2937,37 +2937,37 @@ hd24song* newsong=currproj->createsong(
 );
 
 
-if (newsong==NULL) 
+if (newsong==NULL)
 {
     fl_message("Could not create the song. Access denied?");
 	mustdispsavemessage=false;
-	transfer_cancel=1;    
+	transfer_cancel=1;
     delete ui_newsong;
-    return;    
+    return;
 }
-__uint32 samlen=ui_newsong->songlength_in_wamples; // dialog property, not a function.
+uint32_t samlen=ui_newsong->songlength_in_wamples; // dialog property, not a function.
 win->~Fl_Window();
 delete ui_newsong;
 // optionally, lengthen song to specified size.
 if (samlen>0) {
 	setstatus("Lengthening song... ");
-	
-		
-\#if (HD24DEBUG==1) 
+
+
+\#if (HD24DEBUG==1)
 	cout << "about to start lengthening song to maxlen=" << samlen << endl;
 \#endif
 	bool clearnew=true; // clear lengthened part
 
-	__uint32 translen=newsong->songlength_in_wamples(samlen,clearnew,&this->savemessage[0],&this->transfer_cancel,Fl::check); 
+	uint32_t translen=newsong->songlength_in_wamples(samlen,clearnew,&this->savemessage[0],&this->transfer_cancel,Fl::check); 
 
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "verifying actual song length " << endl
 	 << "new len=" << translen << endl;
 \#endif
-	if (translen!=samlen) 
+	if (translen!=samlen)
 	{
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 		cout << "new len<> maxlen so not enough space." << endl;
 \#endif
 		if (transfer_cancel==0)
@@ -2979,14 +2979,14 @@ if (samlen>0) {
 		}
 		return;
 	}
-	newsong->save(); 
+	newsong->save();
 
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 cout << "translen is now " << translen << endl;
 \#endif
 }
-stop_transfer->hide();	
-this->mustdispsavemessage=false;	
+stop_transfer->hide();
+this->mustdispsavemessage=false;
 delete newsong; // ui refresh will pick it up as currsong.
 ui_refresh("newsong");
 setstatus("Ready.");
@@ -3025,7 +3025,7 @@ switch (chooser.show()) {
 		if (bFileexists) {
 			bool choice=confirm(
 				"A file with this name already exists. Do you wish to overwrite it?"
-				);		
+				);
 			if (!(choice)) return;
 		}
 		string* strfile=new string(chooser.filename());
@@ -3058,15 +3058,15 @@ chooser.title("Select Locate Point file\\0");
 chooser.type(Fl_Native_File_Chooser::BROWSE_FILE);
 chooser.filter("Locate Point files\\t*.{loc}\\0");
 //chooser.preview(0);
-switch (chooser.show()) 
+switch (chooser.show())
 {
 	case -1: break; //error
 	case 1: break; //cancel
 	default:
-		if (chooser.filename()) 
+		if (chooser.filename())
 		{
 			string* cfilename=new string(chooser.filename());
-			
+
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
 			hd24utils::setlastdir("locpointdir",fpath->c_str());
@@ -3351,29 +3351,29 @@ for (i=0; i<MAXCHANNELS; i++) {
                 label Transfer
                 callback {recorder->control->button_stop_call();
 mustdisplaytimer=false;
-__sint64 bytestransferred=0;
+int64_t bytestransferred=0;
 transeng->sizelimit(strtoll(sizelimit->value(),0,10));
 
 int bytespersam;
 int wantsplit=0;
-__uint32 numsongs=1;
+uint32_t numsongs=1;
 double dif;
-__sint64 totbytestotransfer=0; 
+int64_t totbytestotransfer=0;
 
 bool needoverwrite=false;
-bool isproblem=false;	
-__uint32 channelstotransfer=0;
+bool isproblem=false;
+uint32_t channelstotransfer=0;
 
-__uint32 i=0;
+uint32_t i=0;
 
 transfer_cancel=0;
 
-if (currproj==NULL) 
+if (currproj==NULL)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "No current project." << endl;
-\#endif			
-	return;	
+\#endif
+	return;
 }
 
 /* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
@@ -3381,14 +3381,14 @@ if (currproj==NULL)
 //jackclient=NULL;
 /* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 
-if (!(hd24utils::dirExists(projectdir->value()))) 
+if (!(hd24utils::dirExists(projectdir->value())))
 {
 	fl_message("Project directory no longer exists.\\nPlease select another directory and try again.");
 	//jackclient=saveclient;
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "project dir no longer exists, transfer cancelled." << endl;
-\#endif			
-	
+\#endif
+
 	return;
 }
 transeng->setstatusfunction=HD24UserInterface::transferstatus;
@@ -3402,54 +3402,54 @@ delete filenameformat;
 bool channelwarning=false;
 int currfileformat=0;
 bool multisong=false;
-if (currsong==NULL) 
+if (currsong==NULL)
 {
 	multisong=true;
-}  
-else 
+}
+else
 {
 	// count channels to transfer
-	__uint32 channels=currsong->logical_channels();
-	for (unsigned int handle=0;handle<channels;handle++) 
+	uint32_t channels=currsong->logical_channels();
+	for (unsigned int handle=0;handle<channels;handle++)
 	{
-		if (track[handle]->value()!=0) 
+		if (track[handle]->value()!=0)
 		{
 			channelstotransfer++;
 			transeng->trackselected(handle,true);
-		} 
-		else 
+		}
+		else
 		{
 			transeng->trackselected(handle,false);
 		}
 	}
-	
+
 	transeng->mixleft( (transfersource_mixleft->value())==1);
 	transeng->mixright( (transfersource_mixright->value()) ==1);
 
 	currfileformat=fileformat->value();
-	
+
 	transeng->selectedformat(currfileformat);
-	
-	if (transeng->format_outputchannels(currfileformat)>1) 
+
+	if (transeng->format_outputchannels(currfileformat)>1)
 	{
-		if ((channelstotransfer%(transeng->format_outputchannels(currfileformat)))!=0) 
+		if ((channelstotransfer%(transeng->format_outputchannels(currfileformat)))!=0)
 		{
 			channelwarning=true;
 		}
 	}
-	
-} 
-	
-if (multisong) 
+
+}
+
+if (multisong)
 {
 	numsongs=currproj->songcount();
 }
-if (channelwarning) 
+if (channelwarning)
 {
 	string multiple="Number of channels to export must be a multiple of ";
 	string* mynum=Convert::int2str(transeng->format_outputchannels(currfileformat));
 	multiple+=*mynum;
-	if (transeng->format_outputchannels(currfileformat)==2) 
+	if (transeng->format_outputchannels(currfileformat)==2)
 	{
 		multiple+="\\nto export to stereo pairs.";
 	} else {
@@ -3459,31 +3459,31 @@ if (channelwarning)
 	}
 	fl_message("%s",multiple.c_str());
 	delete mynum;
-/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */	
+/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //	jackclient=saveclient;
 
 
 	return;
-	
+
 }
-if (numsongs==0) 
+if (numsongs==0)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "multisong transfer: no songs in current project." << endl;
-\#endif			
+\#endif
 	fl_message("Nothing to do!");
-/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */	
+/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //	jackclient=saveclient;
 
 	return;
 }
 int havedoublesongname=0;
-if (multisong && (numsongs>1)) 
+if (multisong && (numsongs>1))
 {
 	// check if any song names are duplicated
 	hd24song* s1=NULL;
 	hd24song* s2=NULL;
-	for (unsigned i=1; i<numsongs; i++) 
+	for (unsigned i=1; i<numsongs; i++)
 	{
 		if (s1!=NULL) {
                         delete s1;
@@ -3515,8 +3515,8 @@ if (multisong && (numsongs>1))
                 delete s2;
                 s2=NULL;
 	}
-}	
-if (havedoublesongname==1) 
+}
+if (havedoublesongname==1)
 {
  if (!confirm(
 		"Duplicate song names were detected. If you continue, \\n"
@@ -3526,42 +3526,42 @@ if (havedoublesongname==1)
 		"Do you wish to continue?"
 	)
   ) {
-/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */  
+/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //  	jackclient=saveclient;
-	return;	
+	return;
   };
 }
 // preparation for the transfers
-for (i=1; i<=numsongs; i++) 
+for (i=1; i<=numsongs; i++)
 {
-	if (multisong) 
+	if (multisong)
 	{
 		if (currsong!=NULL) {
                         delete currsong;
 			currsong=NULL;
 		}
 		currsong=currproj->getsong(i);
-		if (currsong!=NULL) 
+		if (currsong!=NULL)
 		{
 			channelstotransfer=currsong->logical_channels();
 			choice_startloc=0;
 			choice_endloc=currsong->locatepointcount();
 		}
 	}
-\#if (HD24DEBUG==1) 
-	cout << "channels to transfer=" << channelstotransfer << endl;	
-\#endif			
-	__uint64 bytestotransfer_perchannel=0;
-	__uint64 bytestotransfer_thissong=0;
-	transeng->sourcesong(currsong);	
+\#if (HD24DEBUG==1)
+	cout << "channels to transfer=" << channelstotransfer << endl;
+\#endif
+	uint64_t bytestotransfer_perchannel=0;
+	uint64_t bytestotransfer_thissong=0;
+	transeng->sourcesong(currsong);
 	if (currsong!=NULL)
 	{
 		bytespersam=(currsong->bitdepth())/8;
 		// for kb/sec calculation
 		// because of this, double at higher sample rates
 
-		__uint32 wamstotrans_thissong;
-		if (multisong) 
+		uint32_t wamstotrans_thissong;
+		if (multisong)
 		{
 			wamstotrans_thissong=currsong->songlength_in_wamples();
 			transeng->startoffset(0);
@@ -3569,8 +3569,8 @@ for (i=1; i<=numsongs; i++)
 		}
 		else
 		{
-			__uint32 startoffset=0;
-			__uint32 endoffset=0;	
+			uint32_t startoffset=0;
+			uint32_t endoffset=0;	
 
 			if (choice_startloc!=0) {
 				startoffset=currsong->getlocatepos(choice_startloc);
@@ -3581,18 +3581,18 @@ for (i=1; i<=numsongs; i++)
 			}
 			transeng->startoffset(startoffset);
 			transeng->endoffset(endoffset);
-			if (endoffset>startoffset) 
-			{		
+			if (endoffset>startoffset)
+			{
 				wamstotrans_thissong=endoffset-startoffset;
-			} 
-			else 
+			}
+			else
 			{
 				wamstotrans_thissong=startoffset-endoffset;
 			}
 		}
-\#if (HD24DEBUG==1) 	
+\#if (HD24DEBUG==1)
 	cout << "wams to transfer for this song=" << wamstotrans_thissong << endl ;
-\#endif		
+\#endif
 		if (wamstotrans_thissong==0xFFFFFFFF)
 		{
 			bool wanttransfer=confirm(
@@ -3609,62 +3609,62 @@ for (i=1; i<=numsongs; i++)
 			"transfer anyway?");
 			if (!(wanttransfer)) return;
 		}
-		
-		bytestotransfer_perchannel=(__sint64)((__sint64)wamstotrans_thissong*(__sint64)bytespersam);
-		
+
+		bytestotransfer_perchannel=(int64_t)((int64_t)wamstotrans_thissong*(int64_t)bytespersam);
+
 		// hi-samplerate correction:
 		bytestotransfer_perchannel*=currsong->chanmult();
 		bytestotransfer_thissong=(channelstotransfer*bytestotransfer_perchannel);
-		
+
 		totbytestotransfer+=bytestotransfer_thissong;
-		
-		if (!(needoverwrite)) 
+
+		if (!(needoverwrite))
 		{
 			needoverwrite=anyfilesexist(currsong);
-		}			
-	}	
-		
-		
-	/* The above number equals 2 giga/4, to bypass format limitations. 
-	   For 24-bit samples 2 giga/3 would suffice but some space could 
+		}
+	}
+
+
+	/* The above number equals 2 giga/4, to bypass format limitations.
+	   For 24-bit samples 2 giga/3 would suffice but some space could
 	   be needed by headers etc. */
-	__uint64 MAXBYTES=transeng->sizelimit();
+	uint64_t MAXBYTES=transeng->sizelimit();
 	// max number of samples per giga is half for high samplerate files
 	if (multisong)
 	{
                 delete currsong;
 		currsong=NULL;
 	}
-\#if (HD24DEBUG==1) 	
-	cout << "Maxbytes per channel=" << MAXBYTES 
+\#if (HD24DEBUG==1)
+	cout << "Maxbytes per channel=" << MAXBYTES
 	<< "bytes per channel=" << bytestotransfer_perchannel << endl;
-\#endif	
-	if (bytestotransfer_perchannel>MAXBYTES) 
+\#endif
+	if (bytestotransfer_perchannel>MAXBYTES)
 	{
 	        if (wantsplit!=1)
 	        {
-/*	        
+/*
 			int choice=fl_choice(
 				"Exported audio files may be too large to play or edit. \\nDo you want to export the file as multiple smaller chunks?",
 				"Yes","No","Cancel"
 				);
-			if (choice==2) 
+			if (choice==2)
 			{
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 				cout << "user cancelled too large file transfer" << endl;
-\#endif			
+\#endif
 				//jackclient=saveclient;
 				return; // cancelled
 			}
-			if (choice==0) 
+			if (choice==0)
 			{
 				wantsplit=1;
 			}
 */
 			if (autosplit->value()==1) {
 				wantsplit=1;
-			}			
-		}		
+			}
+		}
 	}
 }
 if (multisong)
@@ -3676,57 +3676,57 @@ if (multisong)
 }
 
 // do we need to overwrite any files? Are we allowed to?
-if (needoverwrite) 
+if (needoverwrite)
 {
 	isproblem=(!(confirm("One or more output files already exist. Do you want to overwrite them?")));
 }
 
-if (isproblem) 
+if (isproblem)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "user does not wish to perform needed overwrite." << endl;
 \#endif
 /* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //	jackclient=saveclient;
-	return;	
+	return;
 }
 
 // needed to check for dir to make sure about existence of output files
 // but the previous question may have given the user the time to mess up.
 // check the dir again :)
 
-if (!(hd24utils::dirExists(projectdir->value()))) 
+if (!(hd24utils::dirExists(projectdir->value())))
 {
 	fl_message("Project directory no longer exists.\\nPlease select another directory and try again.");
-/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */	
+/* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //	jackclient=saveclient;
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "project directory deleted" << endl;
-\#endif	
+\#endif
 	return;
-}	
-\#if (HD24DEBUG==1) 
-	cout << "by calc, tot bytes to transfer=" << totbytestotransfer << endl;	
-\#endif			
+}
+\#if (HD24DEBUG==1)
+	cout << "by calc, tot bytes to transfer=" << totbytestotransfer << endl;
+\#endif
 stop_transfer->show();
-deactivate_ui();	
-setstatus("Transferring audio to PC... 0%");	
-time (&starttime);		
+deactivate_ui();
+setstatus("Transferring audio to PC... 0%");
+time (&starttime);
 int somethingwrong=0;
-for (i=1; i<=numsongs; i++) 
+for (i=1; i<=numsongs; i++)
 {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "set song" << endl;
 \#endif
-	if (transfer_cancel!=0) 
-	{ 
-\#if (HD24DEBUG==1) 
+	if (transfer_cancel!=0)
+	{
+\#if (HD24DEBUG==1)
 		cout << "transfer cancelled by user." << endl;
-\#endif	
+\#endif
 		break;
 	}
 
-	if (multisong) 
+	if (multisong)
 	{
 		if (currsong!=NULL) {
                         delete currsong;
@@ -3735,39 +3735,39 @@ for (i=1; i<=numsongs; i++)
 		currsong=currproj->getsong(i);
 	}
 	transeng->sourcesong(currsong);
-	if (currsong==NULL) 
-  	{	
-\#if (HD24DEBUG==1) 
+	if (currsong==NULL)
+  	{
+\#if (HD24DEBUG==1)
 		cout << "currsong=null, nothing to transfer" << endl;
 \#endif
   		continue;
    	}
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
 	cout << "calling ftransfer with "
 	 << "songnum=" << i
 	 << ", numsongs=" << numsongs
 	 << ", totlen(bytes)=" << totbytestotransfer
 	 << ", bytestransferred=" << bytestransferred
-	 << ", wantsplit=" << wantsplit 
+	 << ", wantsplit=" << wantsplit
 	<< endl;
 \#endif
 
 	transeng->prepare_transfer_to_pc(i,numsongs,totbytestotransfer,bytestransferred,wantsplit,(havedoublesongname==1)?(i):(0));
-	__sint64 currtransferred=transeng->transfer_to_pc();
-	if (currtransferred==0) 
+	int64_t currtransferred=transeng->transfer_to_pc();
+	if (currtransferred==0)
 	{
 		somethingwrong=1;
 		break;
 	}
 	bytestransferred+=currtransferred;
-			
+
 	if (multisong)
 	{
                 delete currsong;
 		currsong=NULL;
 	}
-	
-} 
+
+}
 
 
 if (multisong)
@@ -3776,17 +3776,17 @@ if (multisong)
 	{
                 delete currsong;
 		currsong=NULL;
-	}				
-}	
+	}
+}
 
 /* TODO: DISABLE/ENABLE JACK BEFORE/AFTER TRANSFER */
 //jackclient=saveclient;
-if (somethingwrong==1) 
+if (somethingwrong==1)
 {
 	activate_ui();
 	if (transeng->lasterror()!=NULL)
 	{
-		
+
 		setstatus(transeng->lasterror()->c_str());
 	}
 	else
@@ -3794,18 +3794,18 @@ if (somethingwrong==1)
 		setstatus((const char*)&"Unexpected error transferring files.");
 	}
 	stop_transfer->hide();
-	return;		
+	return;
 }
 
 time (&endtime);
 dif=difftime(endtime,starttime);
-//__uint32 subsecs=(__uint32)(100*(dif-floor(dif)));
+//uint32_t subsecs=(uint32_t)(100*(dif-floor(dif)));
 dif=floor(dif);
-__uint32 minutes=((__uint32)dif-((__uint32)dif%60))/60;
-__uint32 seconds=((__uint32)dif%60);
+uint32_t minutes=((uint32_t)dif-((uint32_t)dif%60))/60;
+uint32_t seconds=((uint32_t)dif%60);
 
 string minsec="Ready. Transfer time: ";
-if (transfer_cancel==1) 
+if (transfer_cancel==1)
 {
 	minsec="Transfer cancelled. Elapsed transfer time: ";
 }
@@ -3818,9 +3818,9 @@ string* strsecs=Convert::int2str(seconds,2,"0");
 minsec+=*strsecs;
 delete(strsecs);
 
-if (dif>=1) 
+if (dif>=1)
 {
-	__uint32 kbps=(__uint32)(((bytestransferred)/1024)/dif);
+	uint32_t kbps=(uint32_t)(((bytestransferred)/1024)/dif);
 
 	minsec+=" (";
 	string* strkbps=Convert::int2str(kbps);
@@ -3861,7 +3861,7 @@ switch (chooser.show()) {
               }
               Fl_Input projectdir {
                 label {Project dir:}
-                callback {/* callback when release: add a 
+                callback {/* callback when release: add a
    (back)slash to the end of the
    pathname if one is not present. */
 
@@ -3914,16 +3914,16 @@ win->show();
 while (win->visible()) { Fl::wait(); }
 
 /* Dialog has closed, read the results */
-//if (ui_fromto->buttonclicked==0) 
+//if (ui_fromto->buttonclicked==0)
 //{ fl_message("No OK nor Cancel clicked"); }
-if (ui_fromto->buttonclicked==1) 
+if (ui_fromto->buttonclicked==1)
 {
 	// OK clicked
 	choice_startloc=ui_fromto->choice_startloc;
 	choice_endloc=ui_fromto->choice_endloc;
 	update_fromto();
 }
-//if (ui_fromto->buttonclicked==2) 
+//if (ui_fromto->buttonclicked==2)
 //{ fl_message("Cancel clicked"); }
 delete ui_fromto;}
                 xywh {505 115 85 20} labelsize 12 align 16
@@ -3971,13 +3971,13 @@ delete ui_fromto;}
                 callback {if (customrate->value()==1) {
 	ratechoice->activate();
 	if (ratechoice->value()==4) {
-		stamprate->activate();	
+		stamprate->activate();
 	} else {
-		stamprate->deactivate();	
+		stamprate->deactivate();
 	}
 } else {
 	ratechoice->deactivate();
-	stamprate->deactivate();	
+	stamprate->deactivate();
 }}
                 xywh {10 345 20 20} box FLAT_BOX down_box DOWN_BOX color 52 labelsize 12 align 8
               }
@@ -4163,12 +4163,12 @@ sizelimit->deactivate();}
                 callback {recorder->control->button_stop_call(); //stop transport
 
 //bool have_smpte=false;
-if (currproj==NULL) 
+if (currproj==NULL)
 {
 	fl_message("No project selected, nothing to do!\\nSelect a project on the Project/Song tab and try again.");
-	return;	
+	return;
 }
-if (currsong==NULL) 
+if (currsong==NULL)
 {
 	fl_message("No song selected, nothing to do!\\nSelect a song on the Project/Song tab and try again.");
 	return;
@@ -4189,19 +4189,19 @@ for (unsigned int ch=1;ch<=currsong->logical_channels();ch++) {
 	if (action==0) { /* 0=ERASE */
 		// track action says 'erase'
 		somethingtodo=1;
-		currsong->trackarmed(ch,true);	
+		currsong->trackarmed(ch,true);
 		continue;
-	} 
+	}
 	if (action==1) { /* 1=SMPTE */
 		// track action says 'stripe with SMPTE/LTC'
 		somethingtodo=1;
 		//have_smpte=true;
-		currsong->trackarmed(ch,true);	
+		currsong->trackarmed(ch,true);
 		continue;
-	} 
+	}
 	// no file, no timecode stripe and no erase, keep track.
-	currsong->trackarmed(ch,false);	
-	
+	currsong->trackarmed(ch,false);
+
 }
 if (somethingtodo==0) {
 	fl_message(
@@ -4216,10 +4216,10 @@ if (somethingtodo==0) {
 		"When a file to transfer contains multiple tracks, you\\n"
                 "can choose to mixdown the file to mono (the default), \\n"
                 "or you can select the track that you want to transfer \\n"
-                "to the HD24 drive." 
+                "to the HD24 drive."
 	);
 	for (unsigned int ch=1;ch<=currsong->logical_channels();ch++) {
-		currsong->trackarmed(ch,false);	
+		currsong->trackarmed(ch,false);
 	}
 	return;
 }
@@ -4264,12 +4264,12 @@ transeng->soundfile=soundfile;
 
 int filemissing=0;
 for (unsigned int misscheck=1;misscheck<=currsong->logical_channels();misscheck++) {
-	if (strlen(filename[misscheck-1]->value())==0) continue;	
-	if (!(hd24utils::fileExists(filename[misscheck-1]->value()))) 
+	if (strlen(filename[misscheck-1]->value())==0) continue;
+	if (!(hd24utils::fileExists(filename[misscheck-1]->value())))
 	{
 		filemissing=1;
 		break;
-	}	
+	}
 }
 
 if (filemissing==1) {
@@ -4278,7 +4278,7 @@ if (filemissing==1) {
 }
 // end of checking if all files still exist
 
-for (unsigned int filenum=1;filenum<=currsong->logical_channels();filenum++) 
+for (unsigned int filenum=1;filenum<=currsong->logical_channels();filenum++)
 {
     transeng->sourcefilename(filenum,filename[filenum-1]->value());
     transeng->trackaction(filenum,((Fl_Choice*)(trackaction[filenum-1]))->value());
@@ -4297,15 +4297,15 @@ if (transeng->lasterror()!=NULL)
     {
 	    setstatus(transeng->lasterror()->c_str());
     }
-    else 
+    else
     {
         setstatus("Done. No error messages.");
-    }	 
+    }
 } else {
     setstatus("Done.");
 }
 ui_refresh("tohd24_done");
-activate_ui();	
+activate_ui();
 this->control->ready(1);}
                 xywh {520 480 80 20} labelsize 12
               }
@@ -4490,37 +4490,37 @@ cout << "Closed chooser with OK." << endl;
 \#if (HD24DEBUG==1)
 cout << "Filename was chosen." << endl;
 \#endif
-			string* cfilename=new string(chooser.filename());		
+			string* cfilename=new string(chooser.filename());
 
 			string* fpath=new string("");
 			*fpath+=cfilename->substr(0,strlen(cfilename->c_str())-strlen(fl_filename_name(cfilename->c_str())));
-			hd24utils::setlastdir("audiofiledir",fpath->c_str());				
+			hd24utils::setlastdir("audiofiledir",fpath->c_str());
 \#if (HD24DEBUG==1)
 cout << "I've set the last audiofile dir to " << fpath->c_str() << endl;
-\#endif			
+\#endif
 			delete cfilename;
 \#if (HD24DEBUG==1)
 cout << "Files chosen: "<< chooser.count() << endl;
-\#endif				
+\#endif
 			for (int n = 0; n < chooser.count(); n++ ) {
 \#if (HD24DEBUG==1)
 cout << "n=" << n << endl;
-\#endif						
+\#endif
 				string* cfilename=new string(chooser.filename(n));
 \#if (HD24DEBUG==1)
 cout << "currfile=" << *cfilename << endl;
-\#endif				
+\#endif
 				int currfiletracks=countfiletracks(cfilename->c_str());
-				if (currfiletracks==0) 
+				if (currfiletracks==0)
 				{
 					currfiletracks=-1;
 				}
 \#if (HD24DEBUG==1)
 cout << "track count=" << currfiletracks << endl;
-\#endif				
-				
+\#endif
+
 				int totfiletracks=currfiletracks;
-				int haveslot=0;	
+				int haveslot=0;
 				unsigned int suggestedslot;
 \#define NO_SLOT 1000
 				suggestedslot=NO_SLOT;
@@ -4561,10 +4561,10 @@ cout << "track count=" << currfiletracks << endl;
   					    	    {
 					    		suggestedslot=slotnum;
 					    	    }
-					        }					    
-					    }					    
+					        }
+					    }
 					}
-				
+
 					haveslot=0;
 					if (suggestedslot!=NO_SLOT)
 					{
@@ -4575,24 +4575,24 @@ cout << "track count=" << currfiletracks << endl;
 							filename[suggestedslot]->value(chooser.filename(n));
 							((Fl_Choice*)(trackaction[suggestedslot]))->clear();
 							if (tosplitornottosplit>1) {
-								populate_trackactionbyfile(suggestedslot,3+(totfiletracks-currfiletracks));					
+								populate_trackactionbyfile(suggestedslot,3+(totfiletracks-currfiletracks));
 							} else {
-								populate_trackactionbyfile(suggestedslot,2);									
+								populate_trackactionbyfile(suggestedslot,2);
 							}
 						}
 					}
-					
+
 					if (haveslot==0)
-					{	
+					{
 						for (unsigned int freeslot=0;freeslot<currsong->logical_channels();freeslot++) {
 							if (strlen(filename[freeslot]->value())==0) {
 								haveslot=1;
 								filename[freeslot]->value(chooser.filename(n));
 								((Fl_Choice*)(trackaction[freeslot]))->clear();
 								if (tosplitornottosplit>1) {
-									populate_trackactionbyfile(freeslot,3+(totfiletracks-currfiletracks));					
+									populate_trackactionbyfile(freeslot,3+(totfiletracks-currfiletracks));
 								} else {
-									populate_trackactionbyfile(freeslot,2);									
+									populate_trackactionbyfile(freeslot,2);
 								}
 								break;
 							}
@@ -4601,7 +4601,7 @@ cout << "track count=" << currfiletracks << endl;
 					if (haveslot==0) {
 						break;
 					}
-					if (tosplitornottosplit==1) {					
+					if (tosplitornottosplit==1) {
 						currfiletracks=0;
 					} else {
 						currfiletracks--;
@@ -4620,9 +4620,9 @@ cout << "track count=" << currfiletracks << endl;
 						   "Typically this would be due to the audio file reading library \\n"
 						   "(libsndfile) not having been loaded. Sorry, I can't read \\n"
 						   "audio files without it...");
-						break;				
+						break;
 					}
-				}				
+				}
 		        }
 		}
 }} selected
@@ -4750,12 +4750,12 @@ redrawtracks();}
 		"When a file to transfer contains multiple tracks, you\\n"
                 "can choose to mixdown the file to mono (the default), \\n"
                 "or you can select the track that you want to transfer \\n"
-                "to the HD24 drive.\\n\\n" 
+                "to the HD24 drive.\\n\\n"
                 "The 'Offset' field allows you to specify how far into \\n"
                 "the song writing will start. This permits you to use\\n"
                 "audio from several sources to fill up one song, and is\\n"
                 "for example useful to re-combine the parts resulting \\n"
-                "from auto-splitting back into one long recording.\\n"                
+                "from auto-splitting back into one long recording.\\n"
 	);}
                 xywh {580 105 20 20} box FLAT_BOX color 15 selection_color 15 labelfont 1 labelsize 11 labelcolor 7
               }
@@ -4779,7 +4779,7 @@ redrawtracks();}
               } {
                 Fl_Box {} {
                   label {A future version of HD24connect may display a wave form here.
-Initially, the purpose of this wave form would be to make it 
+Initially, the purpose of this wave form would be to make it
 easier to select an export range.}
                   xywh {15 68 460 222} align 21
                 }
@@ -4790,14 +4790,14 @@ easier to select an export range.}
                 code0 {o->hide();}
               } {
                 Fl_Box {} {
-                  label {A future version of HD24connect may display a list of data files here. 
+                  label {A future version of HD24connect may display a list of data files here.
 Specifically, this would be a list of files associated with the current
 project and/or song. To make this possible, a single song on the
 HD24 drive may be sacrificed as data area. This tab would then contain
-functionality to import/export/list those files, as well as functionality to 
+functionality to import/export/list those files, as well as functionality to
 create a data area on the drive.
-Without data area on the HD24 drive itself, songs may still be given a 
-unique identifier to allow, for instance, automatically associating a mix 
+Without data area on the HD24 drive itself, songs may still be given a
+unique identifier to allow, for instance, automatically associating a mix
 on the DAW computer with a song. }
                   xywh {15 63 505 222} align 21
                 }
@@ -4813,7 +4813,7 @@ on the DAW computer with a song. }
     code {// make_cli: stands for make commandline interface
 // (intended to allow batch processing and regression testing)
 // both current and default to allow multi drive support
-defaulthd24=p_fsys; 
+defaulthd24=p_fsys;
 currenthd24=p_fsys;} {}
   }
   decl {/* ===RECORDER UI stuff ===================================================== */} {}
@@ -4898,10 +4898,10 @@ switch (chooser.show()) {
 				fl_message("Couldn't load headerfile. Possible causes: \\n- Most likely you haven't selected a device or drive image yet.\\n- Maybe you have no read access to the file.");
 				return;
 			}
-			string* strfile=new string(chooser.filename());			
+			string* strfile=new string(chooser.filename());
 			string* fpath=new string("");
 			*fpath+=strfile->substr(0,strlen(strfile->c_str())-strlen(fl_filename_name(strfile->c_str())));
-			hd24utils::setlastdir("headerdir",fpath->c_str());			
+			hd24utils::setlastdir("headerdir",fpath->c_str());
 			ui_restart();
 			return;
 		}
@@ -4913,46 +4913,46 @@ switch (chooser.show()) {
     code {bool anyexist=false;
 
 struct stat fi;
-__uint32 channels=thesong->logical_channels();
+uint32_t channels=thesong->logical_channels();
 for (unsigned int q=0; q<100; q++)
 {
-    for (unsigned int handle=0;handle<channels;handle++) 
+    for (unsigned int handle=0;handle<channels;handle++)
     {
         if (track[handle]->value()==0) {
     	    // channel not selected for export
 	    continue;
         }
         string* fname=transeng->generate_filename(handle,0,q);
-\#if (HD24DEBUG==1) 
-      cout << "check if file exists:" << *fname << endl; 
-\#endif    
+\#if (HD24DEBUG==1)
+      cout << "check if file exists:" << *fname << endl;
+\#endif
         if ((stat (fname->c_str(), &fi) != -1) && ((fi.st_mode & S_IFDIR) == 0)) {
             anyexist=true;
-\#if (HD24DEBUG==1) 
-  cout << "yes, exists" << *fname << endl; 
-\#endif            
+\#if (HD24DEBUG==1)
+  cout << "yes, exists" << *fname << endl;
+\#endif
             delete fname;
             break;
         }
-    
+
         fname=transeng->generate_filename(handle,1,q);
-\#if (HD24DEBUG==1) 
-  cout << "check if file exists:" << *fname << endl; 
-\#endif    
+\#if (HD24DEBUG==1)
+  cout << "check if file exists:" << *fname << endl;
+\#endif
         if ((stat (fname->c_str(), &fi) != -1) && ((fi.st_mode & S_IFDIR) == 0)) {
             anyexist=true;
-\#if (HD24DEBUG==1) 
-  cout << "yes, exists" << *fname << endl; 
-\#endif            
+\#if (HD24DEBUG==1)
+  cout << "yes, exists" << *fname << endl;
+\#endif
             delete fname;
             break;
-        }    
-\#if (HD24DEBUG==1) 
+        }
+\#if (HD24DEBUG==1)
       cout << "no, doesnt exist" << endl;
-\#endif            
+\#endif
 
         delete fname;
-    }  
+    }
     if (anyexist==true) break;
 }
 return anyexist;} {}
@@ -4975,7 +4975,9 @@ this->refresh_busy=0;} {}
   Function {HD24UserInterface(int argc,char** argv,char* absprogpath)} {open
   } {
     code {control=new HD24control();
+cout << "control made " << endl;
 control->parentui(NULL);
+cout << "cleared parentui" << endl;
 string* y=hd24utils::getconfigvalue("drive_writeenabled","0");
 if (strcmp(y->c_str(),"1")==0)
 {
@@ -4986,16 +4988,25 @@ if (strcmp(y->c_str(),"1")==0)
 delete y;
 
 control->parentui(this);
+cout << "set parentui" << endl;
 control->ready(0);
+cout << "ready!" << endl;
 
 /*currpeakmode=0;
 for (unsigned int i=0;i<MAXCHANNELS;i++) { trackpeak[i]=0; } */
 catalogbuffer=NULL;
+cout << "creating portaudio wrapper" << endl;
 portaudio=new PortAudioWrapper(absprogpath);
+cout << "portaudio created" << endl;
 soundfile=new SoundFileWrapper(absprogpath);
+cout << "soundfile created" << endl;
 libjack=new JackWrapper(absprogpath);
+cout << "jack  created" << endl;
 this->recorder=NULL; // will be initialized by make_window code
-this->transeng=new hd24transferengine();} {}
+cout << "recorder reset" << endl;
+this->transeng=new hd24transferengine();
+cout << "transeng made" << endl;
+} {}
   }
   Function {~HD24UserInterface()} {open
   } {
@@ -5007,14 +5018,14 @@ if (currsong!=NULL) { delete currsong; currsong=NULL; }
 if (currproj!=NULL) delete currproj;
 
 /* defaulthd24 was created outside UI context
-   do not clean that one up, but feel free to clean the 
+   do not clean that one up, but feel free to clean the
    current one but only if it differs. */
 if (currenthd24!=defaulthd24)
 {
 	if (currenthd24!=NULL) delete currenthd24;
 }
 
-if (transeng!=NULL) 
+if (transeng!=NULL)
 {
 	delete transeng;
 	transeng=NULL;
@@ -5031,7 +5042,7 @@ if (result==1) {
 }
 return false;} {}
   }
-  Function {samplerate()} {open return_type __uint32
+  Function {samplerate()} {open return_type uint32_t
   } {
     code {// returns current samplerate of the UI, used by mixer
 if (currsong==NULL) return 44100;
@@ -5072,16 +5083,16 @@ if (o->value()==0)
 		==0)
 	{
 		// restore tracks
-		// enable track selection		
+		// enable track selection
 		for (i=0;i<MAXCHANNELS;i++)
-		{		
-			track[i]->value(tracksave[i]);			
+		{
+			track[i]->value(tracksave[i]);
 			track[i]->activate();
 			button_invert_tracks->activate();
-			
+
 		}
 		fileformat->activate();
-	}		
+	}
 }} {}
   }
   Function {showprogtitle()} {open return_type void
@@ -5101,9 +5112,9 @@ this->recorder->finish();} {}
   } {
     code {HD24UserInterface* mythis=(HD24UserInterface*)user;
 //RecorderUI* mythis=(RecorderUI*)user;
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
       mythis->uipoll=((mythis->uipoll)+1)%10;
-\#endif    
+\#endif
 if (mythis->control->ready()==2) { mythis->fl_check(); }
 if (mythis->control->ready()!=1) { return; }
 
@@ -5129,7 +5140,7 @@ hd24song* mycurrsong=mythis->currsong;
 if (mythis->recorder->control->song()!=mythis->currsong)
 {
     /* tell recorder that the previously selected song is gone */
-    mythis->recorder->control->song(mythis->currsong); 
+    mythis->recorder->control->song(mythis->currsong);
 }
 
 if (mycurrsong!=NULL) {
@@ -5138,7 +5149,7 @@ if (mycurrsong!=NULL) {
 
 mythis->uiredrawcount=(mythis->uiredrawcount+1)%UIREFRESH;
 
-if (mythis->uiredrawcount!=0) 
+if (mythis->uiredrawcount!=0)
 {
     // it's not time to redraw the GUI yet.
     Fl::add_timeout(TIMEOUT,HD24UserInterface::poll_callback,user);
@@ -5153,7 +5164,7 @@ do
 //	   /* This is stuff to redraw the meters on the copy to pc tab */
 //		if (mythis->Tabs->value()==mythis->tabCopyToPC) {
 //			if (mythis->trackpeak[i]>.01) {
-//			       if (mythis->trackpeak[i]>.9) 
+//			       if (mythis->trackpeak[i]>.9)
 //			       {
 //				    mythis->trackled[i]->color(1);
 //				    mythis->trackled[i]->redraw();
@@ -5170,7 +5181,7 @@ do
 //				mythis->trackled[i]->color(52);
 //				mythis->trackled[i]->redraw();
 //			}
-//		} 
+//		}
 //	   }
     if (currtab==drivetab)
     {
@@ -5182,9 +5193,9 @@ do
     }
     if (currtab==recordertab)
     {
-\#if (HD24DEBUG==1)     
+\#if (HD24DEBUG==1)
         cout << "update recorder" << endl;
-\#endif        
+\#endif
         if (mythis->recorder!=NULL) {
            RecorderUI::uipoll_callback(mythis->recorder);
         }
@@ -5193,9 +5204,9 @@ do
     }
     if (currtab==mixertab)
     {
-\#if (HD24DEBUG==1) 
+\#if (HD24DEBUG==1)
         cout << "update mixer" << endl;
-\#endif        
+\#endif
         mythis->mixer->control->updatemeters();
         break;
     }
@@ -5214,7 +5225,7 @@ do
 
 if (mythis->recorder!=NULL)
 {
-    RecorderUI::audiopoll_callback(mythis->recorder);           
+    RecorderUI::audiopoll_callback(mythis->recorder);
 }
 
 mythis->busy=0;
@@ -5228,36 +5239,36 @@ Fl::add_timeout(TIMEOUT,HD24UserInterface::poll_callback,user);} {}
   } {
     code {hd24song* locsong=this->currsong;
 int numpoints=0;
-if (locsong!=NULL) 
+if (locsong!=NULL)
 {
  	numpoints=locsong->locatepointcount();
 }
-__uint32 locatepos=locsong->getlocatepos(i);
+uint32_t locatepos=locsong->getlocatepos(i);
 string* locname1=new string("");
 	if (!(((i==0)||(i==numpoints)))) {
 		*locname1+="+";
 		string* dur=locsong->display_duration(locatepos);
 		*locname1+=*dur;
-		delete (dur);	
+		delete (dur);
 	} else {
 		if (i!=0)
 		{
 			*locname1+="+";
 			string* dur=locsong->display_duration(locatepos);
 			*locname1+=*dur;
-			delete (dur);		
+			delete (dur);
 		} else {
-			*locname1+="START";		
+			*locname1+="START";
 		}
 	}
-	
+
 	*locname1="Seek to "+*locname1;
 	int l=strlen(locname1->c_str());
 	for (i=0;i<l;i++) {
 		locbuttonlabel[i]=locname1->c_str()[i];
-		locbuttonlabel[i+1]=(char)0;		
+		locbuttonlabel[i+1]=(char)0;
 	}
-	
+
 	button_golocatepoint->label(&(this->locbuttonlabel[0]));
 	delete locname1;} {}
   }
@@ -5283,4 +5294,4 @@ if (num>0)
 
 }} {}
   }
-} 
+}

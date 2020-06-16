@@ -1,4 +1,4 @@
-#define MAINDEBUG 0
+#define MAINDEBUG 1
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
@@ -180,12 +180,17 @@ int main(int argc, char **argv)
 #endif	
 //	Fl::scheme("gtk+");
 #ifdef LINUX
+        cout << "opening fl display" << endl;
 	fl_open_display();
+        cout << "opened fl display" << endl;
+        cout << "creating ui, absprogpath = " << absprogpath << endl;
+#else
+        cout << "not opening fl display" << endl;
 #endif
-
 HD24UserInterface ui(argc,argv,absprogpath);
 
 #if (MAINDEBUG==1) 
+	cout << "ui createD" << endl;
 	cout << "mdb(3b)" << endl;
 #endif	
 	sysob->setmaintenancemode(maintmode);
