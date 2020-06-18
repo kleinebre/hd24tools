@@ -2240,6 +2240,7 @@ unsigned char* hd24fs::findorphanclusters()
 
 	for (int proj=1; proj<=numprojs; proj++) {
 		hd24project* currproj=this->getproject(proj);
+                if (currproj == NULL) continue;
 		int numsongs=currproj->songcount();
 		for (int song=1; song<=numsongs; song++) {
 			hd24song* currsong=currproj->getsong(song);
@@ -2518,6 +2519,10 @@ uint32_t hd24fs::getprojectsectornum(uint32_t i)
 	{
 		return 0;
 	}
+        if (i == UINT32_MAX)
+        {
+                return UINT32_MAX;
+        }
 	if (i>maxprojects())
 	{
 		return 0;

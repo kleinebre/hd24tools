@@ -404,7 +404,7 @@ select_project(projectid);} {}
   Function {populate_songlist(int songid)} {open return_type void
   } {
     code {int i;
-int numsongs=currproj->songcount();
+int numsongs=currproj?currproj->songcount():0;
 \#if (HD24DEBUG==1)
 	cout << "populate_songlist" << endl;
 \#endif
@@ -2958,7 +2958,7 @@ if (samlen>0) {
 \#endif
 	bool clearnew=true; // clear lengthened part
 
-	uint32_t translen=newsong->songlength_in_wamples(samlen,clearnew,&this->savemessage[0],&this->transfer_cancel,Fl::check); 
+	uint32_t translen=newsong->songlength_in_wamples(samlen,clearnew,&this->savemessage[0],&this->transfer_cancel,Fl::check);
 
 
 \#if (HD24DEBUG==1)
@@ -3570,7 +3570,7 @@ for (i=1; i<=numsongs; i++)
 		else
 		{
 			uint32_t startoffset=0;
-			uint32_t endoffset=0;	
+			uint32_t endoffset=0;
 
 			if (choice_startloc!=0) {
 				startoffset=currsong->getlocatepos(choice_startloc);
