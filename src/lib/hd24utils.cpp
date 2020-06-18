@@ -775,7 +775,7 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 	{
                 cout << "." << endl;
 		uint32_t idx=strpath->find(pathsep->c_str());
-		if (idx==string::npos) {
+		if (idx==UINT32_MAX) {
 			last=1;
 			exepath=new string(strpath->c_str());
 			exename=new string(strpath->c_str());
