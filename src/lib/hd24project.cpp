@@ -6,6 +6,7 @@
 #define INVALID_SONGENTRY 0xFFFFFFFF
 #define RESULT_SUCCESS 0
 #define RESULT_FAIL 1
+#define PROJDEBUG 1
 #include <hd24utils.h>
 #include "memutils.h"
 void hd24project::initvars(hd24fs* p_parent,int32_t p_myprojectid)
@@ -204,7 +205,7 @@ uint32_t hd24project::songcount()
 	{
 		return 0;
 	}
-	if (myprojectid == -1)
+	if (myprojectid == UINT32_MAX)
 	{
 		return 0;
 	}
