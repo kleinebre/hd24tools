@@ -31,8 +31,8 @@ private:
 	int m_trackaction[24];
 	SMPTEgenerator* smptegen;
 public:
-	
-	string* m_projectdir;        
+
+	string* m_projectdir;
 	int usecustomrate; // 1 to stamp export with custom sample rate
 			   // 0 to keep song sample rate
 	uint32_t stamprate; //sample rate to use if usecustomrate==1
@@ -41,10 +41,10 @@ public:
 	hd24transferjob();
 	~hd24transferjob();
 	void init_vars();
-		
+
 	void sizelimit(int64_t llsizelimit);
 	int64_t sizelimit();
-        
+
         uint32_t startoffset();
         uint32_t endoffset();
         void startoffset(uint32_t newoff);
@@ -68,14 +68,14 @@ public:
 	void trackaction(int base1tracknum,int action);
 	int trackaction(int base1tracknum);
         void filenameformat(string* filenameformat);
-        string* filenameformat();        
+        string* filenameformat();
 };
 
 class hd24transferengine
 {
 private:
         void* ui;
-	
+
 	MixerControl* transfermixer;
 	hd24transferjob* job;
 
@@ -84,12 +84,12 @@ private:
 	int64_t totbytestotransfer;
 	int64_t totbytestransferred;
 
-	int prefix;	
+	int prefix;
 	int trackspergroup;
 	int* audiobuf[24]; /* for libsndfile int reading from file */
 	bool isfirstchanofgroup[24]; /* for exporting stereo pairs/groups of channels */
 	bool islastchanofgroup[24]; /* for exporting stereo pairs/groups of channels */
-	
+
 	void setstatus(void* ui,string* message,double percent);
         void generatetimestamp();
 
@@ -104,16 +104,16 @@ private:
 
 
 	bool overwritegivesproblems(hd24song* thesong,int partnum);
-	bool confirmfileoverwrite(); // perform interactive/GUI callback 
+	bool confirmfileoverwrite(); // perform interactive/GUI callback
 				     // to confirm if file overwriting is OK
 	bool anyfilesexist(hd24song* thesong);
 	void transfer_in_progress(bool active);
 
-        time_t jobtimestamp; // these are for benchmarking the transfer	
-        time_t transferstarttime; // these are for benchmarking the transfer	
+        time_t jobtimestamp; // these are for benchmarking the transfer
+        time_t transferstarttime; // these are for benchmarking the transfer
 	time_t endtime;
 
-	/* Regarding populating list of supported file formats 
+	/* Regarding populating list of supported file formats
            TODO: Move to a separate class?
 	*/
 	int formatcount;
@@ -121,7 +121,7 @@ private:
 	vector<string>* m_format_outputextension;
 	vector<string>* m_format_shortdesc;
 	int m_format_outputformat[100];
-	int m_format_outputchannels[100];	
+	int m_format_outputchannels[100];
 	int m_format_bitdepth[100];
 	bool m_format_sndfile[100];
         string* m_lasterror;
@@ -141,31 +141,31 @@ public:
         void (*setstatusfunction)(void* ui,const char*,double progress_pct);
         void reeloffset(uint32_t newoff);
         uint32_t reeloffset();
-        
+
         void set_ui(void* p_ui);
-        
-	hd24transferengine(); 
+
+	hd24transferengine();
 	~hd24transferengine();
-        
+
         void mixer(MixerControl* m_mixer);
         MixerControl* mixer();
-        
+
         void lasterror(const char* errormessage);
         string* lasterror();
-        
+
 	int supportedformatcount();
 	int format_outputchannels(int i);
 	const char* getformatdesc(int formatnum);
-        	
+
         void trackselected(uint32_t base0tracknum,bool select);
         bool trackselected(uint32_t base0tracknum);
-        
+
         void mixleft(bool select);
         bool mixleft();
         void mixright(bool select);
         bool mixright();
-        
-	void init_vars(); 
+
+	void init_vars();
 	void prepare_transfer_to_pc(
 		uint32_t songnum, uint32_t totsongs,
 		int64_t totbytestotransfer,
@@ -178,7 +178,7 @@ public:
 	bool openinputfiles(SNDFILE** filehandle,SF_INFO* sfinfoin,uint32_t channels);
 	void closeinputfiles(SNDFILE** filehandle,uint32_t channels);
 	bool dontopenoutputfiles(hd24sndfile** filehandle,uint32_t channels,uint32_t partnum,int prefix); //HACK
-	
+
 	bool openoutputfiles(hd24sndfile** filehandle,uint32_t channels,uint32_t partnum,int prefix);
 	void closeoutputfiles(hd24sndfile** filehandle,uint32_t channels);
 	string* generate_filename(int tracknum,int partnum,int prefix);
@@ -186,15 +186,15 @@ public:
 	int64_t sizelimit();
 	void projectdir(const char* projectdir);
 	const char* projectdir();
-	
+
 	void selectedformat(int format);
 	int selectedformat();
-        
+
         void sourcesong(hd24song* newsong);
         hd24song* sourcesong();
         void targetsong(hd24song* newsong);
         hd24song* targetsong();
-        
+
         uint32_t startoffset();
         uint32_t endoffset();
         void startoffset(uint32_t newoff);

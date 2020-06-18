@@ -85,8 +85,8 @@ bool hd24utils::isXPorlater()
 
     GetVersionEx(&osvi);
 
-    // Vista returns 6.0, 2000/xp/2003 are 5.0, 5.1 and 5.2 respectively. 
-    return  
+    // Vista returns 6.0, 2000/xp/2003 are 5.0, 5.1 and 5.2 respectively.
+    return
        ( (osvi.dwMajorVersion > 5) ||
        ( (osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1) ));
 
@@ -101,7 +101,7 @@ bool hd24utils::isVistaorlater()
 
     GetVersionEx(&osvi);
 
-    // Vista returns 6.0, 2000/xp/2003 are 5.0, 5.1 and 5.2 respectively. 
+    // Vista returns 6.0, 2000/xp/2003 are 5.0, 5.1 and 5.2 respectively.
     return  (osvi.dwMajorVersion >= 6) ;
 }
 #endif
@@ -109,7 +109,7 @@ bool hd24utils::gencatalog_showlocs(hd24song* currentsong,string* strcatalog,
 				int catalogoptions)
 {
 	int locmode=catalogoptions & hd24utils::LOCMODE_MASK;
-	
+
 	if (locmode==hd24utils::LOCMODE_NONE) return false;
 
 	if (
@@ -127,7 +127,7 @@ bool hd24utils::gencatalog_showlocs(hd24song* currentsong,string* strcatalog,
 			}
 		}
 		havelocpoint=true;
-		*strcatalog+="                ";		
+		*strcatalog+="                ";
 		string* locnum=Convert::int2str(i);
 		string* loc2=Convert::padleft(*locnum,2," ");
 		*strcatalog+=*loc2;
@@ -140,10 +140,10 @@ bool hd24utils::gencatalog_showlocs(hd24song* currentsong,string* strcatalog,
 		*strcatalog+="    ";
 		string* timecode=currentsong->display_duration(locpos);
 		*strcatalog+=*timecode;
-		delete timecode;		
+		delete timecode;
 		*strcatalog+="\n";
 	}
-	
+
 	return havelocpoint;
 }
 
@@ -157,25 +157,25 @@ bool hd24utils::gencatalog_showsongsize(hd24song* currentsong,string* strcatalog
 	switch (sizemode)
 	{
 		case SIZEMODE_ACTUAL:
-                *strcatalog+="                              Recorded size: ";						
+                *strcatalog+="                              Recorded size: ";
 			break;
 		case SIZEMODE_ALLOCATED:
-		*strcatalog+="                             Allocated size: ";			
+		*strcatalog+="                             Allocated size: ";
 			break;
 		case (SIZEMODE_ACTUAL+SIZEMODE_ALLOCATED):
-	        *strcatalog+="                  Recorded / Allocated size: ";			
+	        *strcatalog+="                  Recorded / Allocated size: ";
 			break;
 		default:
 		*strcatalog+="                                             ";
 			break;
 	}
-	
+
 	if ((sizemode & SIZEMODE_ACTUAL) == SIZEMODE_ACTUAL )
 	{
             uint64_t i=currentsong->songsize_in_bytes();
 	    i>>=20;
             string* songsize=Convert::int2str(i);
-	    string* loc2=Convert::padleft(*songsize,12," ");		
+	    string* loc2=Convert::padleft(*songsize,12," ");
 	    *strcatalog+=*loc2;
 	    *strcatalog+="M";
 	    delete loc2;
@@ -183,7 +183,7 @@ bool hd24utils::gencatalog_showsongsize(hd24song* currentsong,string* strcatalog
 	} else {
 	    *strcatalog+="            ";
 	}
-	
+
 	*strcatalog+="  ";
 	if ((sizemode & SIZEMODE_ALLOCATED) == SIZEMODE_ALLOCATED )
 	{
@@ -195,11 +195,11 @@ bool hd24utils::gencatalog_showsongsize(hd24song* currentsong,string* strcatalog
 	    *strcatalog+="M";
 	    delete loc2;
 	    delete songsize;
-	    
+
 	} else {
 	    *strcatalog+=" ";
 	}
-	
+
 	*strcatalog+="\n";
 	return true;
 }
@@ -234,7 +234,7 @@ void hd24utils::gencatalog_showsongs(hd24project* currentproj,
 		*strcatalog+=*songnum;
 		*strcatalog+=": ";
 		delete songnum;
-	
+
 	        string* currsname=currsong->songname();
 		string* pad=Convert::padright(*currsname,35," ");
 	        delete(currsname);
@@ -258,7 +258,7 @@ void hd24utils::gencatalog_showsongs(hd24project* currentproj,
 		*strcatalog+=" Hz";
 
 
-		if (currsong->iswriteprotected()) 
+		if (currsong->iswriteprotected())
 		{
 			*strcatalog+="*";
 		}
@@ -272,7 +272,7 @@ void hd24utils::gencatalog_showsongs(hd24project* currentproj,
 					catalogoptions);
 		dummy|=dummy; /* suppress compiler warning */
 		if (addnewline) {
-			*strcatalog+="\n";	
+			*strcatalog+="\n";
 		}
                 delete currsong;
                 currsong=NULL;
@@ -285,7 +285,7 @@ void hd24utils::gencatalog_showprojects(hd24fs* currenthd24,string* strcatalog,
 {
 	int numprojs=currenthd24->projectcount();
 	hd24project* currproj=NULL;
-	for (int i=1; i<=numprojs; i++) 
+	for (int i=1; i<=numprojs; i++)
 	{
 		currproj=currenthd24->getproject(i);
 
@@ -296,7 +296,7 @@ void hd24utils::gencatalog_showprojects(hd24fs* currenthd24,string* strcatalog,
 		delete projnum;
 		*strcatalog+=": ";
 
-	        string* currpname=currproj->projectname();	        
+	        string* currpname=currproj->projectname();
 		*strcatalog+= *currpname;
 	        delete(currpname);
 
@@ -304,16 +304,16 @@ void hd24utils::gencatalog_showprojects(hd24fs* currenthd24,string* strcatalog,
 		gencatalog_showsongs (currproj,strcatalog,catalogoptions);
 		delete(currproj);
 	}
-	
+
 }
 
-int hd24utils::gencatalog(hd24fs* currenthd24,string* strcatalog) 
+int hd24utils::gencatalog(hd24fs* currenthd24,string* strcatalog)
 {
 	return gencatalog(currenthd24,strcatalog,hd24utils::LOCMODE_NONE);
 }
 
 int hd24utils::gencatalog(hd24fs* currenthd24,string* strcatalog,
-			  int catalogoptions) 
+			  int catalogoptions)
 {
 	time_t currenttime;
 	struct tm timestamp;
@@ -353,17 +353,17 @@ string* hd24utils::savecatalog(hd24fs* currenthd24,string* filename,int catalogo
 	// gencatalog
 	string* catalog=new string("");
 
-	if (hd24utils::gencatalog(currenthd24,catalog)!=0) 
+	if (hd24utils::gencatalog(currenthd24,catalog)!=0)
 	{
 		*error+="Error generating catalog.";
 		return error;
 	}
 	fstream to_out(filename->c_str(),ios::out);
-	if (!to_out) 
+	if (!to_out)
 	{
 		*error+="Cannot write catalog.";
 		return error;
-	}	
+	}
 	to_out << *catalog ;
 
 	to_out.flush();
@@ -380,23 +380,23 @@ string* hd24utils::printcatalog(hd24fs* currenthd24,int catalogoptions)
 {
 
 	string* error=new string("");
-	string catname="_hd24cat.txt";	
+	string catname="_hd24cat.txt";
 
 
 	// gencatalog
 	string* catalog=new string("");
 
-	if (hd24utils::gencatalog(currenthd24,catalog)!=0) 
+	if (hd24utils::gencatalog(currenthd24,catalog)!=0)
 	{
 		*error+="Error generating catalog.";
 		return error;
 	}
 	fstream to_out(catname.c_str(),ios::out);
-	if (!to_out) 
+	if (!to_out)
 	{
 		*error+="Cannot write catalog.";
 		return error;
-	}	
+	}
 	*catalog += "\f\n"; // form feed
 	to_out << *catalog ;
 
@@ -417,16 +417,16 @@ string* hd24utils::printcatalog(hd24fs* currenthd24,int catalogoptions)
 	ShellExecuteEx(&ShExecInfo);
 	WaitForSingleObject(ShExecInfo.hProcess,INFINITE);
 	unlink (catname.c_str());
-#else	
+#else
 	char s[1024];
 	string* catcmd = new string (PRINTAPP);
 	*catcmd += " ";
        	*catcmd += catname;
 	*catcmd += " 2>&1";
 	FILE *fp = popen(catcmd->c_str() , "r");
-	while (fgets(s, sizeof(s)-1, fp)) 
+	while (fgets(s, sizeof(s)-1, fp))
 	{
-		*error += s; 
+		*error += s;
 	}
 	pclose(fp);
 	unlink (catname.c_str());
@@ -443,7 +443,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 	uint32_t trackoff=(trackwithingroup*bytespersam);
 	uint32_t q=0;
 	// unroll loop for bytespersam=1,2,3
-	switch (bytespersam) 
+	switch (bytespersam)
 	{
 		case 3:
 		for (samplenum=0;samplenum<totsams;samplenum++)
@@ -453,7 +453,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 			targetbuf[q++]=sourcebuf[samoff];
 	                targetbuf[q++]=sourcebuf[samoff+1];
 	                targetbuf[q++]=sourcebuf[samoff+2];
-		}		
+		}
 		break;
 		case 1:
 			for (samplenum=0;samplenum<totsams;samplenum++)
@@ -461,7 +461,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 				uint32_t samoff=(samplenum*bytespersam);
 				q=trackspergroup*samoff+trackoff;
 				targetbuf[q]=sourcebuf[samoff];
-			}	
+			}
 			break;
 		case 2:
 			for (samplenum=0;samplenum<totsams;samplenum++)
@@ -470,7 +470,7 @@ void hd24utils::interlacetobuffer(unsigned char* sourcebuf,unsigned char* target
 				q=trackspergroup*samoff+trackoff;
 				targetbuf[q++]=sourcebuf[samoff];
 	                        targetbuf[q++]=sourcebuf[samoff+1];
-			}		
+			}
 			break;
 		default:
 			for (samplenum=0;samplenum<totsams;samplenum++)
@@ -537,7 +537,7 @@ bool hd24utils::isfile(const char* name)
 		if (S_ISDIR(fi.st_mode))
 		{
 			// name points to a dir
-			return false;	
+			return false;
 		}
 		return true;
 	}
@@ -546,7 +546,7 @@ bool hd24utils::isfile(const char* name)
 
 int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsigned long firstsector,unsigned long endsector,char* message,int* cancel) {
 	unsigned long i;
-#define MULTISECTOR 100	
+#define MULTISECTOR 100
 	unsigned char bootblock[(MULTISECTOR+1)*512]; // 1 sector spare
 	memset(bootblock,0,MULTISECTOR*512);
 #if defined(LINUX) || defined(DARWIN)
@@ -560,12 +560,12 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 	if (!currenthd24)
 	{
               _unlink(outputfilename->c_str());
-		
+
 	handle=CreateFile(outputfilename->c_str(),GENERIC_WRITE|GENERIC_READ,
 	      FILE_SHARE_READ|FILE_SHARE_WRITE,
 	      NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
 
-	} else {	
+	} else {
 		handle=CreateFile(outputfilename->c_str(),GENERIC_WRITE|GENERIC_READ,
               FILE_SHARE_READ|FILE_SHARE_WRITE,
               NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
@@ -576,13 +576,13 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 	      FILE_SHARE_READ|FILE_SHARE_WRITE,
 	      NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
 	}
-		
+
 	#endif
 	if (hd24fs::isinvalidhandle(handle)) {
 #if (UTILDEBUG==1)
 		cout << "Cannot open file "<<outputfilename <<" for writing. Access denied?" << endl;
 #endif
-		return 1;		
+		return 1;
 	}
 #ifdef WINDOWS
 	LARGE_INTEGER lizero;
@@ -604,7 +604,7 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 		// if currenthd24 is NULL, we're not doing a copy
 		// but creating an empty drive image.
 		if (currenthd24!=NULL) {
-			currenthd24->readsectors_noheader(currenthd24,i,bootblock,1); // raw reading 
+			currenthd24->readsectors_noheader(currenthd24,i,bootblock,1); // raw reading
 		}
 #if defined(LINUX) || defined(DARWIN)
 		uint64_t targetoff=i;
@@ -648,7 +648,7 @@ int hd24utils::savedrivesectors(hd24fs* currenthd24,string* outputfilename,unsig
 		if (message!=NULL) {
 			if (q%1000==0) {
 				sprintf(message,"Saving sector %ld of %ld",i,(endsector+1));
-			
+
 				Fl::wait(0);
 			}
 		}
@@ -693,7 +693,7 @@ int hd24utils::newdriveimage(string* imagefilename,uint32_t endsector,char* mess
 		}
 		return -1;
 	}
-	
+
 	unsigned long firstsector=0;
 #if (UTILDEBUG==1)
 cout << "about to save drive sectors" <<endl;
@@ -722,7 +722,7 @@ cout << "quickformatting fs" <<endl;
 	delete newfs;
 #if (UTILDEBUG==1)
 cout << "destructed fs object" <<endl;
-#endif	
+#endif
 	return 0;
 }
 
@@ -752,12 +752,12 @@ void hd24utils::dumpsector(const char* buffer)
 int hd24utils::saveheader(hd24fs* currenthd24,string* headerfilename) {
 	return savedrivesectors(currenthd24,headerfilename,0,0x700,NULL,NULL);
 	// TODO: 0x700 sectors is arbitrary. First song entry is at 0x77,
-	// total of 99*99 songs of 7 sectors each puts actual required length 
+	// total of 99*99 songs of 7 sectors each puts actual required length
 	// at 0x10c76. However, this has served fine so far.
 
 }
 
-void hd24utils::findfile(const char* rawname,const char* path,char* result) 
+void hd24utils::findfile(const char* rawname,const char* path,char* result)
 {
 	string* strpath=new string(path);
 #ifdef WINDOWS
@@ -765,9 +765,9 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 #else
 	string* pathsep=new string(":");
 #endif
-	int last=0;	
+	int last=0;
 	string* exename;
-	string* exepath;	
+	string* exepath;
 #if (UTILDEBUG==1)
 	cout << "search path for exe " << endl;
 #endif
@@ -790,10 +790,10 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 #endif
 		if (exepath->substr(exepath->length()-1,1)!=PATHSLASH) {
 		     *exepath+=PATHSLASH;
-		}	
+		}
 		if (exename->substr(exename->length()-1,1)!=PATHSLASH) {
 		     *exename+=PATHSLASH;
-		}	
+		}
 
 		*exename+=rawname;
 #if (UTILDEBUG==1)
@@ -809,7 +809,7 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 				delete exepath;
 				exepath=NULL;
 			}
-			if (strpath!=NULL) {		
+			if (strpath!=NULL) {
 				delete strpath;
 				strpath=NULL;
 			}
@@ -826,10 +826,10 @@ void hd24utils::findfile(const char* rawname,const char* path,char* result)
 		if (exepath!=NULL) {
 			delete exepath;
 			exepath=NULL;
-		}		
-	}	
+		}
+	}
 
-	if (strpath!=NULL) {		
+	if (strpath!=NULL) {
 		delete strpath;
 		strpath=NULL;
 	}
@@ -848,7 +848,7 @@ bool hd24utils::fileExists(const char* strFilename) {
 
 	// Attempt to get the file attributes
 	intStat = stat(strFilename,&stFileInfo);
-	if(intStat == 0) 
+	if(intStat == 0)
 	{
 		// We were able to get the file attributes
 		// so the file obviously exists.
@@ -924,7 +924,7 @@ void hd24utils::recursivemkdir(string* dirname)
 	string* mydirname=new string(dirname->c_str());
 	string* mynewdirname=NULL;
 	int mylen=mydirname->size();
-	
+
 	if (mydirname->substr(mylen-1,1)==(*dirslash))
 	{
 		mynewdirname=new string(mydirname->substr(0,mylen-1));
@@ -934,14 +934,14 @@ void hd24utils::recursivemkdir(string* dirname)
 #if (UTILDEBUG==1)
 	cout << "dirname to create without slash=" << *mydirname << endl;
 #endif
-	
+
 	if ((*mydirname)=="")
 	{
 		delete dirslash;
 		delete mydirname;
 		return;
 	}
-	
+
 	if (hd24utils::dirExists(mydirname->c_str()))
 	{
 		// dir with current name already exists.
@@ -949,7 +949,7 @@ void hd24utils::recursivemkdir(string* dirname)
 		delete mydirname;
 		return;
 	}
-	
+
 	/* Strip out last dirname from dir string to get parent dir;
 	   Create parent dir first, then create full dir. */
 	/* Let's start by stripping out the filename and only keeping the
@@ -983,7 +983,7 @@ void hd24utils::recursivemkdir(string* dirname)
 #else
 	mkdir(mydirname->c_str(),0777);
 #endif
-	
+
 	delete parentdir;
 	delete dirslash;
 	delete mydirname;
@@ -995,17 +995,17 @@ bool hd24utils::guaranteefiledirexists(string* fname)
 	/* Given a full file path+filename, this function verifies whether
 	   the directory specified by the file path exists. If it does not,
 	   this function will attempt to create it.
-	   
+
 	   Returns true if the directory originally existed;
 	   Returns true if the directory could be created;
 	   Returns false if the directory did not exist AND could not be
 	   created.
-	  
+
 	*/
 	string* myfname=new string(fname->c_str());
 	int l=myfname->size();
 	string* dirslash=new string(DIRSLASH);
-	
+
 	/* Let's start by stripping out the filename and only keeping the
 	   directory. */
 	while (myfname->substr(l-1,1)!=*dirslash)
@@ -1024,7 +1024,7 @@ bool hd24utils::guaranteefiledirexists(string* fname)
 		delete myfname;
 		myfname=newmyfname;
 	}
-	
+
 	/* myfname now contains the directory which we want to guarantee
 	   exists. */
 	if (hd24utils::dirExists(myfname->c_str()))
@@ -1042,7 +1042,7 @@ bool hd24utils::guaranteefiledirexists(string* fname)
 		delete myfname;
 		return true;
 	}
-	
+
 	// Creating the dir failed.
 	delete dirslash;
 	delete myfname;
@@ -1096,11 +1096,11 @@ void hd24utils::getmyabsolutepath(const char** argv,char* absprogpath)
                 }
                 rawname=currname.substr(currname.length()-1,1)+rawname;
                 currname=currname.substr(0,currname.length()-1);
-           
+
                 if (currname=="") break;
         } while (1==1);
         // currname=path given on commandline
-	
+
         char cwd[2048];
         char* mycwd=getcwd(&cwd[0],2048);
 	mycwd=&cwd[0];
@@ -1211,7 +1211,7 @@ bool hd24utils::wavefix(SoundFileWrapper* sndfile, const char* filetofix)
 			audiobuf[BYTES_IN_HALF_BUF+i*3+q0+0]=audiobuf[BYTES_IN_HALF_BUF+i*3+q1+0];
 			audiobuf[BYTES_IN_HALF_BUF+i*3+q0+1]=audiobuf[BYTES_IN_HALF_BUF+i*3+q1+1];
 			audiobuf[BYTES_IN_HALF_BUF+i*3+q0+2]=audiobuf[BYTES_IN_HALF_BUF+i*3+q1+2];
-		}	
+		}
 		if (readcount>0) {
 			int writecount=fwrite(
 					(void*)&audiobuf[BYTES_IN_HALF_BUF],1,readcount,outfile);
@@ -1230,7 +1230,6 @@ bool hd24utils::wavefix(SoundFileWrapper* sndfile, const char* filetofix)
 	fclose(infile);
 
 	delete outputfilename;
-	delete ext;	
+	delete ext;
 	return true;
 }
-

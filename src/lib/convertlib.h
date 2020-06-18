@@ -7,12 +7,12 @@ using namespace std;
 #include <string>
 #include <iostream>
 
-class Convert 
+class Convert
 {
 	public:
 		Convert() {};
 		~Convert() {};
-		
+
 		static bool		isnibble(string x);
 		static long		str2long(string hexstr);
 		static double		str2dbl(string hexstr);

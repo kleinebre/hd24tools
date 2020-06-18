@@ -10,7 +10,7 @@
 #define MEMLEAKMULT 1
 #endif
 #define CACHEBUFFERS	30		/* enough for 25 locate points+some lookahead */
-#define NOTHINGTOQUEUE			0xFFFFFFFF 
+#define NOTHINGTOQUEUE			0xFFFFFFFF
 #define CACHEBLOCK_UNUSED		0xFFFFFFFF /* a song can never have this number of blocks
 						      because this is the max no. of samples in a song
 						      and a block consists of multiple samples */
@@ -55,7 +55,7 @@ const int hd24song::WRITEMODE_COPY      =2;
 const int hd24song::WRITEMODE_REALTIME  =3;
 
 bool hd24song::loadlocpoints(string* locpointfilename)
-{	
+{
 //SONGINFO_LOCATEPOINTLIST	0xb8
 // LOCATEENTRY_LENGTH		12
 //	LOCATEPOS_LAST	=24;
@@ -86,14 +86,14 @@ bool hd24song::savelocpoints(string* locpointfilename)
 
 
 	saveFile.write((const char*)(&(this->buffer[0])+SONGINFO_LOCATEPOINTLIST),LOCATELIST_BYTELEN);
-	
+
 	return true;
 }
 
-void hd24song::loadblockintocache(uint32_t blocktoqueue) 
+void hd24song::loadblockintocache(uint32_t blocktoqueue)
 {
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
-	
+
 	for (int i=LOCATEPOS_LAST;i<CACHEBUFFERS;i++) {
 		if (cachebuf_blocknum[i]==blocktoqueue) {
 			return; // already in cache.
@@ -108,7 +108,7 @@ void hd24song::loadblockintocache(uint32_t blocktoqueue)
 	uint32_t rtallocstartsector=Convert::getint32(buffer,SONGINFO_ALLOCATIONLIST+(ALLOCINFO_ENTRYLEN*rtallocentrynum)+ALLOCINFO_SECTORNUM);
 	uint32_t rtallocaudioblocks=Convert::getint32(buffer,SONGINFO_ALLOCATIONLIST+(ALLOCINFO_ENTRYLEN*rtallocentrynum)+ALLOCINFO_AUDIOBLOCKSINBLOCK);
 	uint32_t blocknum=blocktoqueue;
-	
+
 	while ((blocknum-rtallocstartblock) >= rtallocaudioblocks) {
 		rtallocentrynum++;			// reset cursor to start of song
 		if (rtallocentrynum>=ALLOC_ENTRIES_PER_SONG ) break;
@@ -125,7 +125,7 @@ void hd24song::loadblockintocache(uint32_t blocktoqueue)
 		cachebuf_ptr[currcachebufnum],blocksize_in_sectors); // raw read
 
 //	cachebuf_ptr[currcachebufnum]=NULL; // TODO: READ SECTORS!!!
-	
+
 	currcachebufnum++;
 	if (currcachebufnum>=CACHEBUFFERS)
 	{
@@ -140,19 +140,19 @@ void hd24song::bufferpoll() {
 	// object to check the cache request queue for 	blocks
 	// to cache.
 	if (currentreadmode==READMODE_COPY) return;
-	if (polling==1) 
-	{ 
+	if (polling==1)
+	{
 		// Previous poll is still in progress.
 		// This is not a proper semaphore system but will
 		// help relief processing weight should the system
-		// get overloaded. Normally bufferpoll shouldn't be 
+		// get overloaded. Normally bufferpoll shouldn't be
 		// called much more than around 20 times per second,
 		// so the chance two polls interfere with one another
                 // is minimal.
-		return; 
+		return;
 	}
 	polling=1;	// semaphore
-	if (blocktoqueue!=NOTHINGTOQUEUE) 
+	if (blocktoqueue!=NOTHINGTOQUEUE)
 	{
 		loadblockintocache(blocktoqueue);
 		blocktoqueue=NOTHINGTOQUEUE;
@@ -186,7 +186,7 @@ string* hd24song::getlocatename(int locatepoint)
 
 void hd24song::setlocatename(int locatepoint,string newname)
 {
-	
+
 	if (locatepoint<0) locatepoint=0;
 	if (locatepoint>LOCATEPOS_LAST) return;
 	while (newname.length()<8) {
@@ -200,7 +200,7 @@ void hd24song::setlocatename(int locatepoint,string newname)
 }
 void hd24song::silenceaudioblocks(uint32_t allocsector,uint32_t numblocks)
 {
-	/* Given a sector number and a block count, silence the 
+	/* Given a sector number and a block count, silence the
            given number of audio blocks on the drive starting
            from the given sector number.
            This function has 2 modes- one working with a 1-sector
@@ -215,10 +215,10 @@ void hd24song::silenceaudioblocks(uint32_t allocsector,uint32_t numblocks)
 	uint32_t sectorstoclear=parentfs->getblocksizeinsectors();
 	sectorstoclear*=numblocks;
 	unsigned char* clearblock=(unsigned char*)memutils::mymalloc("silenceaudioblocks",sectorstoclear*512,1);
-	if (clearblock==NULL) 
+	if (clearblock==NULL)
 	{
 		// Alloc failed, use low-memory use version
-		for (uint32_t i=0;i<sectorstoclear;i++) 
+		for (uint32_t i=0;i<sectorstoclear;i++)
 		{
 			parentfs->writesectors(parentfs->devhd24,
 			allocsector+i,
@@ -226,7 +226,7 @@ void hd24song::silenceaudioblocks(uint32_t allocsector,uint32_t numblocks)
 			1);
 		}
 	}
-	else 
+	else
 	{
 		memset(clearblock,0,512*sectorstoclear);
 		parentfs->writesectors(parentfs->devhd24,
@@ -245,8 +245,8 @@ bool hd24song::setallocinfo(bool silencenew)
 
 uint32_t hd24song::requiredaudioblocks(uint32_t songlen_in_wamps)
 {
-	/* Figure out how many audio blocks we would expect 
-	   the song to have based on the songlength in wamples. 
+	/* Figure out how many audio blocks we would expect
+	   the song to have based on the songlength in wamples.
            Blocks will be used twice as fast for high samplerate songs
            as a "wample" equals 2 samples. */
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
@@ -258,7 +258,7 @@ uint32_t hd24song::requiredaudioblocks(uint32_t songlen_in_wamps)
 	if (tracks_per_song>0) {
 		tracksamples_per_block=(blocksize_in_bytes / bytes_per_sample) / tracks_per_song;
 	}
-	uint32_t wamples_per_block=tracksamples_per_block/this->chanmult();	
+	uint32_t wamples_per_block=tracksamples_per_block/this->chanmult();
 	uint32_t remainder=songlen_in_wamps%wamples_per_block;
 	uint32_t blocks_expected=(songlen_in_wamps-remainder)/wamples_per_block;
 	if (remainder!=0) {
@@ -303,10 +303,10 @@ bool hd24song::allocatenewblocks(uint32_t blockstoalloc,bool silencenew,char* me
 #endif
 		if (allocsector==0) {
 #if (SONGDEBUG == 1)
-	cout << "Ran out of space with " << blockstoalloc 
+	cout << "Ran out of space with " << blockstoalloc
              <<" left to alloc " << endl;
 #endif
-			
+
 			return false;
 		}
 		if (silencenew)
@@ -324,9 +324,9 @@ bool hd24song::allocatenewblocks(uint32_t blockstoalloc,bool silencenew,char* me
 		parentfs->enablebit(alloccluster,parentfs->sectors_driveusage);
                 if (blockstoalloc>=blockspercluster)
                 {
-			blockstoalloc-=blockspercluster;	
-                } 
-		else 
+			blockstoalloc-=blockspercluster;
+                }
+		else
 		{
 			blockstoalloc=0;
 		}
@@ -353,12 +353,12 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
            For realtime recording, it is set to FALSE for efficiency
            reasons, as the recording algorithm itself will overwrite
            newly allocated space with audio (and silence as needed).
- 
-	   Savemessage allows giving textual feedback to the user 
-           and the int pointed to by cancel will be set to 1 by the 
-           GUI if the user interrupts the process. 
+
+	   Savemessage allows giving textual feedback to the user
+           and the int pointed to by cancel will be set to 1 by the
+           GUI if the user interrupts the process.
            In case of recovering a song, after setting the length of
-           a crashed song to the estimated duration, we want to try 
+           a crashed song to the estimated duration, we want to try
            to find back the audio.
 
            It is reasonable that this previously recorded audio can be
@@ -368,7 +368,7 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
            pressing 'stop'.
 
            This function attempts to perform this allocation (which
-           should also allow people to perform headerless 
+           should also allow people to perform headerless
            live recoveries).
 
 	   The way this will work is:
@@ -393,13 +393,13 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
 	cout << "Actual   blocks allocated for song:" << blocksinalloctable << endl
 	<< "Expected blocks allocated for song:" << blocks_expected << endl;
 #endif
-	if (blocksinalloctable==blocks_expected) 
+	if (blocksinalloctable==blocks_expected)
 	{
 		// right amount of space is already allocated.
 		return true;
 	}
 
-	if (blocksinalloctable>blocks_expected) 
+	if (blocksinalloctable>blocks_expected)
 	{
 		// looks like too much space is allocated,
 		// but setallocinfo() won't support song shrinking
@@ -414,7 +414,7 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
 	uint32_t blockstoalloc=blocks_expected-blocksinalloctable;
 
 	unsigned char* copyusagetable=parentfs->getcopyofusagetable();
-	if (copyusagetable==NULL) 
+	if (copyusagetable==NULL)
 	{
 		/* Cannot get usage table (out of memory?) */
 		return false;
@@ -428,23 +428,23 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
 		return false;
 	}
 
-	/* Cluster allocation succeeded. 
+	/* Cluster allocation succeeded.
            To find out which clusters have been allocated,
            XOR the previous copy of the usage table over it.
-           This will result in a list of newly allocated 
+           This will result in a list of newly allocated
            (orphan) clusters still to be appended to the song.
         */
-	for (uint32_t i=0;i<(512*15);i++) 
+	for (uint32_t i=0;i<(512*15);i++)
 	{
 		copyusagetable[i]=(copyusagetable[i])
                                  ^(parentfs->sectors_driveusage[i]);
 	}
-	
+
 #if (SONGDEBUG == 1)
 	cout << "Alloc action successful- append orphan clusters now." << endl;
 #endif
 	// call appendorphanclusters
-	if (message!=NULL) 
+	if (message!=NULL)
 	{
 		sprintf(message,"Adding allocated space to song...");
 		if (checkfunc!=NULL)
@@ -456,7 +456,7 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
 	if (silencenew) {
 		songresize=false;
 	}
-	else 
+	else
 	{
 		songresize=true;
 	}
@@ -464,8 +464,8 @@ bool hd24song::setallocinfo(bool silencenew,char* message,int* cancel,int (*chec
 	memutils::myfree("copyusagetable",copyusagetable);
 	// save for either song or drive usage table is not
 	// to be called here- it would violate the concept
-	// of safe, read-only recovery.	
-	if (message!=NULL) 
+	// of safe, read-only recovery.
+	if (message!=NULL)
 	{
 		sprintf(message,"Added allocated space to song.");
 		if (checkfunc!=NULL)
@@ -482,7 +482,7 @@ void hd24song::appendorphanclusters(unsigned char* usagebuffer,bool allowsongres
 	uint32_t currpos=0;
 	uint32_t curralloctableentry=used_alloctable_entries();
 #if (SONGDEBUG == 1)
-	cout << "Appending orphan clusters to song. Used alloctable entries=" << curralloctableentry 
+	cout << "Appending orphan clusters to song. Used alloctable entries=" << curralloctableentry
 	<< "clusters=" << clusters
 	<< endl;
 #endif
@@ -522,7 +522,7 @@ void hd24song::appendorphanclusters(unsigned char* usagebuffer,bool allowsongres
 		printf("%x %x\n",(uint32_t)parentfs->cluster2sector(blockstart),(uint32_t)( parentfs->getblockspercluster()*blocklen ));
 #endif
 	}
-	/* the operation may have resulted in the song getting	
+	/* the operation may have resulted in the song getting
 	   longer. This is due to the fact that while recording,
            'stop' may be pressed before all audio blocks of the
            cluster have been used.
@@ -531,7 +531,7 @@ void hd24song::appendorphanclusters(unsigned char* usagebuffer,bool allowsongres
         */
 
 	uint32_t blocksinalloctable=audioblocks_in_alloctable();
-	
+
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
 	uint32_t bits=(this->bitdepth());
@@ -548,7 +548,7 @@ void hd24song::appendorphanclusters(unsigned char* usagebuffer,bool allowsongres
 	/* The following directly sets the songlength in the song buffer
 	   rather than via songlength_in_wamples(val) to prevent
 	   testing whether more space needs to be allocated-
-           which is not needed as space has just been allocated. 
+           which is not needed as space has just been allocated.
            (Also, the below number may be less accurate than the
            number some user might specify via songlength_in_samples(val)).
         */
@@ -556,10 +556,10 @@ void hd24song::appendorphanclusters(unsigned char* usagebuffer,bool allowsongres
 	{
         	Convert::setint32(buffer,SONGINFO_SONGLENGTH_IN_WAMPLES,newsonglen);
 	}
-       	return; 
+       	return;
 }
 
-void hd24song::setblockcursor(uint32_t blocknum) 
+void hd24song::setblockcursor(uint32_t blocknum)
 {
 	allocentrynum=0;	// reset cursor to start of song
 	allocstartblock=0; 	// blocknum of first block in current allocation entry
@@ -583,10 +583,10 @@ void hd24song::unmark_used_clusters(unsigned char* sectors_inuse)
  	 * will alter that image to unmark the clusters
  	 * in use by this song.
  	 * Under normal circumstances, this is used to
- 	 * delete songs. 
- 	 * However, it is also useful to search for orphan 
- 	 * clusters (by unmarking all clusters in use by 
- 	 * all songs- the remaining clusters then must be 
+ 	 * delete songs.
+ 	 * However, it is also useful to search for orphan
+ 	 * clusters (by unmarking all clusters in use by
+ 	 * all songs- the remaining clusters then must be
  	 * orphan clusters)
  	 */
 #if (SONGDEBUG == 1)
@@ -603,7 +603,7 @@ void hd24song::unmark_used_clusters(unsigned char* sectors_inuse)
 
 	uint32_t blockspercluster=parentfs->getblockspercluster();
 
-	for (uint32_t i=0; i<allocentries; i++) 
+	for (uint32_t i=0; i<allocentries; i++)
 	{
 		uint32_t entrystartsector=Convert::getint32(buffer,
 			SONGINFO_ALLOCATIONLIST+ALLOCINFO_SECTORNUM
@@ -620,14 +620,14 @@ void hd24song::unmark_used_clusters(unsigned char* sectors_inuse)
 #endif
 
 		uint32_t entrynumclusters=(entrynumblocks-(entrynumblocks%blockspercluster))/blockspercluster;
-		if ((entrynumblocks%blockspercluster)!=0) 
+		if ((entrynumblocks%blockspercluster)!=0)
 		{
 			entrynumclusters++;
 		}
 #if (SONGDEBUG == 1)
 			cout << "buffer=" << buffer << endl;
 #endif
-		if (entrynumclusters==0) 
+		if (entrynumclusters==0)
 		{
 #if (SONGDEBUG == 1)
 			cout << "nothing to free here." << endl;
@@ -658,7 +658,7 @@ void hd24song::currentlocation(uint32_t offset)
 
 uint32_t hd24song::golocatepos(uint32_t offset)
 {
-	/* Offset indicates next sample that will be 
+	/* Offset indicates next sample that will be
 	   played back (or recorded). A song of 1 sample long
 	   can have the cursor set at offset 0 or offset 1;
            offset 1 is then beyond the end of the song, which is
@@ -674,9 +674,9 @@ uint32_t hd24song::golocatepos(uint32_t offset)
 	songcursor=offset;
 	evenodd=0;
 
-	uint32_t samplenumber=songcursor;	
+	uint32_t samplenumber=songcursor;
 #if (SONGDEBUG == 1)
-//	cout << "songcursor=" << songcursor << endl; 
+//	cout << "songcursor=" << songcursor << endl;
 #endif
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
@@ -693,10 +693,10 @@ uint32_t hd24song::golocatepos(uint32_t offset)
 	}
 
 #if (SONGDEBUG == 1)
-//	cout << "still going strong" << endl; 
+//	cout << "still going strong" << endl;
 #endif
 
-	setblockcursor(blocknum);	
+	setblockcursor(blocknum);
 
 	return songcursor;
 }
@@ -704,22 +704,22 @@ uint32_t hd24song::golocatepos(uint32_t offset)
 uint32_t hd24song::setlocatepos(int locatepoint,uint32_t offset)
 {
 	/** Sets the value of a locate point to the given offset.
-            Parameters: 
+            Parameters:
             locatepoint
 		The 0-based locate point identifier
             offset
 		The new offset (in samples*) for the locate point.
  		* In high samplerate songs (88k2, 96k), the offset is given as
-                number of sample pairs, because audio data is interlaced 
+                number of sample pairs, because audio data is interlaced
             	across 2 physical tracks.
         */
 
-	if (locatepoint<0) 
+	if (locatepoint<0)
         {
 		locatepoint=0;
 	}
 
-	if (locatepoint>LOCATEPOS_LAST) 
+	if (locatepoint>LOCATEPOS_LAST)
 	{
 		return 0;
 	}
@@ -737,7 +737,7 @@ uint32_t hd24song::setlocatepos(int locatepoint,uint32_t offset)
 	return getlocatepos(locatepoint);
 }
 
-hd24song::hd24song(hd24project* p_parent,uint32_t p_songid) 
+hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 {
 #if (SONGDEBUG == 1)
 	cout << "CONSTRUCT hd24song " << p_songid << endl;
@@ -750,7 +750,7 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 	scratchbook=NULL;
 	buffer=NULL;
 	framespersec=FRAMESPERSEC;
-	lastallocentrynum=0; 	
+	lastallocentrynum=0;
 	busyrecording=false;
 	mysongid=p_songid;
 	rehearsemode=false;
@@ -763,14 +763,14 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
 
-	for (uint32_t tracknum=1;tracknum<=24;tracknum++) 
+	for (uint32_t tracknum=1;tracknum<=24;tracknum++)
 	{
 		track_armed[tracknum-1]=false;
 	}
 
 	// 'read enabled' is used in copy mode to reduce the amount of
-	// secors that need to be read from disk.	
-	for (uint32_t tracknum=1;tracknum<=24;tracknum++) 
+	// secors that need to be read from disk.
+	for (uint32_t tracknum=1;tracknum<=24;tracknum++)
 	{
 		track_readenabled[tracknum-1]=true; // by default all are read enabled.
 	}
@@ -786,14 +786,14 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 		cout << "could not allocate audio buffer" << endl;
 #endif
 	}
-	
+
 	// Set up cache buffers for realtime access
 	// first, dynamically create pointer array
 	cachebuf_blocknum=(uint32_t*)memutils::mymalloc("hd24song-cachebuf",sizeof(uint32_t)*CACHEBUFFERS,1);
 	cachebuf_ptr=(unsigned char**)memutils::mymalloc("hd24song-cachebufptr",sizeof (unsigned char *)*CACHEBUFFERS,1);
 	// then, allocate blocks and point array to it.
 	int i;
-	
+
 	for (i=0;i<CACHEBUFFERS;i++)
 	{
 		cachebuf_ptr[i]=NULL;
@@ -806,26 +806,26 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 	}
 
 	uint32_t songsector=parentproject->getsongsectornum(mysongid);
-#if (SONGDEBUG ==1) 
-	cout << "Reading # song sectors= " << TOTAL_SECTORS_PER_SONG 
+#if (SONGDEBUG ==1)
+	cout << "Reading # song sectors= " << TOTAL_SECTORS_PER_SONG
 	<< "from sec " << songsector << endl;
-#endif	
+#endif
 	parentfs->readsectors(parentfs->devhd24,
 			songsector,
 			buffer,TOTAL_SECTORS_PER_SONG);
 	parentfs->fstfix(buffer,TOTAL_SECTORS_PER_SONG*512);
-	
-#if (SONGDEBUG ==1) 
-	cout << "alloc mem for blocksectors" << endl;	
+
+#if (SONGDEBUG ==1)
+	cout << "alloc mem for blocksectors" << endl;
 #endif
 
 	blocksector=(uint32_t*)memutils::mymalloc("blocksector",600000,sizeof(uint32_t));
-#if (SONGDEBUG ==1) 
+#if (SONGDEBUG ==1)
 	cout << "Blocksector=" <<blocksector << endl
-	<< "clear blocksectors" << endl;	
+	<< "clear blocksectors" << endl;
 #endif
-	for (int i=0; i<600000;i++) { 
-		blocksector[i]=0; 
+	for (int i=0; i<600000;i++) {
+		blocksector[i]=0;
 	}
 	// how many blocks in this song?
 #if (SONGDEBUG == 1)
@@ -835,19 +835,19 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 	 << "bitdepth in bytes=" << bitdepth()/8 << endl
 	 << "phys_channels=" << physical_channels() << endl;
 #endif
-	if (physical_channels() >0) 
+	if (physical_channels() >0)
 	{
 		uint32_t blocksize_in_wamples=blocksize_in_bytes / (chanmult()*physical_channels()* (bitdepth()/8));
 		uint32_t number_of_blocks=(uint32_t) floor ( songlength_in_wamples() / blocksize_in_wamples  );
 #if (SONGDEBUG == 1)
 		cout << "songlen in wam=" <<  songlength_in_wamples() << endl;
 #endif
-		if (	( songlength_in_wamples() % blocksize_in_wamples ) !=0 ) 
+		if (	( songlength_in_wamples() % blocksize_in_wamples ) !=0 )
 		{
 			number_of_blocks++;
 		}
 
-	
+
 #if (SONGDEBUG == 1)
 		cout << " blocksize in wams = " << blocksize_in_wamples
 	       	 << "=" << number_of_blocks << "blocks " << endl
@@ -856,9 +856,9 @@ hd24song::hd24song(hd24project* p_parent,uint32_t p_songid)
 #endif
 		memoizeblocksectors(number_of_blocks);
 	}
-	
+
 	divider=0;
-	lastreadblock=0; 
+	lastreadblock=0;
 	mustreadblock=1; // next time a sample is requested, we must read from disk
 	golocatepos(0);
 }
@@ -872,7 +872,7 @@ bool hd24song::has_unexpected_end()
 {
 	// Check if this song has an 'unexpected end of song' error
 	// (in header mode, this always returns false)
-	if (this->parentfs->headersectors!=0) 
+	if (this->parentfs->headersectors!=0)
 	{
 		return false;
 	}
@@ -881,7 +881,7 @@ bool hd24song::has_unexpected_end()
 
 	uint32_t blocksinalloctable=audioblocks_in_alloctable();
 
-	if ( blocksinalloctable < Convert::getint32(buffer,SONGINFO_AUDIOBLOCKS) ) 
+	if ( blocksinalloctable < Convert::getint32(buffer,SONGINFO_AUDIOBLOCKS) )
 	{
 		// the song itself claims it should have more audioblocks
 		return true;
@@ -901,12 +901,12 @@ bool hd24song::is_fixable_unexpected_end()
         uint32_t songblockcount=Convert::getint32(buffer,SONGINFO_AUDIOBLOCKS);
 	if (songblockcount>MAX_BLOCKS_IN_SONG)
         {
-		/* Safety feature: corruption detected, 
+		/* Safety feature: corruption detected,
                    block count of song is greater than theoretical maximum. */
                 songblockcount=MAX_BLOCKS_IN_SONG;
         }
 
-        /* Values in songblockcount and blocksinalloctable should be equal 
+        /* Values in songblockcount and blocksinalloctable should be equal
            unless the song is corrupt. If the latter value lower,
            there is an 'unexpected end of song' error. */
 
@@ -921,11 +921,11 @@ bool hd24song::is_fixable_unexpected_end()
 
 	if (used_alloctable_entries() == (512/ALLOCINFO_ENTRYLEN) ) {
 		/* Yes, it is. We have exactly 1 sector of allocated data and
-		   the rest is zero data, due to a known (presumed) bug in 
+		   the rest is zero data, due to a known (presumed) bug in
                    the HD24 recorder. */
 		return true;
 	}
-	
+
 	/* No, it isn't. Then assume we cannot fix it. */
 	return false;
 }
@@ -949,7 +949,7 @@ uint32_t hd24song::used_alloctable_entries()
 }
 
 uint32_t hd24song::audioblocks_in_alloctable()
-{	
+{
 	/** Finds out how many audio blocks are claimed in
 	    the allocation table of the song. */
 	uint32_t checkentries=used_alloctable_entries();
@@ -958,16 +958,16 @@ uint32_t hd24song::audioblocks_in_alloctable()
 	}
 	uint32_t totblocks=0;
 
-	for (uint32_t i=0; i<checkentries; i++) 
+	for (uint32_t i=0; i<checkentries; i++)
 	{
 		uint32_t entrynumblocks=Convert::getint32(buffer,
 			SONGINFO_ALLOCATIONLIST+ALLOCINFO_AUDIOBLOCKSINBLOCK
 			+(ALLOCINFO_ENTRYLEN*i));
 		totblocks+=entrynumblocks;
 
-	        if (totblocks>MAX_BLOCKS_IN_SONG) 
+	        if (totblocks>MAX_BLOCKS_IN_SONG)
         	{
-	            /* Safety net: Corruption detected, song claims to use 
+	            /* Safety net: Corruption detected, song claims to use
                        more blocks than the theoretical possible maximum. */
                     return MAX_BLOCKS_IN_SONG;
                 }
@@ -976,12 +976,12 @@ uint32_t hd24song::audioblocks_in_alloctable()
 	return totblocks;
 }
 
-hd24song::~hd24song() 
+hd24song::~hd24song()
 {
 #if (SONGDEBUG == 1)
 	cout << "DESTRUCT hd24song " << mysongid << endl;
 #endif
-	if (buffer!=NULL) 
+	if (buffer!=NULL)
 	{
 		memutils::myfree("~hd24song-buffer",buffer);
 		buffer=NULL;
@@ -996,31 +996,31 @@ hd24song::~hd24song()
 		memutils::myfree("~hd24song-audiobuffer",audiobuffer);
 		audiobuffer=NULL;
 	}
-	if (blocksector != NULL) 
+	if (blocksector != NULL)
 	{
 		memutils::myfree("~hd24song-blocksector",blocksector);
 		blocksector=NULL;
 	}
 	int i;
-	
+
 	// clear cache
-	for (i=0;i<CACHEBUFFERS;i++) 
+	for (i=0;i<CACHEBUFFERS;i++)
 	{
 		if (cachebuf_ptr[i]!=NULL) {
-			memutils::myfree("cachebuf_ptr[i]",cachebuf_ptr[i] );	
+			memutils::myfree("cachebuf_ptr[i]",cachebuf_ptr[i] );
 		}
 	}
 	if (cachebuf_ptr!=NULL)
 	{
 		memutils::myfree("cachebuf_ptr",cachebuf_ptr);
 	}
-	if (cachebuf_blocknum!=NULL) 
+	if (cachebuf_blocknum!=NULL)
 	{
 		memutils::myfree("cachebuf_blocknum",cachebuf_blocknum);
 	}
 }
 
-void hd24song::queuecacheblock(uint32_t blocknum) 
+void hd24song::queuecacheblock(uint32_t blocknum)
 {
 	// Only process request if the block is neither cached nor queued yeta
 	// This function is only called if a block is not cached.
@@ -1031,10 +1031,10 @@ void hd24song::queuecacheblock(uint32_t blocknum)
 	// The queue needn't be very big; a shortcut is to use a queue of
 	// just 1 element long. This should still work OK because a block
 	// queue request may be issued over and over again until it is cached.
-	if (blocknum!=blocktoqueue) 
+	if (blocknum!=blocktoqueue)
 	{
 		// block not yet queued
-	}	
+	}
 	blocktoqueue=blocknum;
 	return;
 }
@@ -1047,7 +1047,7 @@ string* hd24song::songname(hd24fs* parentfs, unsigned char* songbuf)
 		delete ver;
 		string* tmp=new string("");
 		string* dummy=Convert::readstring(songbuf,SONGINFO_SONGNAME_8,8);
-	
+
 		*tmp+=*dummy;
 		delete dummy;
 		if (tmp->length()==8) {
@@ -1062,7 +1062,7 @@ string* hd24song::songname(hd24fs* parentfs, unsigned char* songbuf)
 	return tmp;
 }
 
-string* hd24song::songname() 
+string* hd24song::songname()
 {
 	return songname(this->parentfs,buffer);
 }
@@ -1078,7 +1078,7 @@ void hd24song::songname(unsigned char* songbuf,string newname)
 	return;
 }
 
-bool hd24song::iswriteprotected() 
+bool hd24song::iswriteprotected()
 {
 	uint32_t writeprot=(Convert::getint32(buffer,SONGINFO_WRITEPROTECTED));
 	writeprot&=0x04000000;
@@ -1090,7 +1090,7 @@ void hd24song::setwriteprotected(bool prot)
 {
 	uint32_t writeprot=(Convert::getint32(buffer,SONGINFO_WRITEPROTECTED));
 	writeprot&=0xFBFFFFFF;
-	
+
 	if (prot) {
 		writeprot|=0x04000000;
 	}
@@ -1120,7 +1120,7 @@ uint32_t hd24song::physical_channels(unsigned char* songbuf)
 	return channels;
 }
 
-uint32_t hd24song::physical_channels() 
+uint32_t hd24song::physical_channels()
 {
 	return physical_channels(buffer);
 }
@@ -1132,9 +1132,9 @@ uint32_t hd24song::chanmult()
 {
 	return physical_channels(buffer)/logical_channels(buffer);
 }
-uint32_t hd24song::logical_channels() 
+uint32_t hd24song::logical_channels()
 {
-	if (this->samplerate()>=88200) 
+	if (this->samplerate()>=88200)
 	{
 		return (physical_channels()>>1);
 	} else {
@@ -1142,9 +1142,9 @@ uint32_t hd24song::logical_channels()
 	}
 }
 
-uint32_t hd24song::logical_channels(unsigned char* songbuf) 
+uint32_t hd24song::logical_channels(unsigned char* songbuf)
 {
-	if (samplerate(songbuf)>=88200) 
+	if (samplerate(songbuf)>=88200)
 	{
 		return (physical_channels(songbuf)>>1);
 	} else {
@@ -1161,32 +1161,32 @@ void hd24song::logical_channels(unsigned char* songbuf,uint32_t channelcount)
         }
 }
 
-uint32_t hd24song::samplerate(unsigned char* songbuf) 
+uint32_t hd24song::samplerate(unsigned char* songbuf)
 {
 	uint32_t samrate=Convert::getint32(songbuf,SONGINFO_SAMPLERATE)>>8;
 	return samrate;
 }
 
-uint32_t hd24song::samplerate() 
+uint32_t hd24song::samplerate()
 {
 	return samplerate(buffer);
 }
 
-void hd24song::samplerate(unsigned char* songbuf,uint32_t newrate) 
+void hd24song::samplerate(unsigned char* songbuf,uint32_t newrate)
 {
 	uint32_t samrate=(newrate<<8);
 	uint32_t bd=((unsigned char)songbuf[SONGINFO_BITDEPTH]);
 	samrate|=bd;
-	Convert::setint32(songbuf,SONGINFO_SAMPLERATE,samrate);        
+	Convert::setint32(songbuf,SONGINFO_SAMPLERATE,samrate);
 }
 
-void hd24song::samplerate(uint32_t newrate) 
+void hd24song::samplerate(uint32_t newrate)
 {
 	samplerate(buffer,newrate);
 }
 
 
-uint32_t hd24song::bitdepth() 
+uint32_t hd24song::bitdepth()
 {
 	uint32_t depth=(uint32_t)((unsigned char)buffer[SONGINFO_BITDEPTH]);
 	if ((depth!=24) && (depth !=16) && (depth!=32)) return 24;
@@ -1196,7 +1196,7 @@ uint32_t hd24song::songlength_in_wamples()
 {
 	return Convert::getint32(buffer,SONGINFO_SONGLENGTH_IN_WAMPLES);
 }
-uint64_t hd24song::songsize_in_bytes() 
+uint64_t hd24song::songsize_in_bytes()
 {
 	// actual bytes in recording
 	uint32_t bits=(this->bitdepth());
@@ -1206,15 +1206,15 @@ uint64_t hd24song::songsize_in_bytes()
 		*(Convert::getint32(buffer,SONGINFO_SONGLENGTH_IN_WAMPLES));
 }
 
-uint64_t hd24song::bytes_allocated_on_disk() 
+uint64_t hd24song::bytes_allocated_on_disk()
 {
 	// bytes allocated on HD24 drive
 	uint64_t songlen=this->songsize_in_bytes();
-	
+
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blockspercluster=parentfs->getblockspercluster();
 	uint32_t blocksize_in_bytes=blockspercluster*blocksize_in_sectors*SECTORSIZE;
-	uint32_t s=songlen % blocksize_in_bytes;	
+	uint32_t s=songlen % blocksize_in_bytes;
 	if (s!=0) {
 		songlen-=s;
 		songlen+=blocksize_in_bytes;
@@ -1243,7 +1243,7 @@ uint32_t hd24song::songlength_in_wamples(uint32_t newlen,bool silencenew,char* s
         //   The return value of the function is the actual song length
 	//   set. Return value may differ from newlen if not enough drive
 	//   space was available or if allocating ran into problems
-	//   otherwise. 
+	//   otherwise.
 	if (this==NULL)
 	{
 #if (SONGDEBUG==1)
@@ -1297,11 +1297,11 @@ uint32_t hd24song::songlength_in_wamples(uint32_t newlen)
 	return songlength_in_wamples(newlen,true);
 }
 
-string* hd24song::display_cursor() 
+string* hd24song::display_cursor()
 {
-	return (display_duration(songcursor));	
+	return (display_duration(songcursor));
 }
-uint32_t hd24song::cursorpos() 
+uint32_t hd24song::cursorpos()
 {
 	return songcursor;
 }
@@ -1310,13 +1310,13 @@ bool hd24song::endofsong()
 	if (songcursor>=songlength_in_wamples()) return true;
 	return false;
 }
-string* hd24song::display_duration(uint32_t offset,uint32_t samrate) 
+string* hd24song::display_duration(uint32_t offset,uint32_t samrate)
 {
-	if (samrate==0) 
+	if (samrate==0)
 	{
 		string* nulldur=Convert::int2str(0,2,"0");
 		*nulldur+=":00:00.00";
-		return nulldur;	
+		return nulldur;
 	}
 	samrate/=chanmult();
 	uint32_t subsec=display_subseconds(offset,samrate);
@@ -1339,7 +1339,7 @@ string* hd24song::display_duration(uint32_t offset,uint32_t samrate)
 	return newstr;
 }
 
-string* hd24song::display_duration(uint32_t offset) 
+string* hd24song::display_duration(uint32_t offset)
 {
 	return display_duration(offset,samplerate());
 }
@@ -1349,19 +1349,19 @@ string* hd24song::display_duration()
 	return display_duration(songlength_in_wamples());
 }
 
-uint32_t hd24song::display_hours() 
+uint32_t hd24song::display_hours()
 {
 	return display_hours(songlength_in_wamples());
 }
 
-uint32_t hd24song::display_hours(uint32_t offset,uint32_t samrate) 
+uint32_t hd24song::display_hours(uint32_t offset,uint32_t samrate)
 {
-	if (samrate==0) 
-	{	
-		return 0;	
+	if (samrate==0)
+	{
+		return 0;
 	}
 	if (samrate>=88200) { samrate=samrate>>1; }
-	
+
         uint32_t totsonglen=offset;
 	uint32_t songsubsecs=totsonglen%samrate;
 	uint32_t cutsonglen=(totsonglen-songsubsecs);
@@ -1373,16 +1373,16 @@ uint32_t hd24song::display_hours(uint32_t offset,uint32_t samrate)
 	return totsonghours;
 }
 
-uint32_t hd24song::display_minutes() 
+uint32_t hd24song::display_minutes()
 {
 	return display_minutes(songlength_in_wamples());
 }
 
-uint32_t hd24song::display_minutes(uint32_t offset,uint32_t samrate) 
+uint32_t hd24song::display_minutes(uint32_t offset,uint32_t samrate)
 {
-	if (samrate==0) 
-	{	
-		return 0;	
+	if (samrate==0)
+	{
+		return 0;
 	}
 	if (samrate>=88200) { samrate=samrate>>1; }
         uint32_t totsonglen=offset;
@@ -1395,13 +1395,13 @@ uint32_t hd24song::display_minutes(uint32_t offset,uint32_t samrate)
 	return viewsongmins;
 }
 
-uint32_t hd24song::display_seconds() 
+uint32_t hd24song::display_seconds()
 {
 	return display_seconds(songlength_in_wamples());
 }
 
 void hd24song::sectorinit(unsigned char* songsector)
-{	
+{
 	unsigned char emptysong[512] = {
 		0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X10,0X00,0X00,0X00,0X30,0X00,0X00,0X00,
 		0X00,0X20,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
@@ -1448,9 +1448,9 @@ void hd24song::sectorinit(unsigned char* songsector)
 
 uint32_t hd24song::display_seconds(uint32_t offset,uint32_t samrate)
 {
-	if (samrate==0) 
-	{	
-		return 0;	
+	if (samrate==0)
+	{
+		return 0;
 	}
 	if (samrate>=88200) { samrate=samrate>>1; }
 	uint32_t cutsonglen=offset-display_subseconds(offset,samrate);
@@ -1463,11 +1463,11 @@ uint32_t hd24song::display_subseconds() {
 	return display_subseconds(songlength_in_wamples());
 }
 
-uint32_t hd24song::display_subseconds(uint32_t offset,uint32_t samrate) 
+uint32_t hd24song::display_subseconds(uint32_t offset,uint32_t samrate)
 {
-	if (samrate==0) 
-	{	
-		return 0;	
+	if (samrate==0)
+	{
+		return 0;
 	}
 	if (samrate>=88200) { samrate=samrate>>1; }
         uint32_t totsonglen=offset;
@@ -1475,27 +1475,27 @@ uint32_t hd24song::display_subseconds(uint32_t offset,uint32_t samrate)
 	return songsubsecs;
 }
 
-uint32_t hd24song::display_hours(uint32_t offset) 
+uint32_t hd24song::display_hours(uint32_t offset)
 {
 	return display_hours(offset,samplerate());
 }
 
-uint32_t hd24song::display_minutes(uint32_t offset) 
+uint32_t hd24song::display_minutes(uint32_t offset)
 {
 	return display_minutes(offset,samplerate());
 }
 
-uint32_t hd24song::display_seconds(uint32_t offset) 
+uint32_t hd24song::display_seconds(uint32_t offset)
 {
 	return display_seconds(offset,samplerate());
 }
 
-uint32_t hd24song::display_subseconds(uint32_t offset) 
+uint32_t hd24song::display_subseconds(uint32_t offset)
 {
 	return display_subseconds(offset,samplerate());
 }
 
-unsigned char* hd24song::getcachedbuffer(uint32_t blocknum) 
+unsigned char* hd24song::getcachedbuffer(uint32_t blocknum)
 {
 	// This will return a pointer to an audio buffer containing
 	// the audio of the given blocknum, if available.
@@ -1508,13 +1508,13 @@ unsigned char* hd24song::getcachedbuffer(uint32_t blocknum)
 	/* A straight loop isn't the fastest way to find the
 	 * correct buffer (a binary tree or hash would perform
 	 * better). However the advantage for a total of around
-	 * 40 blocks (25 locate points and some lookahead) 
+	 * 40 blocks (25 locate points and some lookahead)
 	 * would be rather marginal. */
 
 	bool havenext=false;
 	bool haveprev=false;
 
-	for (i=LOCATEPOS_LAST;i<CACHEBUFFERS;i++) 
+	for (i=LOCATEPOS_LAST;i<CACHEBUFFERS;i++)
 	{
 		if (blocknum>0) {
 			if (cachebuf_blocknum[i]==(blocknum-1)) {
@@ -1526,31 +1526,31 @@ unsigned char* hd24song::getcachedbuffer(uint32_t blocknum)
 			havenext=true;
 			if (haveprev && foundbuf) break;
 		}
-		if (cachebuf_blocknum[i]==blocknum) 
+		if (cachebuf_blocknum[i]==blocknum)
 		{
 			bufptr=cachebuf_ptr[i];
 			foundbuf=true;
 			if (havenext && haveprev) break;
 		}
 	}
-	if (!(foundbuf)) 
+	if (!(foundbuf))
 	{
-		if (!haveprev) 
+		if (!haveprev)
 		{
 			queuecacheblock(blocknum-1);
 		}
-		if (!havenext) 
+		if (!havenext)
 		{
 			queuecacheblock(blocknum+1);
 		}
 		queuecacheblock(blocknum);
 		return NULL;
 	}
-	if (!haveprev) 
+	if (!haveprev)
 	{
 		queuecacheblock(blocknum-1);
 	}
-	if (!havenext) 
+	if (!havenext)
 	{
 		queuecacheblock(blocknum+1);
 	}
@@ -1561,7 +1561,7 @@ unsigned char* hd24song::getcachedbuffer(uint32_t blocknum)
 	return bufptr;
 }
 
-void hd24song::memoizeblocksectors(uint32_t number_of_blocks) 
+void hd24song::memoizeblocksectors(uint32_t number_of_blocks)
 {
 	uint32_t totblocksfound=0;
 	uint32_t myallocentrynum=0;
@@ -1585,7 +1585,7 @@ void hd24song::memoizeblocksectors(uint32_t number_of_blocks)
 			SONGINFO_ALLOCATIONLIST+ALLOCINFO_AUDIOBLOCKSINBLOCK
 			+(ALLOCINFO_ENTRYLEN*myallocentrynum));
 #if (SONGDEBUG == 1)
-		cout << "Entry " << myallocentrynum << " start sector=" << entrystartsector 
+		cout << "Entry " << myallocentrynum << " start sector=" << entrystartsector
 		<< "# blocks in entry=" << entrynumblocks << endl;
 #endif
 
@@ -1602,19 +1602,19 @@ void hd24song::memoizeblocksectors(uint32_t number_of_blocks)
 #endif
 	return	;
 }
-	
-/*	   Quick calculation: 
+
+/*	   Quick calculation:
 	   Saving 1 block sectornum=32 bit (4 bytes).
-           MAX_BLOCKS_IN_SONG=524288, so the maximum number of bytes needed to 
-           memoize all song allocation info=524288*4=2097152 bytes (~2 megabyte) 
+           MAX_BLOCKS_IN_SONG=524288, so the maximum number of bytes needed to
+           memoize all song allocation info=524288*4=2097152 bytes (~2 megabyte)
            for the worst case song, which is certainly doable.
 
 	   As memoization can be done efficiently when carried out sequentially, it can be done in O(n)
 
 	   When this function is called once with last blocknum, all blocks can be memoized during a
 	   single pass of the WHILE loop
-           Lookup will be O(1). 
-	   A typical song transfer will take X tracks 
+           Lookup will be O(1).
+	   A typical song transfer will take X tracks
            (each track requires a sector calc for all blocks).
 */
 
@@ -1623,12 +1623,12 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	/* This procedure is intended for copying audio from disk (and for realtime
            playback). This procedure assumes sequential reading.
 
-	   If reverse playback is desired, golocatepos() must be called for 
+	   If reverse playback is desired, golocatepos() must be called for
            every sample. This is a bit more expensive in resources.
-	   However, as golocatepos() 
+	   However, as golocatepos()
 	   doesn't cause any I/O, it should still be light enough for regular use.
 
-	   As such, allocation info for every sample will only be recalculated 
+	   As such, allocation info for every sample will only be recalculated
 	   when needed. This results in the best possible performance.
 
 	   There are two playback modes: copy and realtime. Copy mode guarantees
@@ -1636,13 +1636,13 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
            require (slow) disk reads in the process, which makes it unsuitable
            for anything requiring realtime response.
 
-           Realtime mode guarantees to return a result in a short amount of time, 
+           Realtime mode guarantees to return a result in a short amount of time,
            by using a cache. This makes it suitable for realtime playback.
            When a block is not available in cache, silence is returned. This makes
            realtime mode unsuitable for accurate transfers, but suitable for direct
            from-disk mixing. Blocks that are not available in cache are queued for
            caching. Periodic background checks should be performed on this queue to
-           help guarantee availability of the blocks to cache. 
+           help guarantee availability of the blocks to cache.
 
 	   In high samplerate mode, samples are interlaced between odd tracks and
 	   even tracks. This allows the song cursor to keep running at normal speed-
@@ -1656,9 +1656,9 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	<< "parentfs=" << parentfs << endl;
 #endif
 	unsigned char* buffertouse=NULL;
-	currentreadmode=readmode;	
+	currentreadmode=readmode;
 	uint32_t samrate=samplerate();
-	uint32_t samplenumber=songcursor;	
+	uint32_t samplenumber=songcursor;
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
 	uint32_t bits=(this->bitdepth());
@@ -1674,10 +1674,10 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	if (parentfs->maintenancemode==1) {
 		readmode=hd24song::READMODE_COPY;
 	}
-	switch (readmode) 
+	switch (readmode)
 	{
 		case hd24song::READMODE_COPY:
-			if ((lastreadblock!=blocknum)||(mustreadblock==1)) 
+			if ((lastreadblock!=blocknum)||(mustreadblock==1))
 			{
 				mustgetaudiodata=true;
 			}
@@ -1688,11 +1688,11 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 				mustgetaudiodata=true;
 			}
 			break;
-		default: 
+		default:
 			mustgetaudiodata=false;
 			break;
 	}
-	
+
 #if (SONGDEBUG==1)
 	cout << "readmtsample MARK2" << endl;
 #endif
@@ -1700,7 +1700,7 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	{
 		// We advanced a block. This means we need to read more audio data.
 		// (or in case of realtime reading, at least find out what next block to get)
-		if (blocknum==(allocstartblock+allocaudioblocks)) 
+		if (blocknum==(allocstartblock+allocaudioblocks))
 		{
 			// In fact, we've read all data in the current allocation entry.
 			allocentrynum++;			// reset cursor to start of song
@@ -1710,11 +1710,11 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 			allocaudioblocks=Convert::getint32(buffer,
 				SONGINFO_ALLOCATIONLIST+(ALLOCINFO_ENTRYLEN*allocentrynum)+ALLOCINFO_AUDIOBLOCKSINBLOCK);
 		}
-		
-		switch (readmode) 
+
+		switch (readmode)
 		{
 			case (hd24song::READMODE_COPY):
-				if (parentfs->maintenancemode==1) 
+				if (parentfs->maintenancemode==1)
 				{
                                         // in maintenance mode, we will display the sector currently
                                         // being played back (that is what maintenance mode is all
@@ -1724,13 +1724,13 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 					string* cluster=Convert::int32tostr(parentfs->sector2cluster(currsector));
 
 					cout 	<< "sector "  // maintenance mode, PRAGMA allowed
-					     	<< *hexsector 
-						<< " (cluster " 
-						<< *cluster 
+					     	<< *hexsector
+						<< " (cluster "
+						<< *cluster
 						<< ")-1" << endl; // maintenance mode, PRAGMA allowed
 					delete hexsector;
 				}
-				
+
 				parentfs->readsectors(parentfs->devhd24,
 				allocstartsector+((blocknum-allocstartblock)*blocksize_in_sectors),
 				audiobuffer,blocksize_in_sectors); // raw audio read, no fstfix needed
@@ -1738,7 +1738,7 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 				break;
 			case (hd24song::READMODE_REALTIME):
 				buffertouse=getcachedbuffer(blocknum);
-					
+
 			default: break;
 		}
 	}
@@ -1749,13 +1749,13 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 #endif
 
 	int sample_within_block=samplenumber%(tracksamples_per_block);
-	if (readmode==hd24song::READMODE_COPY) 
+	if (readmode==hd24song::READMODE_COPY)
 	{
 		buffertouse=audiobuffer;
 	}
 	uint32_t trackspersam;
 	if (samrate>=88200) {
-		trackspersam=2; 
+		trackspersam=2;
 	} else {
 		trackspersam=1;
 	}
@@ -1765,17 +1765,17 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	/* Audio buffer has been read, now copy multi track sample
            to multi track sample buffer. In high sample rate mode,
            either even or odd samples is returned (alternating
-	   each call) 
+	   each call)
         */
 	uint32_t tottracks=logical_channels();
-	for (uint32_t tracknum=0;tracknum<tottracks;tracknum++) 
+	for (uint32_t tracknum=0;tracknum<tottracks;tracknum++)
 	{
 		uint32_t samval;
-		if (buffertouse==NULL) 
+		if (buffertouse==NULL)
 		{
 			samval=0;
-		} 
-		else 
+		}
+		else
 		{
 			int offset_first_blocksample=(((tracknum*trackspersam)+evenodd)*tracksamples_per_block*bytes_per_sample);
 			int sample_offset=offset_first_blocksample+(sample_within_block*bytes_per_sample);
@@ -1792,7 +1792,7 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 		if ((tracknum==0) && (songcursor<20)) {
 			string* bla=Convert::int32tohex(samval);
 #if ( SONGDEBUG == 1 )
-			cout << *bla << "-2"<< endl; 
+			cout << *bla << "-2"<< endl;
 #endif
 			delete bla;
 		}
@@ -1805,14 +1805,14 @@ void hd24song::getmultitracksample(long* mtsample,int readmode)
 	cout << "readmtsample MARK 4" << endl;
 #endif
 	lastreadblock=blocknum;
-	if (samrate>=88200) 
+	if (samrate>=88200)
 	{
-		// For high sample rate mode the song cursor advances 
+		// For high sample rate mode the song cursor advances
 		// only every other sample.
 		// Variable evenodd keeps track of what to return.
 		evenodd=1-evenodd;
 		if (evenodd==0) {
-			songcursor++;	
+			songcursor++;
 		}
 	} else {
 		songcursor++;
@@ -1831,7 +1831,7 @@ int hd24song::getmtrackaudiodata(uint32_t firstsamnum,uint32_t samples,unsigned 
 	   It assumes single track audio and will always read only whole blocks,
            directly to the given buffer. Return value is a pointer to the
            first sample that was supposed to be read.
- 
+
 	   The buffer should be sufficiently large to hold the total audio size.
   	   (number of samples*3 bytes for normal sample rates or
             number of samples*3*2 bytes for high sample rates (88k2, 96k).
@@ -1839,17 +1839,17 @@ int hd24song::getmtrackaudiodata(uint32_t firstsamnum,uint32_t samples,unsigned 
 	   In copy mode, only required blocks will be read from disk
            (no caching will take place- we'll leave this to the OS)
 
-           Realtime mode guarantees to return a result in a short amount of time, 
+           Realtime mode guarantees to return a result in a short amount of time,
            by using a cache. This makes it suitable for realtime playback.
            REALTIME MODE IS NOT IMPLEMENTED YET.
            When a block is not available in cache, silence is returned. This makes
            realtime mode unsuitable for accurate transfers, but suitable for direct
            from-disk mixing. Blocks that are not available in cache are queued for
            caching. Periodic background checks should be performed on this queue to
-           help guarantee availability of the blocks to cache. 
+           help guarantee availability of the blocks to cache.
         */
 
-	currentreadmode=readmode;	
+	currentreadmode=readmode;
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
 
@@ -1893,7 +1893,7 @@ int hd24song::getmtrackaudiodata(uint32_t firstsamnum,uint32_t samples,unsigned 
 #if (SONGDEBUG==1)
 	cout << "sectoroffset,readlength="<<sectoroffset<<","<<readlength<< endl;
 #endif
-	for (uint32_t blocknum=startblocknum;blocknum<=endblocknum;blocknum++) 
+	for (uint32_t blocknum=startblocknum;blocknum<=endblocknum;blocknum++)
 	{
 #if (SONGDEBUG == 1)
 			string* bla=Convert::int32tohex(blocksector[blocknum]);
@@ -1911,7 +1911,7 @@ int hd24song::getmtrackaudiodata(uint32_t firstsamnum,uint32_t samples,unsigned 
 	return firstsamnum%tracksamples_per_block;
 }
 
-void hd24song::interlaceblock(unsigned char* sourcebuffer,unsigned char* targetbuffer) 
+void hd24song::interlaceblock(unsigned char* sourcebuffer,unsigned char* targetbuffer)
 {
 	/* This is needed for high sample rates as high sample rate recordings
            take up two physical channels for each logical audio channel */
@@ -1924,13 +1924,13 @@ void hd24song::interlaceblock(unsigned char* sourcebuffer,unsigned char* targetb
 	uint32_t bytes_per_sample=bits/8;
 	uint32_t tracksamples_per_halfblock=(blocksize_halfblock/bytes_per_sample);
 	uint32_t choffset=0;
-	for (uint32_t ch=0;ch<logical_channels();ch++) 
-	{	
-		for (uint32_t i=0;i<tracksamples_per_halfblock;i++) 
+	for (uint32_t ch=0;ch<logical_channels();ch++)
+	{
+		for (uint32_t i=0;i<tracksamples_per_halfblock;i++)
 		{
 			uint32_t samoff_target=i*bytes_per_sample+choffset;
 			uint32_t samoff_source=2*i*bytes_per_sample+choffset;
-			for (uint32_t j=0;j<bytes_per_sample;j++) {	
+			for (uint32_t j=0;j<bytes_per_sample;j++) {
 				targetbuffer[samoff_target+j]
 					=sourcebuffer[samoff_source+j];
 				targetbuffer[samoff_target+j+bytes_per_sample]
@@ -1941,10 +1941,10 @@ void hd24song::interlaceblock(unsigned char* sourcebuffer,unsigned char* targetb
 	}
 }
 
-void hd24song::deinterlaceblock(unsigned char* sourcebuffer,unsigned char* targetbuffer) 
+void hd24song::deinterlaceblock(unsigned char* sourcebuffer,unsigned char* targetbuffer)
 {
 	/* This is needed for high sample rates as high sample rate recordings
-           take up two physical channels for each logical audio channel */	
+           take up two physical channels for each logical audio channel */
 	uint32_t blocksize_in_sectors=parentfs->getblocksizeinsectors();
 	uint32_t blocksize_in_bytes=blocksize_in_sectors*SECTORSIZE;
 	uint32_t blocksize_doubleblock=blocksize_in_bytes/logical_channels();
@@ -1954,13 +1954,13 @@ void hd24song::deinterlaceblock(unsigned char* sourcebuffer,unsigned char* targe
 	uint32_t bytes_per_sample=bits/8;
 	uint32_t tracksamples_per_halfblock=(blocksize_halfblock/bytes_per_sample);
 	uint32_t choffset=0;
-	for (uint32_t ch=0;ch<logical_channels();ch++) 
-	{	
-		for (uint32_t i=0;i<tracksamples_per_halfblock;i++) 
+	for (uint32_t ch=0;ch<logical_channels();ch++)
+	{
+		for (uint32_t i=0;i<tracksamples_per_halfblock;i++)
 		{
 			uint32_t samoff_source=i*bytes_per_sample+choffset;
 			uint32_t samoff_target=2*i*bytes_per_sample+choffset;
-			for (uint32_t j=0;j<bytes_per_sample;j++) {	
+			for (uint32_t j=0;j<bytes_per_sample;j++) {
 				targetbuffer[samoff_target+j]
 					=sourcebuffer[samoff_source+j];
 				targetbuffer[samoff_target+j+bytes_per_sample]
@@ -1981,7 +1981,7 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
 	for (int i=0;i<30;i++) { cout << " " << (short)((unsigned char)writebuffer[i]); } // PRAGMA allowed
 	cout << endl; // PRAGMA allowed
 #endif
-	/* 
+	/*
            This procedure is intended for writing audio data to disk.
            Contrary to reading audio (where realtime mode is OK to drop
            some audio during heavy seeking), write mode should always
@@ -1989,22 +1989,22 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
            As such only sequential operation is allowed.
 
            NOTE: THIS FUNCTION WAS NOT TESTED FOR REALTIME OPERATION.
-           
+
            Before writing, you need to arm the tracks that you want to
            write to (using the unarmtrack and armtrack functions),
-           then enable record mode (function startrecord). 
+           then enable record mode (function startrecord).
 
            Startrecord will disable seeking while recording and perform
            any tasks needed to initialize drive usage administration.
 
-           When no tracks are armed or record mode is not enabled, 
+           When no tracks are armed or record mode is not enabled,
            nothing will be written to disk. (A rehearse mode may be
            added at some point to prevent writing to disk even in
  	   record mode).
 
            After writing, you need to call stoprecord. This will
            re-enable seek operations and write out any drive usage
-           information, increase file length etc, should any space have 
+           information, increase file length etc, should any space have
     	   been allocated during the write operation.
 
            Before calling this function, the write buffer needs to contain
@@ -2034,7 +2034,7 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
 	uint32_t tracks_per_song=logical_channels();
 	uint32_t trackbytes_per_block=(blocksize_in_bytes / logical_channels());
 	uint32_t trackwamples_per_block=trackbytes_per_block / (bytes_per_sample*chanmult());
-	
+
 	// track bytes is correct as it deals with logical tracks.
 	// tracksamples per block ought to be duplicated for high samplerates though.
 
@@ -2045,9 +2045,9 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
           cout << "tracksams_per_block=" << trackwamples_per_block
 	<<"startblocknum="<<startblocknum
 		<<", endblocknum="<<endblocknum
-		<<endl; 
+		<<endl;
 #endif
-	for (uint32_t blocknum=startblocknum;blocknum<=endblocknum;blocknum++) 
+	for (uint32_t blocknum=startblocknum;blocknum<=endblocknum;blocknum++)
 	{
 #if (HD24TRANSFERDEBUG==1)
 		cout << "blocknum="<<blocknum<<endl;
@@ -2061,7 +2061,7 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
 #endif
 			setrehearsemode(true);
 		}
-		
+
 		parentfs->readsectors(parentfs->devhd24,
 			blocksector[blocknum],
 			scratchbook,
@@ -2086,7 +2086,7 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
 					scratchbook[firsttrackbyte+q]=(unsigned char)writebuffer[firsttrackbyte+q];
 				}
 			}
-			if (armedtrackcount>0) {		
+			if (armedtrackcount>0) {
 #if (HD24TRANSFERDEBUG==1)
 				cout << "writing back " <<  armedtrackcount
 				 << " armed tracks to sector "<< blocksector[blocknum] << endl;
@@ -2096,7 +2096,7 @@ int hd24song::putmtrackaudiodata(uint32_t firstwamnum,uint32_t wamples,unsigned 
 					scratchbook,
 					blocksize_in_sectors);
 			}
-			else 
+			else
 			{
 #if (HD24TRANSFERDEBUG==1)
 				cout << "no armed tracks, not writing." << endl;
@@ -2141,7 +2141,7 @@ bool hd24song::recording()
 }
 
 
-void hd24song::readenabletrack(uint32_t tracknum,bool enable) 
+void hd24song::readenabletrack(uint32_t tracknum,bool enable)
 {
 	if (tracknum<1) return;
 	if (tracknum>24) return;
@@ -2165,7 +2165,7 @@ void hd24song::setrehearsemode(bool p_rehearsemode)
 	return;
 }
 
-void hd24song::trackarmed(uint32_t tracknum,bool arm) 
+void hd24song::trackarmed(uint32_t tracknum,bool arm)
 {
 	if (tracknum<1) return;
 	if (tracknum>24) return;
@@ -2174,7 +2174,7 @@ void hd24song::trackarmed(uint32_t tracknum,bool arm)
 	return;
 }
 
-bool hd24song::trackarmed(uint32_t tracknum) 
+bool hd24song::trackarmed(uint32_t tracknum)
 {
 	if (tracknum<1) return false;
 	if (tracknum>24) return false;
@@ -2189,13 +2189,13 @@ bool hd24song::istrackmonitoringinput(uint32_t tracknum)
 	if (tracknum>(this->logical_channels())) return false;
 
 	// indicates if a given track is (supposed to be)
-	// monitoring input (if false, playback is being monitored). 
+	// monitoring input (if false, playback is being monitored).
 	// This is based on the following decision matrix:
         //
 	// All input | auto input | Track rec-enabled | Transport status | result
         // ----------+------------+-------------------+------------------+--------
         //  on       |            | don't care        | don't care       | true
-        //  off      | off        | false             | stop             | false 
+        //  off      | off        | false             | stop             | false
         //  off      | off        | false             | play             | false
         //  off      | off        | false             | rec              | false
         //  off      | off        | true              | stop             | true
@@ -2214,7 +2214,7 @@ bool hd24song::istrackmonitoringinput(uint32_t tracknum)
 	if (!(this->trackarmed(tracknum))) return false;
 
 	if (this->parentfs->transportstatus==hd24fs::TRANSPORTSTATUS_PLAY) {
-		if (this->parentfs->isautoinput()) {	
+		if (this->parentfs->isautoinput()) {
 			return false;
 		}
 	}
@@ -2227,16 +2227,16 @@ uint32_t hd24song::getnextfreesector(uint32_t lastallocsector)
 	   will return the sector number of the next unallocated cluster.
 	   When no unallocated sectors are found, the function will return 0.
 
-           Sector 0 is never in the data area, so this will allow us to 
+           Sector 0 is never in the data area, so this will allow us to
 	   distinguish between this situation and real cluster numbers.
 	   Sector 0 is the superblock- as allocation implies writing to the
-           drive, the code calling this function MUST verify the result. 
-	  
+           drive, the code calling this function MUST verify the result.
+
            When the allocation info cannot be decided upon based on just
            the unallocated song sectors within the last allocated cluster
            for the song, this function will ask the file system for the
            sector number of the next unused cluster.
-           
+
 	*/
 #if (SONGDEBUG==1)
 	cout << "Song::getnextfreesec(" << lastallocsector << ")" << endl;
@@ -2247,12 +2247,12 @@ uint32_t hd24song::getnextfreesector(uint32_t lastallocsector)
         uint32_t allocblocks=Convert::getint32(buffer,SONGINFO_ALLOCATIONLIST
 		+(ALLOCINFO_ENTRYLEN*lastallocentrynum)+ALLOCINFO_AUDIOBLOCKSINBLOCK);
 	uint32_t nextsec=0;
-	
+
 	if ((allocsector==0) && (lastallocsector==0))
 	{
 		// no sectors allocated yet within song.
 		nextsec=this->parentfs->getnextfreesector(CLUSTER_UNDEFINED);
-	} else {	
+	} else {
 		// find out first cluster used by allocation unit
 		uint32_t alloccluster;
 		uint32_t blockspercluster;
@@ -2275,16 +2275,16 @@ uint32_t hd24song::getnextfreesector(uint32_t lastallocsector)
 		nextsec=this->parentfs->getnextfreesector(lastalloccluster);
 	}
 
-	if (nextsec==0) 
+	if (nextsec==0)
 	{
-	   /* 
+	   /*
 		TODO: safety feature: If getnextfreesector returns 0, record
-          	mode will be disabled to prevent accidentally overwriting the 
-           	superblock. (Alternatively transport may be stopped but 
+          	mode will be disabled to prevent accidentally overwriting the
+           	superblock. (Alternatively transport may be stopped but
            	auto-stop hasn't been fully designed yet). */
 		// write protect of some sort
 		setrehearsemode(true);
-	} 
+	}
 	return nextsec;
 }
 
@@ -2303,16 +2303,16 @@ void hd24song::save()
 	parentfs->writesectors(parentfs->devhd24,
 			songsector,
 			buffer,TOTAL_SECTORS_PER_SONG);
-	
+
 	parentfs->fstfix(buffer,TOTAL_SECTORS_PER_SONG*512); // sector is now in 'fixed' format again
-	if (this->lengthened) 
+	if (this->lengthened)
 	{
 #if (SONGDEBUG == 1)
 		cout << "song was lengthened, update of drive usage needed." << endl;
 #endif
 		parentfs->savedriveusage();
 		this->lengthened=false;
-	} else 
+	} else
 	{
 #if (SONGDEBUG == 1)
 		cout << "song was not lengthened, no update of drive usage needed." << endl;
