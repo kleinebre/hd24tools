@@ -531,11 +531,11 @@ if (portaudio_initialized!=0) {
 }
 return false;} {}
   }
-  Function {paTestCallback(const void *inputBuffer, void *outputBuffer, uint32_t nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  Function {paTestCallback(const void *inputBuffer, void *outputBuffer, long unsigned int nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
   } {
     code {return 0;} {}
   }
-  Function {portaudio_process(const void *inputBuffer, void *outputBuffer, uint32_t nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
+  Function {portaudio_process(const void *inputBuffer, void *outputBuffer, long unsigned int nframes, const PaStreamCallbackTimeInfo* timeinfo,PaStreamCallbackFlags, void *userData)} {open private return_type {static int}
   } {
     code {RecorderControl* recordercontrol=(RecorderControl*)userData;
 
