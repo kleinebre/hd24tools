@@ -1,3 +1,4 @@
+#define HD24FSDEBUG 1
 #define ALLOC_SECTORS_PER_SONG	5
 #define SONG_SECTORS_PER_SONG	2
 #define TOTAL_SECTORS_PER_SONG	(ALLOC_SECTORS_PER_SONG+SONG_SECTORS_PER_SONG)
@@ -46,7 +47,7 @@
 #define FSINFO_NUMSECTORS_DRIVEUSAGE	0x3c
 #define DEFAULT_SECTORS_DRIVEUSAGE 15
 #define FSINFO_CLUSTERWORDS_IN_TABLE	0x40 /* Not sure what this is used for. */
-#define FSINFO_FREE_CLUSTERS_ON_DISK	0x44 
+#define FSINFO_FREE_CLUSTERS_ON_DISK	0x44
 #define FSINFO_FIRST_PROJECT_SECTOR	0x48
 #define FSINFO_SECTORS_PER_PROJECT	0x4C
 #define FSINFO_MAXPROJECTS		0x50
@@ -79,21 +80,21 @@ const int hd24fs::MODE_RDONLY=GENERIC_READ;
 const int hd24fs::MODE_RDWR=GENERIC_READ|GENERIC_WRITE;
 #define popen _popen
 #define pclose _pclose
-__uint32 hd24fs::bytenumtosectornum(__uint64 flen)
+uint32_t hd24fs::bytenumtosectornum(uint64_t flen)
 {
-	/* This was unit tested to behave identically to 
-           the previous version.  (note: Windows only!) 
-           But is (flen-1)/512 what we really mean? 
+	/* This was unit tested to behave identically to
+           the previous version.  (note: Windows only!)
+           But is (flen-1)/512 what we really mean?
            flen would basically be "file size" so 1..512
-           should return 0, 513..1024 should return 1, etc.		
+           should return 0, 513..1024 should return 1, etc.
 	*/
         if (flen==0) return ERROR_INVALID;
-        return (__uint32)((flen-1)/512);
+        return (uint32_t)((flen-1)/512);
 }
 
-__uint64 hd24fs::windrivesize(FSHANDLE hPhysicalDrive)
+uint64_t hd24fs::windrivesize(FSHANDLE hPhysicalDrive)
 {
-	__uint64 result;
+	uint64_t result;
 	result=0;
 	//LPOVERLAPPED olap=new OVERLAPPED;
 
@@ -164,7 +165,7 @@ void hd24fs::dumpsector(const unsigned char* buffer)
 	}
 }
 
-__uint32 hd24fs::songentry2sector(__uint32 songentry)
+uint32_t hd24fs::songentry2sector(uint32_t songentry)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::songentry2sector(" <<songentry<<")"<< endl;
@@ -176,18 +177,18 @@ __uint32 hd24fs::songentry2sector(__uint32 songentry)
 	// returns 0 when entry number is not legal.
 	getsector_bootinfo();
 	if (sector_boot==NULL) {
-		/* 
+		/*
 		   Info needed for the calculation is missing.
 		   As boot info should just have been read in the line before
 		   this should normally never happen unless we're running out of
-                   memory. As such coverage tests will normally miss it. 
+                   memory. As such coverage tests will normally miss it.
 		*/
 		return 0;
 	}
-	__uint32 firstsongsec=Convert::getint32(sector_boot,FSINFO_FIRST_SONG_SECTOR);
-	__uint32 secspersong=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_SONG);
+	uint32_t firstsongsec=Convert::getint32(sector_boot,FSINFO_FIRST_SONG_SECTOR);
+	uint32_t secspersong=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_SONG);
 	if (songentry<(99*99)) {
-		__uint32 secnum=(firstsongsec+(songentry*secspersong));
+		uint32_t secnum=(firstsongsec+(songentry*secspersong));
 		return secnum;
 	}
 	return 0; // entry number is not legal.
@@ -206,7 +207,7 @@ bool hd24fs::isdevicefile()
 	}
 	const char* strb=hd24devicenamegenerator::DEVICEPREFIX;
 	int y=strlen(strb);
-	
+
 	if (strncmp(this->devicename->c_str(),strb,y)==0)
 	{
 		return true;
@@ -214,7 +215,7 @@ bool hd24fs::isdevicefile()
 	return false;
 }
 
-__uint32 hd24fs::songsondisk()
+uint32_t hd24fs::songsondisk()
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::songsondisk()" << endl;
@@ -227,7 +228,7 @@ __uint32 hd24fs::songsondisk()
 	return Convert::getint32(sector_boot,FSINFO_CURRENT_SONGS_ON_DISK);
 }
 
-void hd24fs::songsondisk(__uint32 songcount)
+void hd24fs::songsondisk(uint32_t songcount)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::songsondisk("<<songcount<<")" << endl;
@@ -237,10 +238,10 @@ void hd24fs::songsondisk(__uint32 songcount)
 		// info needed for the calculation is missing.
 		return; //cannot update.
 	}
-	Convert::setint32(sector_boot,FSINFO_CURRENT_SONGS_ON_DISK,songcount);	
+	Convert::setint32(sector_boot,FSINFO_CURRENT_SONGS_ON_DISK,songcount);
 }
 
-__uint32 hd24fs::songsector2entry(__uint32 songsector)
+uint32_t hd24fs::songsector2entry(uint32_t songsector)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::songsector2entry("<<songsector<<")" << endl;
@@ -254,18 +255,18 @@ __uint32 hd24fs::songsector2entry(__uint32 songsector)
 		// info needed for the calculation is missing.
 		return ERROR_INVALID;
 	}
-	__uint32 firstsongsec=Convert::getint32(sector_boot,FSINFO_FIRST_SONG_SECTOR);
-	__uint32 secspersong=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_SONG);
-	__uint32 offset=songsector-firstsongsec;
+	uint32_t firstsongsec=Convert::getint32(sector_boot,FSINFO_FIRST_SONG_SECTOR);
+	uint32_t secspersong=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_SONG);
+	uint32_t offset=songsector-firstsongsec;
 	if ((offset%secspersong) !=0) {
 		return ERROR_INVALID;
 	}
-	__uint32 resultentry=(offset/secspersong);
+	uint32_t resultentry=(offset/secspersong);
 	if (resultentry>=(99*99)) return ERROR_INVALID;
 	return resultentry;
 }
 
-__uint32 hd24fs::cluster2sector(__uint32 clusternum)
+uint32_t hd24fs::cluster2sector(uint32_t clusternum)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::cluster2sector("<<clusternum<<")" << endl;
@@ -283,7 +284,7 @@ __uint32 hd24fs::cluster2sector(__uint32 clusternum)
 	);
 }
 
-__uint32 hd24fs::sector2cluster(__uint32 sectornum)
+uint32_t hd24fs::sector2cluster(uint32_t sectornum)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::sector2cluster("<<sectornum<<")" << endl;
@@ -293,61 +294,61 @@ __uint32 hd24fs::sector2cluster(__uint32 sectornum)
 		// unknown cluster size. Return 'undefined' cluster number.
 		return CLUSTER_UNDEFINED;
 	}
-	__uint32 dataarea=Convert::getint32(sector_boot,FSINFO_DATAAREA);
-	
+	uint32_t dataarea=Convert::getint32(sector_boot,FSINFO_DATAAREA);
+
 	if (sectornum<dataarea) {
 		// A cluster number of a sector outside the data area was requested.
 		return CLUSTER_UNDEFINED;
 	}
 
-	__uint32 unoffsetsector=sectornum-dataarea;
-	__uint32 sectorspercluster=
+	uint32_t unoffsetsector=sectornum-dataarea;
+	uint32_t sectorspercluster=
 		Convert::getint32(sector_boot,FSINFO_BLOCKSIZE_IN_SECTORS)
 		* Convert::getint32(sector_boot,FSINFO_AUDIOBLOCKS_PER_CLUSTER);
-	__uint32 firstsectorofcluster=unoffsetsector-(unoffsetsector%sectorspercluster);
-	__uint32 cluster=firstsectorofcluster/sectorspercluster;
+	uint32_t firstsectorofcluster=unoffsetsector-(unoffsetsector%sectorspercluster);
+	uint32_t cluster=firstsectorofcluster/sectorspercluster;
 	return cluster;
 }
 
-__uint32 hd24fs::getnextfreesector(__uint32 cluster)
+uint32_t hd24fs::getnextfreesector(uint32_t cluster)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::getnextfreesector("<<cluster<<")" << endl;
 #endif
 	if (cluster==CLUSTER_UNDEFINED) {
-		__uint32 result=getnextfreesectorword();
+		uint32_t result=getnextfreesectorword();
 #if (HD24FSDEBUG==1)
 		cout << result << endl;
 #endif
 		return result;
 	}
-	if (isfreecluster(cluster+1,&sectors_driveusage[0])) 
+	if (isfreecluster(cluster+1,&sectors_driveusage[0]))
 	{
 		return cluster2sector(cluster+1);
-	}	
+	}
 	return getnextfreesectorword();
 }
 
-__uint32 hd24fs::getnextfreesectorword()
+uint32_t hd24fs::getnextfreesectorword()
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::getnextfreesectorword()" << endl;
 #endif
-	__uint32 cluster=getnextfreeclusterword();
+	uint32_t cluster=getnextfreeclusterword();
 	if (cluster==CLUSTER_UNDEFINED) {
 		return 0;
 	}
 	return cluster2sector(cluster);
 }
 
-__uint32 hd24fs::getnextfreeclusterword()
+uint32_t hd24fs::getnextfreeclusterword()
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::getnextfreeclusterword()" << endl;
 #endif
 	getsectors_driveusage();
-	__uint32 driveusagecount=driveusagesectorcount();
-	__uint32 driveusagewords=driveusagecount*(512/4);
+	uint32_t driveusagecount=driveusagesectorcount();
+	uint32_t driveusagewords=driveusagecount*(512/4);
 
 	// For performance reasons, we start searching
 	// at last result+1 (this will typically result
@@ -357,9 +358,9 @@ __uint32 hd24fs::getnextfreeclusterword()
 #if (HD24FSDEBUG==1)
 	cout << " start search at " << nextfreeclusterword << endl;
 #endif
-	__uint32 i=nextfreeclusterword;
-	__uint32 initsec=i;
-		
+	uint32_t i=nextfreeclusterword;
+	uint32_t initsec=i;
+
 	bool foundfree=false;
 	while (i<driveusagewords) {
 		if (Convert::getint32(&sectors_driveusage[0],i*4)==0) {
@@ -385,17 +386,17 @@ __uint32 hd24fs::getnextfreeclusterword()
 	return (i*32);
 }
 
-__uint32 hd24fs::getlastsectornum(int* lastsecerror) 
+uint32_t hd24fs::getlastsectornum(int* lastsecerror)
 {
 	// Will return the last sector num for drives up to 2 TB.
 	// Note: lastsecerror will be nonzero if drive size cannot
-	// be determined. 
-	*lastsecerror=0;	
+	// be determined.
+	*lastsecerror=0;
 #if (HD24FSDEBUG==1)
 	cout <<"hd24fs::getlastsectornum(int* lastsecerror)" << endl;
 #endif
 	// cache result.
-		
+
 	if ((gotlastsectornum==false)||(devhd24!=foundlastsectorhandle)) {
 		foundlastsectorhandle=devhd24;
 		foundlastsectornum=getlastsectornum(devhd24,lastsecerror);
@@ -407,17 +408,17 @@ __uint32 hd24fs::getlastsectornum(int* lastsecerror)
 	return foundlastsectornum;
 }
 
-void hd24fs::setwavefixmode(int mode) 
+void hd24fs::setwavefixmode(int mode)
 {
 	wavefixmode=mode;
 }
 
-void hd24fs::setmaintenancemode(int mode) 
+void hd24fs::setmaintenancemode(int mode)
 {
 	maintenancemode=mode;
 }
 
-int hd24fs::getmaintenancemode() 
+int hd24fs::getmaintenancemode()
 {
 	return maintenancemode;
 }
@@ -439,21 +440,21 @@ void hd24fs::setdevicename(const char* orig,string* devname)
 	this->devicename=new string(devname->c_str());
 }
 
-__uint32 hd24fs::getlastsectornum(FSHANDLE handle,int* lastsecerror) 
+uint32_t hd24fs::getlastsectornum(FSHANDLE handle,int* lastsecerror)
 {
 #if (HD24FSDEBUG==1)
 	cout <<"hd24fs::getlastsectornum(FSHANDLE handle)" << endl
 	 << "handle="<<handle<<endl;
 #endif
-if (isinvalidhandle(handle)) 
+if (isinvalidhandle(handle))
 {
 #if (HD24FSDEBUG==1)
-	cout << "Handle is not valid." << endl;	
+	cout << "Handle is not valid." << endl;
 #endif
 	return 0;
 } else {
 #if (HD24FSDEBUG==1)
-	cout << "Handle is OK" << endl;	
+	cout << "Handle is OK" << endl;
 #endif
 }
 if (this!=NULL)
@@ -468,13 +469,13 @@ if (this!=NULL)
 	}
 }
 #if defined(LINUX) || defined(DARWIN)
-	__uint64 curroff=lseek64(handle,0,SEEK_CUR);
+	uint64_t curroff=lseek64(handle,0,SEEK_CUR);
 	// >>9 equals /512
-	__uint64 sects=(lseek64(handle,0,SEEK_END));
+	uint64_t sects=(lseek64(handle,0,SEEK_END));
 #if (HD24FSDEBUG==1)
 	cout << "size=" << sects << " bytes " << endl;
 #endif
-	__uint32 remainder=sects%512;
+	uint32_t remainder=sects%512;
 	sects-=remainder;
 	if (remainder!=0) remainder=1;
 	sects=(sects>>9)+remainder;
@@ -490,7 +491,7 @@ if (this!=NULL)
 	 * work on Windows, because it is not possible to
 	 * request the file size of a device.
 	 */
-	
+
 #ifdef WINDOWS
 	unsigned char buffer[2048];
 	LARGE_INTEGER lizero;
@@ -520,7 +521,7 @@ if (this!=NULL)
 	cout << "fileptr method failed" << endl;
 #endif
 	/* The proper way to do things has failed (probably because
-	 * we are dealing with a device file instead of with a 
+	 * we are dealing with a device file instead of with a
 	 * regular one.
 	 */
 	long long flen=windrivesize(handle);
@@ -529,13 +530,13 @@ if (this!=NULL)
 		return hd24fs::bytenumtosectornum(flen);
 	}
 
-	/* TODO: Before trying a raw sectornum scan, 
+	/* TODO: Before trying a raw sectornum scan,
            we can still check if we're dealing with a valid
            superblock, not using a headerfile and checking if
            the last sector as indicated by the superblock points
            to a copy of that superblock. This won't work on a raw
            drive, of course, but will provide a reasonably safe
-           workaround for valid HD24 drives. 
+           workaround for valid HD24 drives.
 	*/
 
 	/* .......hmm, do we really want to do the following???? */
@@ -566,22 +567,22 @@ if (this!=NULL)
 	SetFilePointerEx(handle,lizero,&saveoff,FILE_CURRENT); // save offset
 
 	long bytesread=1;
-	unsigned long trysector=1;
-	unsigned long oldtrysector=1;
+	uint32_t trysector=1;
+	uint32_t oldtrysector=1;
 	int drivetoosmall=1;
 	bytesread=readsectors(handle,trysector,buffer,1); // raw/audio read (no fstfix needed)
 #if (HD24FSDEBUG==1)
 		cout << "bytes read (sector no. 1)=" << bytesread << endl;
 #endif
-	unsigned long lastok=0;
-	unsigned long firstfail=0;
+	uint32_t lastok=0;
+	uint32_t firstfail=0;
 	//int dummy;
 	/* This loop doubles the sector number. Actually stays at 2^n-1,
 	 * this will likely perform better than 2^n because chances are
 	 * greater that it stays below disk boundaries, preventing slow
 	 * timeouts.
 	 */
-	while (bytesread>0) 
+	while (bytesread>0)
 	{
 #if (HD24FSDEBUG==1)
 		cout << "trysector=" << trysector << endl;
@@ -590,12 +591,12 @@ if (this!=NULL)
 		drivetoosmall=0;
 		oldtrysector=trysector;
 		trysector=trysector*2+1; // count will be 1,3,7,15,31,... =(2^n)-1
-		if (oldtrysector==trysector) 
+		if (oldtrysector==trysector)
 		{
 			// x*2+1 yields x - this means all
 			// bits are turned on and we overflow.
 			// So we're at 4 tera limit.
-			// 4 terabyte and still nothing found? hmmmm	
+			// 4 terabyte and still nothing found? hmmmm
 			SetFilePointerEx(handle,saveoff,NULL,FILE_BEGIN);
 			return 0;
 		}
@@ -612,35 +613,35 @@ if (this!=NULL)
 	}
 	/* We have the sector number of the last successful read and
 	 * of the failed read. Time to do a binary search. */
-	unsigned long lowerbound=lastok;
+	uint32_t lowerbound=lastok;
 #if (HD24FSDEBUG==1)
 	cout << "lastok=" << lastok << endl
 	 << "firstfaiL=" << firstfail << endl;
 
 #endif
-	if (lastok==0) 
+	if (lastok==0)
 	{
 		if (firstfail==0)
 		{
 			return 0;
 		}
 	}
-	unsigned long upperbound=lastok*2;
-	unsigned long midpos=0;
-	while (lowerbound<=upperbound) 
+	uint32_t upperbound=lastok*2;
+	uint32_t midpos=0;
+	while (lowerbound<=upperbound)
 	{
 		//midpos=lowerbound+floor((upperbound-lowerbound)/2);
-		midpos=lowerbound+(__uint32)floor((upperbound-lowerbound)/8); 
+		midpos=lowerbound+(uint32_t)floor((upperbound-lowerbound)/8);
 		// prefer asymmetrical search due to time out when
 		// searching past upperbound
 		bytesread=readsectors(handle,midpos,buffer,1); // raw/audio read (no fstfix needed)
 		if (bytesread>0) {
 			lowerbound=midpos+1;
 		} else {
-			// could not read midpos, 
+			// could not read midpos,
 			// so upperbound is before that.
 			upperbound=midpos-1;
-		}	
+		}
 	}
 	if (midpos==lowerbound)
 	{
@@ -651,8 +652,8 @@ if (this!=NULL)
          * number of the last sector, however. */
 	// midpos++; // NO!
 	SetFilePointerEx(handle,saveoff,&saveoff,FILE_BEGIN); //restore
-	
-	__uint64 sectors=midpos;
+
+	uint64_t sectors=midpos;
 	return sectors;
 #endif
 }
@@ -661,12 +662,12 @@ if (this!=NULL)
  * which is functionality that is shielded off in hd24fs.
  */
 
-__uint32 hd24raw::songsondisk()
+uint32_t hd24raw::songsondisk()
 {
 	return fsys->songsondisk();
 }
 
-__uint32 hd24raw::getlastsectornum(int* lastsecerror)
+uint32_t hd24raw::getlastsectornum(int* lastsecerror)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24raw::getlastsectornum()" << endl;
@@ -674,12 +675,12 @@ __uint32 hd24raw::getlastsectornum(int* lastsecerror)
 	return fsys->getlastsectornum(lastsecerror);
 }
 
-__uint32 hd24raw::getprojectsectornum(__uint32 x)
+uint32_t hd24raw::getprojectsectornum(uint32_t x)
 {
 	return fsys->getprojectsectornum(x);
 }
 
-__uint32 hd24raw::quickformat(char* message)
+uint32_t hd24raw::quickformat(char* message)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24raw::quickformat()" << endl;
@@ -687,22 +688,22 @@ __uint32 hd24raw::quickformat(char* message)
 	return fsys->quickformat(message);
 }
 
-unsigned long hd24raw::getnextfreesector(__uint32 cluster)
+uint32_t hd24raw::getnextfreesector(uint32_t cluster)
 {
 	return fsys->getnextfreesector(cluster);
 }
 
-hd24raw::hd24raw(hd24fs* p_fsys) 
+hd24raw::hd24raw(hd24fs* p_fsys)
 {
 	fsys=p_fsys;
 }
 
-long hd24raw::readsectors(unsigned long secnum, unsigned char* buffer,int sectors) 
+long hd24raw::readsectors(uint32_t secnum, unsigned char* buffer,int sectors)
 {
 	return fsys->readsectors(fsys->devhd24, secnum, buffer,sectors);
 }
 
-long hd24raw::writesectors(unsigned long secnum, unsigned char* buffer,int sectors) 
+long hd24raw::writesectors(uint32_t secnum, unsigned char* buffer,int sectors)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24raw::writesectors()" << endl;
@@ -728,7 +729,7 @@ bool hd24fs::isinvalidhandle(FSHANDLE handle)
 	return false;
 }
 
-bool hd24fs::isexistingdevice(string* devname) 
+bool hd24fs::isexistingdevice(string* devname)
 {
 #if defined(LINUX) || defined(DARWIN)
 #if (HD24FSDEBUG==1)
@@ -742,7 +743,7 @@ cout << "try open device " << devname->c_str() << endl;
 	             NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 #endif
 	if (!isinvalidhandle(handle)) return true;
-	return false;	
+	return false;
 }
 
 string* hd24fs::drivetype(string* devname)
@@ -828,7 +829,7 @@ string* hd24fs::drivetype(string* devname)
 	return new string("Unrecognized format");
 }
 
-FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryharder) 
+FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryharder)
 {
 #if (HD24FSDEBUG_DEVSCAN==1)
 	cout << "FSHANDLE hd24fs::findhd24device(" << mode << ", " << *devname << ", force=" << force << ",tryharder=" << tryharder <<")" << endl;
@@ -852,7 +853,7 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 #endif
 
 	if (isinvalidhandle(handle)) {
-		if (mode==MODE_RDWR) 
+		if (mode==MODE_RDWR)
 		{
 			// attempt fallback to read-only mode
 			// (for CDROM/DVD devices etc)
@@ -878,7 +879,7 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 	}
 
 	// can open device.
-	__uint32 sectornum=0;
+	uint32_t sectornum=0;
 	int lastsecerror=0;
 	if (tryharder) {
 		sectornum=getlastsectornum(handle,&lastsecerror);
@@ -892,7 +893,7 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 	cout << "FStype=" <<*fstype<<endl;
 #endif
 	bool isadat=false;
-        if (*rawfstype=="SMARTIMG") 
+        if (*rawfstype=="SMARTIMG")
         {
                 this->smartimage=new hd24driveimage();
 #if (HD24FSDEBUG==1)
@@ -915,27 +916,27 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 		   use as OS drive. So we'll demand that the second and
                    secondlast sector are equal.
 		*/
-		if (tryharder) 
+		if (tryharder)
 		{
-	                readsectors_noheader(handle,sectornum-1,compare1buf,1); 
-	                readsectors_noheader(handle,1,compare2buf,1); 
-			if (memcmp(compare1buf,compare2buf,512)==0) 
+	                readsectors_noheader(handle,sectornum-1,compare1buf,1);
+	                readsectors_noheader(handle,1,compare2buf,1);
+			if (memcmp(compare1buf,compare2buf,512)==0)
 			{
 				isadat=true;
 			}
-			else 
+			else
 			{
 				/* Drive may have been an ADAT drive,
-				   but no longer is. If it is in fact an 
-                                   ADAT drive but corrupted, it is still 
-                                   possible to force detection using force 
+				   but no longer is. If it is in fact an
+                                   ADAT drive but corrupted, it is still
+                                   possible to force detection using force
                                    mode. Give it another chance; do not
                                    enable write prevention for now.
                                 */
 				isadat=false;
 			}
 		}
-		else 
+		else
 		{
 			isadat=true;
 		}
@@ -944,7 +945,7 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 
 	if (isadat) return handle;
 
-	if (force) 
+	if (force)
 	{
 		forcemode=true;
 		m_isOpen=true;
@@ -955,29 +956,29 @@ FSHANDLE hd24fs::findhd24device(int mode,string* devname,bool force,bool tryhard
 	return FSHANDLE_INVALID;
 }
 
-unsigned long hd24fs::hd24devicecount() 
+uint32_t hd24fs::hd24devicecount()
 {
 	/* Attempt to auto-detect a hd24 disk on all IDE and SCSI devices.
            (this should include USB and firewire) */
         FSHANDLE handle;
 	int devcount=0;
 #if (HD24FSDEBUG==1)
-	cout << "====PERFORMING DEVICE COUNT====" << endl;	
+	cout << "====PERFORMING DEVICE COUNT====" << endl;
 #endif
 	hd24devicenamegenerator* dng=new hd24devicenamegenerator();
 	dng->imagedir(this->imagedir);
-	
-	__uint32 totnames=dng->getnumberofnames();
-        for (__uint32 j=0;j<2;j++) 
+
+	uint32_t totnames=dng->getnumberofnames();
+        for (uint32_t j=0;j<2;j++)
 	{
 		// 2 loops: one to try, one to try harder
-		// first loop searches strictly valid devices 
+		// first loop searches strictly valid devices
 		// second loop searches for possibly corrupted devices
 		bool tryharder=false;
 		if (j==1) {
 			tryharder=true;
 		}
-	        for (__uint32 i=0;i<totnames;i++) 
+	        for (uint32_t i=0;i<totnames;i++)
 		{
 			string* devname=dng->getdevicename(i);
 			handle=findhd24device(MODE_RDONLY,devname,false,tryharder);
@@ -985,19 +986,19 @@ unsigned long hd24fs::hd24devicecount()
 			cout << "try device no " <<i << "with name" << *devname << "...";
 #endif
 			delete (devname);
-			if (!(isinvalidhandle(handle))) 
+			if (!(isinvalidhandle(handle)))
 			{
 				devcount++;
 				hd24closedevice(handle,"Devscan invalid handle");
 			}
 	        }
 
-		if (devcount>0) {		
+		if (devcount>0) {
 			break;
 		}
 	}
 #if (HD24FSDEBUG==1)
-	cout << "====END OF DEVICE COUNT, " << devcount << " DEVICES FOUND ====" << endl;	
+	cout << "====END OF DEVICE COUNT, " << devcount << " DEVICES FOUND ====" << endl;
 #endif
 	delete (dng);
         return devcount;
@@ -1017,7 +1018,7 @@ else
 	cout << "hd24fs::setimagedir("<<newdir<<")"<< endl;
 #endif
 }
-	
+
 	if (this->imagedir!=NULL)
 	{
 		memutils::myfree("hd24fs::setimagedir()-imagedir",(void*)imagedir);
@@ -1029,14 +1030,14 @@ else
 		this->imagedir=(char*)memutils::mymalloc("hd24fs::imagedir",strlen(newdir)+1,1);
 		if (this->imagedir!=NULL)
 		{
-			strncpy((char*)imagedir,newdir,strlen(newdir)+1);		
+			strncpy((char*)imagedir,newdir,strlen(newdir)+1);
 		}
 	}
-	
+
 	return; //return (const char*)imagedir;
 }
 
-FSHANDLE hd24fs::findhd24device(int mode,int base0devnum) 
+FSHANDLE hd24fs::findhd24device(int mode,int base0devnum)
 {
 #if (HD24FSDEBUG_DEVSCAN==1)
 	cout << "hd24fs::findhd24device(" << mode << "," << base0devnum << ")" << endl;
@@ -1044,21 +1045,21 @@ FSHANDLE hd24fs::findhd24device(int mode,int base0devnum)
 	// TODO: Reduce code duplication in this subroutine
 	// and hd24devicecount
 	/* Attempt to auto-detect a hd24 disk on all known
-	   IDE and SCSI devices. (this should include USB 
+	   IDE and SCSI devices. (this should include USB
 	   and firewire) */
 	int currdev=0;
         FSHANDLE handle;
 	hd24devicenamegenerator* dng=new hd24devicenamegenerator();
 	dng->imagedir(this->imagedir);
-		
-	__uint32 totnames=dng->getnumberofnames();		
+
+	uint32_t totnames=dng->getnumberofnames();
 #if (HD24FSDEBUG==1)
-	cout << totnames << " devices" << endl;		
+	cout << totnames << " devices" << endl;
 #endif
-        for (__uint32 j=0;j<2;j++) 
+        for (uint32_t j=0;j<2;j++)
 	{
 		// 2 loops: one to try, one to try harder
-		// first loop searches strictly valid devices 
+		// first loop searches strictly valid devices
 		// second loop searches for possibly corrupted devices
 
 		bool tryharder=false;
@@ -1066,11 +1067,11 @@ FSHANDLE hd24fs::findhd24device(int mode,int base0devnum)
 			tryharder=true;
 		}
 		int devorder=0;
-	        for (__uint32 i=0;i<totnames;i++) 
+	        for (uint32_t i=0;i<totnames;i++)
 		{
 			string* devname=dng->getdevicename(i);
 			handle=findhd24device(mode,devname,false,tryharder);
-			
+
 			if (!(isinvalidhandle(handle))) {
 				if (currdev==base0devnum) {
 					// String "3" indicates origin, i.e.
@@ -1094,17 +1095,17 @@ FSHANDLE hd24fs::findhd24device(int mode,int base0devnum)
         return FSHANDLE_INVALID;
 }
 
-void hd24fs::hd24closedevice(FSHANDLE handle,const char* source) 
+void hd24fs::hd24closedevice(FSHANDLE handle,const char* source)
 {
-	/* 
-           This function can be called with this=NULL 
-	   as it can work on non-HD24 filesystems 
+	/*
+           This function can be called with this=NULL
+	   as it can work on non-HD24 filesystems
         */
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::closedevice(" << handle <<","<<source<<")" << endl;
-#endif	
+#endif
 	if (this!=NULL)
-	{	
+	{
 		foundlastsectornum=0;
 		gotlastsectornum=false;
 	}
@@ -1116,14 +1117,14 @@ void hd24fs::hd24closedevice(FSHANDLE handle,const char* source)
 #endif
 }
 
-FSHANDLE hd24fs::findhd24device(int mode) 
+FSHANDLE hd24fs::findhd24device(int mode)
 {
 	/* Attempt to auto-detect a hd24 disk on all IDE and SCSI devices.
            (this should include USB and firewire) */
 	return findhd24device(mode,0);
 }
 
-FSHANDLE hd24fs::findhd24device() 
+FSHANDLE hd24fs::findhd24device()
 {
 	return findhd24device(MODE_RDONLY);
 }
@@ -1143,7 +1144,7 @@ int hd24fs::getdeviceid()
 	return deviceid;
 }
 
-void hd24fs::initvars() 
+void hd24fs::initvars()
 {
 	this->foundlastsectorhandle=FSHANDLE_INVALID;
 	this->deviceid=-1;
@@ -1157,7 +1158,7 @@ void hd24fs::initvars()
 
 
 	this->writeprotected=false; // by default allow writes.
-				    // can be disabled if corrupt 
+				    // can be disabled if corrupt
 				    // state is detected.
 	this->transportstatus=TRANSPORTSTATUS_STOP;
 	this->imagedir=NULL;
@@ -1184,7 +1185,7 @@ void hd24fs::initvars()
 	this->needcommit=false;
 
 	// 0x10c76 is last sector of song/project area (without undo buffer)
-	return;	
+	return;
 }
 
 hd24fs::hd24fs(const char* p_imagedir,int mode)
@@ -1204,7 +1205,7 @@ hd24fs::hd24fs(const char* p_imagedir,int mode,int base0devnum)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::hd24fs(" << mode << "," << base0devnum << ")" << endl;
-#endif	
+#endif
 	initvars();
 	setimagedir(p_imagedir);
 	devicename=new string("");
@@ -1257,7 +1258,7 @@ hd24fs::~hd24fs()
 #endif
 	if (isOpen())
 	{
-		//if (!this->isdevicefile()) 
+		//if (!this->isdevicefile())
 		commit();
 		hd24closedevice(this->devhd24,"hd24close (after doing a commit)");
 	}
@@ -1272,7 +1273,7 @@ hd24fs::~hd24fs()
 #if (HD24FSDEBUG==1)
 	cout << "Free diskinfo mem" << endl;
 #endif
-	if (sector_diskinfo!=NULL) 
+	if (sector_diskinfo!=NULL)
 	{
 		memutils::myfree("sectors_diskinfo",sector_diskinfo);
 		sector_diskinfo=NULL;
@@ -1309,23 +1310,23 @@ hd24fs::~hd24fs()
 	this->hd24sync();
 }
 
-bool hd24fs::isOpen() 
+bool hd24fs::isOpen()
 {
-	if (this->m_isOpen) 
+	if (this->m_isOpen)
 	{
 		return true;
 	}
 	return false;
-}	
+}
 
-void hd24fs::fstfix(unsigned char * bootblock,int fixsize) 
+void hd24fs::fstfix(unsigned char * bootblock,int fixsize)
 {
 	if (bootblock==NULL) return;
 	if (fixsize<=0) return;
 #if (HD24FSDEBUG==1)
 	cout << "fstfix("<<bootblock<<","<<fixsize/512 <<"*512)"<< endl;
 #endif
-        for (int i=0;i<fixsize;i+=4) 
+        for (int i=0;i<fixsize;i+=4)
 	{
                 unsigned char a=bootblock[i];
                 unsigned char b=bootblock[i+1];
@@ -1338,14 +1339,14 @@ void hd24fs::fstfix(unsigned char * bootblock,int fixsize)
 	}
 }
 
-void hd24fs::hd24seek(FSHANDLE devhd24,__uint64 seekpos) {
+void hd24fs::hd24seek(FSHANDLE devhd24,uint64_t seekpos) {
 #if defined(LINUX) || defined(DARWIN)
 	lseek64(devhd24,seekpos,SEEK_SET);
 #endif
 #ifdef WINDOWS
 	LARGE_INTEGER li;
 	li.HighPart=seekpos>>32;
-	li.LowPart=seekpos%((__uint64)1<<32);
+	li.LowPart=seekpos%((uint64_t)1<<32);
 //LowPart=seekpos%
 //	SetFilePointer(devhd24,seekpos,NULL,FILE_BEGIN);
 	SetFilePointerEx(devhd24,li,NULL,FILE_BEGIN);
@@ -1369,7 +1370,7 @@ void hd24fs::hd24seek(FSHANDLE devhd24,__uint64 seekpos) {
 	return;
 }
 
-long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char * buffer,int sectors) 
+long hd24fs::writesectors(FSHANDLE devhd24,uint32_t sectornum,unsigned char * buffer,int sectors)
 {
 	//////
 	// this bit keeps track of the highest FS sector written
@@ -1383,7 +1384,7 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
         // but the whole lot needs to be committed then anyway
 	// so no point in keeping track of it.
 
-	
+
 #if (HD24FSDEBUG==1)
 		cout << "   writesectors sectornum " << sectornum << ", sectorcount=" << sectors << endl;
 #endif
@@ -1401,11 +1402,11 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
 	FSHANDLE mysmartimagehandle=devhd24;
 	if (this!=NULL)
 	{
-		__uint32 lastsec=sectornum+(sectors-1);
+		uint32_t lastsec=sectornum+(sectors-1);
 		if (lastsec<=0x10c76)
 		{
 			// 0x10c76 is normally last sector of song/project
-			// are (not counting the undo buffer). 
+			// are (not counting the undo buffer).
 			// TODO: calculate based on superblock info.
 			// if current sector is inside song/project area,
 			// remember it to speed up commits.
@@ -1428,7 +1429,7 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
 		if ((this->headersectors)!=0)
 		{
 			// Header mode is active. Only allow writing over header area.
-			if (sectornum<this->headersectors) 
+			if (sectornum<this->headersectors)
 			{
 				currdevice=hd24header;
 				setheader=1;
@@ -1436,7 +1437,7 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
 				// headermode is active yet caller is trying to write over drive
 				// data area. We cannot allow this (for safety reasons).
 				return 0;
-		
+
 			}
 		} else {
 		}
@@ -1448,19 +1449,19 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
 //			cout << "Writing sectors to smartimage content." << endl;
 			FSHANDLE oldhandle=smartimage->handle();
 			smartimage->handle(mysmartimagehandle);
-			__uint32 wresult=512*(smartimage->content_writesectors(sectornum,buffer,sectors));
+			uint32_t wresult=512*(smartimage->content_writesectors(sectornum,buffer,sectors));
 			smartimage->handle(oldhandle);
 			return wresult;
 		}
 	}
 
-	hd24seek(currdevice,(__uint64)sectornum*512);
+	hd24seek(currdevice,(uint64_t)sectornum*512);
 	if (this!=NULL)
 	{
 		this->needcommit=true;
 	}
 #if defined(LINUX) || defined(DARWIN) || defined(__APPLE__)
-       long bytes=pwrite64(currdevice,buffer,WRITESIZE,(__uint64)sectornum*512); //1,devhd24);
+       long bytes=pwrite64(currdevice,buffer,WRITESIZE,(uint64_t)sectornum*512); //1,devhd24);
 #endif
 #ifdef WINDOWS
 	DWORD dummy;
@@ -1472,20 +1473,20 @@ long hd24fs::writesectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char
        	return bytes;
 }
 
-long hd24fs::readsectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char * buffer,int sectors) 
+long hd24fs::readsectors(FSHANDLE devhd24,uint32_t sectornum,unsigned char * buffer,int sectors)
 {
 	int sectorcount=sectors;
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::readsectors(devhd24="<<devhd24<<",sectornum="<<sectornum<<",buf="<<buffer<<",sc#="<<sectorcount<<");"<< endl;
 #endif
-	
+
 	FSHANDLE currdevice=devhd24;
 	FSHANDLE mysmartimagehandle=devhd24;
 	int setheader=0;
 	if (this!=NULL) {
 		if ((this->headersectors)!=0)
 		{
-			if (sectornum<this->headersectors) 
+			if (sectornum<this->headersectors)
 			{
 				currdevice=hd24header;
 				setheader=1;
@@ -1501,19 +1502,19 @@ long hd24fs::readsectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char 
 	//			cout << "Reading "<<sectorcount<<" sectors from smartimage content." << endl;
 				FSHANDLE oldhandle=smartimage->handle();
 				smartimage->handle(mysmartimagehandle);
-				__uint32 intresult=512*(
+				uint32_t intresult=512*(
 				smartimage->content_readsectors(sectornum,buffer,sectorcount));
-				
+
 				smartimage->handle(oldhandle);
 				return intresult;
 			}
 		}
 	}
-	// without "this" defined, we can only read from the actual handle given.	
-       	hd24seek(currdevice,(__uint64)sectornum*SECTORSIZE);
+	// without "this" defined, we can only read from the actual handle given.
+       	hd24seek(currdevice,(uint64_t)sectornum*SECTORSIZE);
        int READSIZE=SECTORSIZE*(sectorcount);
 #if defined(LINUX) || defined(DARWIN)
-       long bytes_read=pread64(currdevice,buffer,READSIZE,(__uint64)sectornum*512); //1,currdevice);
+       long bytes_read=pread64(currdevice,buffer,READSIZE,(uint64_t)sectornum*512); //1,currdevice);
 #endif
 #ifdef WINDOWS
 	DWORD bytes_read;
@@ -1526,46 +1527,46 @@ long hd24fs::readsectors(FSHANDLE devhd24,unsigned long sectornum,unsigned char 
         return bytes_read;
 }
 
-long hd24fs::readsectors_noheader(hd24fs* currhd24,unsigned long sectornum,unsigned char * bootblock,__uint32 count) 
+long hd24fs::readsectors_noheader(hd24fs* currhd24,uint32_t sectornum,unsigned char * bootblock,uint32_t count)
 {
 	return readsectors_noheader(currhd24->devhd24,sectornum,bootblock,count);
 }
 
-/*long hd24fs::readsector_noheader(FSHANDLE devhd24,unsigned long sectornum,unsigned char * bootblock) 
+/*long hd24fs::readsector_noheader(FSHANDLE devhd24,uint32_t sectornum,unsigned char * bootblock)
 {
 	if (this==NULL) {
 		readsectors(devhd24,sectornum,bootblock,1);
 	}
-	unsigned long headersecs=this->headersectors;
-   	
+	uint32_t headersecs=this->headersectors;
+
 	this->headersectors=0; // disable header processing, if applies
 	long number_read=readsectors(devhd24,sectornum,bootblock,1);
 	this->headersectors=headersecs; // re-enable header processing
 	return number_read;
 }
 */
-long hd24fs::readsectors_noheader(FSHANDLE devhd24,unsigned long sectornum,unsigned char * bootblock,__uint32 count) 
+long hd24fs::readsectors_noheader(FSHANDLE devhd24,uint32_t sectornum,unsigned char * bootblock,uint32_t count)
 {
-	unsigned long headersecs=this->headersectors;
+	uint32_t headersecs=this->headersectors;
 	this->headersectors=0; // disable header processing, if applies
 	long number_read=readsectors(devhd24,sectornum,bootblock,count);
 	this->headersectors=headersecs; // re-enable header processing
 	return number_read;
 }
 /*
-long hd24fs::writesector(FSHANDLE devhd24,unsigned long sectornum,unsigned char * bootblock) 
+long hd24fs::writesector(FSHANDLE devhd24,uint32_t sectornum,unsigned char * bootblock)
 {
 	return writesectors(devhd24,sectornum,bootblock,1);
 }
 */
-string* hd24fs::gethd24currentdir(int argc,char* argv[]) 
+string* hd24fs::gethd24currentdir(int argc,char* argv[])
 {
 	/* For future use. We may save a file in the
   	   homedir of the user containing info about which
  	   "path" (project/songname/file format) was last
 	   selected by the user.
 	*/
-	
+
        return new string("/");
 }
 
@@ -1574,10 +1575,10 @@ string* hd24fs::gethd24currentdir()
        return new string("/");
 }
 
-unsigned char* hd24fs::readdiskinfo() 
+unsigned char* hd24fs::readdiskinfo()
 {
 #if (HD24FSDEBUG==1)
-	cout << "Driveusage before readdiskinfo=" << (int)(this->sectors_driveusage) << endl;
+	// cout << "Driveusage before readdiskinfo=" << (int)(this->sectors_driveusage) << endl;
 #endif
 	// read disk info
 	if (/*formatting||*/(sector_boot==NULL))
@@ -1590,13 +1591,13 @@ unsigned char* hd24fs::readdiskinfo()
 		sector_diskinfo=NULL;
 	}
 	sector_diskinfo=(unsigned char *)memutils::mymalloc("readdiskinfo",1024,1);
-	if (sector_diskinfo!=NULL) 
+	if (sector_diskinfo!=NULL)
 	{
 		readsectors(devhd24,1,sector_diskinfo,1); // fstfix follows
 		fstfix (sector_diskinfo,512);
 	}
 #if (HD24FSDEBUG==1)
-	cout << "Driveusage after readdiskinfo=" << (int)(this->sectors_driveusage) << endl;
+	// cout << "Driveusage after readdiskinfo=" << (int)(this->sectors_driveusage) << endl;
 #endif
 	return sector_diskinfo;
 }
@@ -1604,10 +1605,10 @@ unsigned char* hd24fs::readdiskinfo()
 bool hd24fs::useheaderfile(string headerfilename)
 {
 	getsector_bootinfo();
-	if (sector_boot==NULL) 
+	if (sector_boot==NULL)
 	{
 		/* we haven't got a main device yet
-		   so we cannot apply a header to it */	
+		   so we cannot apply a header to it */
 		return false;
 	}
 	// allow writing to header.
@@ -1633,10 +1634,10 @@ bool hd24fs::useheaderfile(string headerfilename)
 	return true;
 }
 
-void hd24fs::clearbuffer(unsigned char* buffer,unsigned int bytes)
+void hd24fs::clearbuffer(unsigned char* buffer,uint32_t bytes)
 {
 	/* clear buffer */
-	for (unsigned int i=0;i<bytes;i++) {
+	for (uint32_t i=0;i<bytes;i++) {
 		buffer[i]=0;
 	}
 	return;
@@ -1656,7 +1657,7 @@ void hd24fs::cleardriveinfo(unsigned char* buffer)
 	return;
 }
 
-void hd24fs::useinternalboot(unsigned char* buffer,__uint32 lastsector)
+void hd24fs::useinternalboot(unsigned char* buffer,uint32_t lastsector)
 {
 	unsigned char internal_boot[136]=
 	{
@@ -1674,13 +1675,13 @@ void hd24fs::useinternalboot(unsigned char* buffer,__uint32 lastsector)
 	clearbuffer(buffer);
 
 	/* fill buffer with default boot info */
-	for (unsigned int i=0;i<sizeof(internal_boot);i++) {
+	for (uint32_t i=0;i<sizeof(internal_boot);i++) {
 		buffer[i]=internal_boot[i];
-	}	
+	}
 
 	/* If a specific FS size (in sectors) was given, update boot info
 	   to match that size */
-	if (lastsector!=0) 
+	if (lastsector!=0)
 	{
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Calculating number of clusters on the drive" << endl;
@@ -1690,72 +1691,72 @@ void hd24fs::useinternalboot(unsigned char* buffer,__uint32 lastsector)
 		Convert::setint32(buffer,FSINFO_LAST_SECTOR,lastsector);
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Last sector=" << lastsector << endl;
-#endif		
+#endif
 		// allocatable sectors=total sectors-(2*fs sectors+undo area)
 		// tot secs-0x14a46b
 
-		__uint32 allocatablesectors=lastsector-0x14a46b;
+		uint32_t allocatablesectors=lastsector-0x14a46b;
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "# allocatable sectors=" << allocatablesectors << endl;
-#endif		
+#endif
 		Convert::setint32(buffer,FSINFO_ALLOCATABLE_SECTORCOUNT,allocatablesectors);
 
-		
+
 		// (15 sectors of drive usage info=((15*512)-8)*8 bits
 		//
-		__uint32 maxclusters=((15 /*sectors of alloc info*/ 
+		uint32_t maxclusters=((15 /*sectors of alloc info*/
 				       *512 /*bytes*/)
 				       -8 /* checksum bytes */)
 					*8 /* bits per byte */;
-		// represents ~ 61376 allocatable clusters 
+		// represents ~ 61376 allocatable clusters
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "max # of clusters=" << maxclusters << endl;
-#endif				
-		__uint32 allocatableaudioblocks=(allocatablesectors - (allocatablesectors%0x480))/0x480;
+#endif
+		uint32_t allocatableaudioblocks=(allocatablesectors - (allocatablesectors%0x480))/0x480;
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "allocatable audio blocks=" << allocatableaudioblocks << endl;
-#endif				
-		// given the maximum number of clusters 
+#endif
+		// given the maximum number of clusters
 		// and the total number of allocatable audio blocks,
 		// we must decide on the number of audio blocks per cluster.
-		__uint32 rest=0;
+		uint32_t rest=0;
 		if ((allocatableaudioblocks%maxclusters)>0) rest++;
-		__uint32 blockspercluster=rest+((allocatableaudioblocks-(allocatableaudioblocks%maxclusters))/maxclusters);
+		uint32_t blockspercluster=rest+((allocatableaudioblocks-(allocatableaudioblocks%maxclusters))/maxclusters);
 		Convert::setint32(buffer,FSINFO_AUDIOBLOCKS_PER_CLUSTER,blockspercluster);
 
-		__uint32 divider=(1152*32*blockspercluster);
-		__uint32 chunksizemod=allocatableaudioblocks % divider;
-		__uint32 chunksize=((allocatablesectors-chunksizemod)/divider);
+		uint32_t divider=(1152*32*blockspercluster);
+		uint32_t chunksizemod=allocatableaudioblocks % divider;
+		uint32_t chunksize=((allocatablesectors-chunksizemod)/divider);
 		if (chunksizemod>0) {chunksize++; }
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "blocks per cluster="<<blockspercluster
 		     << "divider=1152*32*blockspercluster=" <<divider
 		     << "'chunksize'=" << chunksize
 		    << endl;
-#endif				
-		Convert::setint32(buffer,FSINFO_CLUSTERWORDS_IN_TABLE,chunksize); 
-		// Not sure what this is used for. 
-		// However presumably space is allocated in chunks of 32 clusters, 
+#endif
+		Convert::setint32(buffer,FSINFO_CLUSTERWORDS_IN_TABLE,chunksize);
+		// Not sure what this is used for.
+		// However presumably space is allocated in chunks of 32 clusters,
 
 		// offset 0x14h: number of audio blocks per cluster
-		__uint32 allocatableclusters=(allocatableaudioblocks-(allocatableaudioblocks%blockspercluster))/blockspercluster;
+		uint32_t allocatableclusters=(allocatableaudioblocks-(allocatableaudioblocks%blockspercluster))/blockspercluster;
 		Convert::setint32(buffer,FSINFO_FREE_CLUSTERS_ON_DISK,allocatableclusters);
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "allocatableclusters="<<allocatableclusters<< endl;
-#endif				
+#endif
           	fstfix(buffer,512); // convert back into native format
-	}	
+	}
 
 	/* Calculate the proper checksum for the bootinfo */
 	setsectorchecksum(buffer,
 		0 /* startoffset */,
-		0 /* sector */, 
+		0 /* sector */,
 		1 /*sectorcount */
 	);
 	return;
 }
 
-unsigned char* hd24fs::readbootinfo() 
+unsigned char* hd24fs::readbootinfo()
 {
 	// read boot info
 
@@ -1767,7 +1768,7 @@ unsigned char* hd24fs::readbootinfo()
 		sector_boot=(unsigned char *)memutils::mymalloc("readbootinfo",1024,1);
 	}
 
-	if (sector_boot!=NULL) 
+	if (sector_boot!=NULL)
 	{
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Malloc space for bootsector succeeded" << endl
@@ -1778,11 +1779,11 @@ unsigned char* hd24fs::readbootinfo()
 		cout << "Reading sector (From disk)" << endl;
 #endif
 			readsectors(devhd24,0,sector_boot,1);
-		} else {             	
+		} else {
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Using internal boot." << endl;
 #endif
-			useinternalboot(sector_boot,0);	
+			useinternalboot(sector_boot,0);
 		}
           	fstfix(sector_boot,512);
 	} else {
@@ -1790,9 +1791,9 @@ unsigned char* hd24fs::readbootinfo()
 		cout << "Malloc space for bootsector failed" << endl;
 #endif
 	}
-#if (HD24FSDEBUG_QUICKFORMAT==1)			
+#if (HD24FSDEBUG_QUICKFORMAT==1)
 	hd24utils::dumpsector((const char*)sector_boot);
-#endif	
+#endif
 	return sector_boot;
 }
 
@@ -1803,7 +1804,7 @@ unsigned char* hd24fs::readdriveusageinfo()
 #endif
 
 	// read file allocation table/disk usage table
-	unsigned int driveusagecount=driveusagesectorcount();
+	uint32_t driveusagecount=driveusagesectorcount();
 	if (sectors_driveusage==NULL)
 	{
 
@@ -1815,10 +1816,10 @@ unsigned char* hd24fs::readdriveusageinfo()
 	cout 	<< "hd24fs::readdriveusageinfo() reading "
 		<< driveusagecount << "sectors into buffer at "
 		<< &sectors_driveusage << endl;
-#endif		
+#endif
 		if (driveusagecount==0)
 		{
-		
+
 		}
 		readsectors(devhd24,driveusagefirstsector(),sectors_driveusage,driveusagecount);
 		fstfix(sectors_driveusage,512*driveusagecount);
@@ -1840,7 +1841,7 @@ unsigned char* hd24fs::resetsongusage()
 	if (sectors_songusage==NULL)
 	{
 		sectors_songusage=(unsigned char *)memutils::mymalloc("resetsongusage",512*3,1);
-		if (sectors_songusage==NULL) 
+		if (sectors_songusage==NULL)
 		{
 			return NULL;
 		}
@@ -1848,24 +1849,24 @@ unsigned char* hd24fs::resetsongusage()
 
 	if (sectors_songusage!=NULL)
 	{
-		for (int i=0;i<512*3;i++) 
+		for (int i=0;i<512*3;i++)
 		{
 			sectors_songusage[i]=0xff;
 		}
 	}
 
-	__uint32 i;
+	uint32_t i;
 	// table is initialized, now populate it.
-	__uint32 maxprojs=this->maxprojects();
-	__uint32 maxsongcount=this->maxsongsperproject();
-	__uint32 totentries=maxprojs*maxsongcount; // 99 songs, 99 projects
+	uint32_t maxprojs=this->maxprojects();
+	uint32_t maxsongcount=this->maxsongsperproject();
+	uint32_t totentries=maxprojs*maxsongcount; // 99 songs, 99 projects
 #if (HD24FSDEBUG==1)
 	cout << "Clear song usage table..."<< endl
 	<< "this=" << this << endl;
 #endif
 	for (i=0;i<totentries;i++) {
 		disablebit(i,sectors_songusage);
-		// this is based on song sectors. 
+		// this is based on song sectors.
 		// That is, entry 0=sec 0x77,
 		// entry 1=sec 0x77+7, etc.
 	}
@@ -1879,7 +1880,7 @@ unsigned char* hd24fs::resetdriveusage()
 {
 #if (HD24FSDEBUG==1)||(HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "hd24fs::resetdriveusage()" << endl;
-#endif	
+#endif
 	// Reset drive usage table. First we occupy all of it;
 	// then we make only accessible entries available.
 
@@ -1887,13 +1888,13 @@ unsigned char* hd24fs::resetdriveusage()
 	{
 		unsigned char* du=(unsigned char *)memutils::mymalloc("resetdriveusage/sectors_driveusage",512*15,1);
 		sectors_driveusage=du;
-		if (this->sectors_driveusage==NULL) 
+		if (this->sectors_driveusage==NULL)
 		{
 			return NULL;
 		}
 	}
 
-	for (int i=0;i<512*15;i++) 
+	for (int i=0;i<512*15;i++)
 	{
 		sectors_driveusage[i]=0xff;
 	}
@@ -1902,35 +1903,35 @@ unsigned char* hd24fs::resetdriveusage()
 	{
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "hd24fs::resetdriveusage() - reloading boot info " << endl;
-#endif	
+#endif
 
 		this->readbootinfo();
 	} else {
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "hd24fs::resetdriveusage() - using current (not reloading) boot info " << endl;
-#endif	
+#endif
 
 	}
 
-	__uint32 i;
+	uint32_t i;
 	// table is initialized, now populate it.
-	__uint32 totentries=Convert::getint32(sector_boot,FSINFO_FREE_CLUSTERS_ON_DISK);
+	uint32_t totentries=Convert::getint32(sector_boot,FSINFO_FREE_CLUSTERS_ON_DISK);
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "According to superblock, free clusters on disk=" << totentries << endl;
 	hd24utils::dumpsector((const char*)sector_boot);
-#endif	
+#endif
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "before reset, drive usage looks as follows: "<< endl;
 	hd24utils::dumpsector((const char*)sectors_driveusage);
-#endif	
+#endif
 	for (i=0;i<totentries;i++) {
 		disablebit(i,sectors_driveusage);
 	}
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "after reset, drive usage looks as follows: "<< endl;
 	hd24utils::dumpsector((const char*)sectors_driveusage);
-#endif	
-	
+#endif
+
 #if (HD24FSDEBUG==1)
 	cout << "Drive usage table cleared." << endl;
 #endif
@@ -1946,39 +1947,39 @@ unsigned char* hd24fs::calcsongusage()
 	resetsongusage();
 
 	hd24project* currproj=NULL;
-	__uint32 projcount=projectcount();
-	__uint32 i;
-	__uint32 j;
-	for (i=1; i<=projcount;i++) 
+	uint32_t projcount=projectcount();
+	uint32_t i;
+	uint32_t j;
+	for (i=1; i<=projcount;i++)
 	{
-		if (currproj!=NULL) 
+		if (currproj!=NULL)
 		{
 			delete(currproj);
 			currproj=NULL;
 		}
 		currproj=getproject(i);
-		if (currproj==NULL) 
+		if (currproj==NULL)
 		{
 			continue;
 		}
 
 		// currproj!=NULL.
-		__uint32 currsongcount=currproj->songcount();
-		for (j=1; j<=currsongcount;j++) 
+		uint32_t currsongcount=currproj->songcount();
+		for (j=1; j<=currsongcount;j++)
 		{
 			// get song sector info.
-			__uint32 songsector = currproj->getsongsectornum(j);
-			if (songsector==0) 
+			uint32_t songsector = currproj->getsongsectornum(j);
+			if (songsector==0)
 			{
-				// song at given entry is not in use 
+				// song at given entry is not in use
 				// in this project, no need to mark it as used.
 				continue;
 			}
 
 			// mark the song used based on its entry number
 			// (calculated from the sector where it lives)
-			__uint32 songentry=songsector2entry(songsector);
-			if (songentry!=INVALID_SONGENTRY) 
+			uint32_t songentry=songsector2entry(songsector);
+			if (songentry!=INVALID_SONGENTRY)
 			{
 				// given song entry is used.
 				enablebit(songentry,sectors_songusage);
@@ -2003,12 +2004,12 @@ unsigned char* hd24fs::calcsongusage()
 void hd24fs::rewritesongusage()
 {
 	unsigned char* songusage=calcsongusage();
-	__uint32 sectornum=2; /* TODO: get from fs */
-	__uint32 sectorcount=3; /* TODO: get from fs */
+	uint32_t sectornum=2; /* TODO: get from fs */
+	uint32_t sectorcount=3; /* TODO: get from fs */
 	fstfix(songusage,sectorcount*512);
 	setsectorchecksum(songusage,
 		0 /* startoffset */,
-		sectornum /* sector */, 
+		sectornum /* sector */,
 		sectorcount /*sectorcount */
 	);
 	this->writesectors(this->devhd24,
@@ -2016,10 +2017,10 @@ void hd24fs::rewritesongusage()
 			songusage,
 			sectorcount);
 	fstfix(songusage,sectorcount*512);
-	
-	/* this also implies we need to update the superblock 
+
+	/* this also implies we need to update the superblock
 	   with the current song count */
-	__uint32 songcount=0;
+	uint32_t songcount=0;
 	for (int i=0;i<99*99;i++) {
 		if (!(isbitzero(i,songusage)))
 		{
@@ -2030,7 +2031,7 @@ void hd24fs::rewritesongusage()
 	fstfix(sector_boot,512);
 	setsectorchecksum(sector_boot,
 		0 /* startoffset */,
-		0 /* sector */, 
+		0 /* sector */,
 		1 /*sectorcount */);
 	this->writesectors(this->devhd24,
 			0,
@@ -2040,7 +2041,7 @@ void hd24fs::rewritesongusage()
 	return;
 }
 
-unsigned char* hd24fs::getsector_diskinfo() 
+unsigned char* hd24fs::getsector_diskinfo()
 {
 	getsector_bootinfo();
 	unsigned char* targetbuf=sector_diskinfo;
@@ -2051,7 +2052,7 @@ unsigned char* hd24fs::getsector_diskinfo()
 	return targetbuf;
 }
 
-unsigned char* hd24fs::getsector_bootinfo() 
+unsigned char* hd24fs::getsector_bootinfo()
 {
 	unsigned char* targetbuf=sector_boot;
 	if (/*formatting||*/(sector_boot==NULL) )
@@ -2069,7 +2070,7 @@ unsigned char* hd24fs::getsectors_driveusage()
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "hd24fs::getsectors_driveusage()" << endl;
 #endif
-	
+
 	readbootinfo();
 	if (sectors_driveusage==NULL)
 	{
@@ -2081,7 +2082,7 @@ unsigned char* hd24fs::getsectors_driveusage()
 unsigned char* hd24fs::getcopyofusagetable()
 {
 	unsigned char* copyusagetable=(unsigned char*)memutils::mymalloc("copyusagetable",15*512,1);
-	if (copyusagetable==NULL) 
+	if (copyusagetable==NULL)
 	{
 		/* Out of memory */
 		return NULL;
@@ -2096,9 +2097,9 @@ unsigned char* hd24fs::getcopyofusagetable()
 	return copyusagetable;
 }
 
-string* hd24fs::volumename() 
-{	
-	if (!(isOpen())) 
+string* hd24fs::volumename()
+{
+	if (!(isOpen()))
 	{
 	      	return new string("");
 	}
@@ -2116,9 +2117,9 @@ void hd24fs::setvolumename(string newname)
 	return;
 }
 
-unsigned long hd24fs::driveusagesectorcount()
+uint32_t hd24fs::driveusagesectorcount()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		throw ERROR_NOT_OPEN;
 	}
@@ -2126,7 +2127,7 @@ unsigned long hd24fs::driveusagesectorcount()
 		cout << "Figuring out number of sectors used for drive usage"
 		<< endl;
 #endif
-	
+
 	getsector_bootinfo();
 	int sectors_driveusage=Convert::getint32(sector_boot,FSINFO_NUMSECTORS_DRIVEUSAGE);
 	if (sectors_driveusage==0)
@@ -2137,41 +2138,41 @@ unsigned long hd24fs::driveusagesectorcount()
 
 }
 
-unsigned long hd24fs::clustercount()
+uint32_t hd24fs::clustercount()
 {
-	/* 
+	/*
            Clustercount=
 		(number of allocatable sectors on disk)/
                 ((sectors per audioblock)*(audioblocks per cluster))
         */
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return 0;
 	}
 	getsector_bootinfo();
-	__uint32 allocatablesectorcount=
+	uint32_t allocatablesectorcount=
 	    Convert::getint32(sector_boot,FSINFO_ALLOCATABLE_SECTORCOUNT);
-	__uint32 audioblocksize=
+	uint32_t audioblocksize=
 	    Convert::getint32(sector_boot,FSINFO_BLOCKSIZE_IN_SECTORS);
-        __uint32 clustersize=
+        uint32_t clustersize=
  	    Convert::getint32(sector_boot,FSINFO_AUDIOBLOCKS_PER_CLUSTER)
             *audioblocksize;
 
         allocatablesectorcount-=(allocatablesectorcount%clustersize);
-	return allocatablesectorcount/clustersize; 
+	return allocatablesectorcount/clustersize;
 }
 
 void hd24fs::dumpclusterusage(unsigned char* usagebuffer)
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return;
 	}
-	__uint32 clusters=clustercount();
+	uint32_t clusters=clustercount();
 #if (HD24FSDEBUG==1)
 	cout << "Dumping cluster usage for "<<clusters<<" clusters. "<<endl;
 #endif
-	for (__uint32 i=0;i<clusters;i++) {
+	for (uint32_t i=0;i<clusters;i++) {
 		if (isfreecluster(i,usagebuffer)) {
 			cout << "0"; // PRAGMA allowed
 		} else {
@@ -2184,11 +2185,11 @@ void hd24fs::dumpclusterusage(unsigned char* usagebuffer)
 
 void hd24fs::dumpclusterusage2(unsigned char* usagebuffer)
 {
-	__uint32 clusters=clustercount();
-	__uint32 currpos=0;
+	uint32_t clusters=clustercount();
+	uint32_t currpos=0;
 	cout << "DumpClusterUsage2" << endl; // PRAGMA allowed
 	while (currpos<clusters) {
-		__uint32 blockstart=currpos;
+		uint32_t blockstart=currpos;
 		while (isfreecluster(blockstart,usagebuffer) && (blockstart<clusters)) {
 			blockstart++;
 		}
@@ -2198,20 +2199,20 @@ void hd24fs::dumpclusterusage2(unsigned char* usagebuffer)
 		}
 
 		// blockstart now points to a nonfree cluster
-		__uint32 blockend=blockstart;
+		uint32_t blockend=blockstart;
 		while (!isfreecluster(blockend,usagebuffer) && (blockend<clusters)) {
 			blockend++;
 		}
 		// blockend now points to a free cluster
 		currpos=blockend;
-		__uint32 blocklen=blockend-blockstart;
-		printf("%x %x\n",(unsigned int) cluster2sector(blockstart),(unsigned int)( getblockspercluster()*blocklen ));
-	}	
+		uint32_t blocklen=blockend-blockstart;
+		printf("%x %x\n",(uint32_t) cluster2sector(blockstart),(uint32_t)( getblockspercluster()*blocklen ));
+	}
 }
 
-unsigned long hd24fs::driveusagefirstsector()
+uint32_t hd24fs::driveusagefirstsector()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return 0;
 	}
@@ -2222,51 +2223,52 @@ unsigned long hd24fs::driveusagefirstsector()
 
 unsigned char* hd24fs::findorphanclusters()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return NULL;
 	}
-	__uint32 driveusagecount=driveusagesectorcount();
+	uint32_t driveusagecount=driveusagesectorcount();
 	getsectors_driveusage();
 	int numprojs=projectcount();
 
-	if (sectors_orphan==NULL) { 
+	if (sectors_orphan==NULL) {
 		// only allocate once (free on object destruct)
 		sectors_orphan=(unsigned char *)memutils::mymalloc("findorphanclusters",512*(driveusagecount+1),1);
 	}
 	readsectors(devhd24,driveusagefirstsector(),sectors_orphan,driveusagecount);
 	fstfix(sectors_orphan,512*driveusagecount);
-	
+
 	for (int proj=1; proj<=numprojs; proj++) {
 		hd24project* currproj=this->getproject(proj);
+                if (currproj == NULL) continue;
 		int numsongs=currproj->songcount();
 		for (int song=1; song<=numsongs; song++) {
 			hd24song* currsong=currproj->getsong(song);
 			if (currsong==NULL) continue;
-			currsong->unmark_used_clusters(sectors_orphan);	
+			currsong->unmark_used_clusters(sectors_orphan);
 			delete currsong;
 		}
 		if (currproj!=NULL) {
-			delete currproj;		
+			delete currproj;
 			currproj=NULL;
 		}
 	}
 	return sectors_orphan;
 }
 
-bool hd24fs::isbitzero(unsigned long i,unsigned char* usagebuffer)
+bool hd24fs::isbitzero(uint32_t i,unsigned char* usagebuffer)
 {
 	int bitnum=i%32;
 	i-=bitnum;
 	i/=32;	// i now is word num
 	i*=4;	// i now is offset
-	__uint32 getword=Convert::getint32(usagebuffer,i);
-	__uint32 mask=1;
+	uint32_t getword=Convert::getint32(usagebuffer,i);
+	uint32_t mask=1;
 #if (HD24FSDEBUG_BITSET==1)
 //	cout << "bitnum=" << bitnum << " ";
-#endif	
+#endif
 	mask=mask<<bitnum;
-	__uint32 bitval=(getword & mask);
+	uint32_t bitval=(getword & mask);
 #if (HD24FSDEBUG_BITSET==1)
 //	cout << "bitval=" << bitval << endl;
 #endif
@@ -2274,7 +2276,7 @@ bool hd24fs::isbitzero(unsigned long i,unsigned char* usagebuffer)
 	return false;
 }
 
-void hd24fs::enablebit(__uint32 ibitnum,unsigned char* usagebuffer) 
+void hd24fs::enablebit(uint32_t ibitnum,unsigned char* usagebuffer)
 {
 #if (HD24FSDEBUG_BITSET==1)
 	cout << "enable bit " << ibitnum << endl;
@@ -2283,17 +2285,17 @@ void hd24fs::enablebit(__uint32 ibitnum,unsigned char* usagebuffer)
 	ibitnum-=bitnum;
 	ibitnum/=32;	// i now is word num
 	ibitnum*=4;	// i now is byte offset of word
-	__uint32 getword=Convert::getint32(usagebuffer,ibitnum);
-	__uint32 mask=1;
+	uint32_t getword=Convert::getint32(usagebuffer,ibitnum);
+	uint32_t mask=1;
 	mask=mask<<bitnum;
 #if (HD24FSDEBUG_BITSET==1)
 	cout << "getword=" << getword << "mask=" << mask << endl;
-#endif		
+#endif
 	getword=getword|mask;
 	Convert::setint32(usagebuffer,ibitnum,getword);
 }
 
-void hd24fs::disablebit(__uint32 ibitnum,unsigned char* usagebuffer)
+void hd24fs::disablebit(uint32_t ibitnum,unsigned char* usagebuffer)
 {
 #if (HD24FSDEBUG_BITSET==1)
 	cout << "disable bit " << ibitnum << endl;
@@ -2302,115 +2304,115 @@ void hd24fs::disablebit(__uint32 ibitnum,unsigned char* usagebuffer)
 	ibitnum-=bitnum;
 	ibitnum/=32;	// i now is word num
 	ibitnum*=4;	// i now is offset
-	__uint32 getword=Convert::getint32(usagebuffer,ibitnum);
-	__uint32 mask=1;
+	uint32_t getword=Convert::getint32(usagebuffer,ibitnum);
+	uint32_t mask=1;
 	mask=mask<<bitnum;
 #if (HD24FSDEBUG_BITSET==1)
 	cout << "getword=" << getword << "mask=" << mask << endl;
-#endif	
+#endif
 	getword=getword& (0xFFFFFFFF ^ mask);
 #if (HD24FSDEBUG_BITSET==1)
 	cout << "new getword=" << getword << endl;
-#endif		
+#endif
 	Convert::setint32(usagebuffer,ibitnum,getword);
 }
 
-bool hd24fs::isfreecluster(unsigned long i,unsigned char* usagebuffer) 
+bool hd24fs::isfreecluster(uint32_t i,unsigned char* usagebuffer)
 {
 	return isbitzero(i,usagebuffer);
 }
 
-void hd24fs::allocatecluster(__uint32 clusternum,unsigned char* usagebuffer) 
+void hd24fs::allocatecluster(uint32_t clusternum,unsigned char* usagebuffer)
 {
 	enablebit(clusternum,usagebuffer);
 }
 
-void hd24fs::freecluster(__uint32 clusternum,unsigned char* usagebuffer) 
+void hd24fs::freecluster(uint32_t clusternum,unsigned char* usagebuffer)
 {
 	disablebit(clusternum,usagebuffer);
 }
-void hd24fs::allocatecluster(__uint32 clusternum) 
+void hd24fs::allocatecluster(uint32_t clusternum)
 {
 	allocatecluster(clusternum,sectors_driveusage);
 }
 
-void hd24fs::freecluster(__uint32 clusternum) 
+void hd24fs::freecluster(uint32_t clusternum)
 {
 	freecluster(clusternum,sectors_driveusage);
 }
 
-unsigned long hd24fs::freeclustercount() 
+uint32_t hd24fs::freeclustercount()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return 0;
 	}
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "hd24fs::freeclustercount()" << endl;
 #endif
-	
+
 	sectors_driveusage=getsectors_driveusage();
-	
-	if (sectors_driveusage==NULL) 
+
+	if (sectors_driveusage==NULL)
 	{
 		return 0; // cannot get driveusage sectors, 0 clusters free.
 	}
-	unsigned long i=0;
-	__uint32 fsc=driveusagesectorcount();
-	
+	uint32_t i=0;
+	uint32_t fsc=driveusagesectorcount();
+
 	if (fsc>0xFF) return 0;
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Sectors used for drive usage=" << fsc << endl;
 #endif
-	__uint32 clusters=((fsc /*sectors of alloc info*/ 
+	uint32_t clusters=((fsc /*sectors of alloc info*/
 				       *512 /*bytes*/)
 				       -8 /* checksum bytes */)
 					*8 /* bits per byte */;
-	//unsigned long clusters=((512*fsc-1)+504)*8;
+	//uint32_t clusters=((512*fsc-1)+504)*8;
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		cout << "Total clusters=" << clusters << endl;
 #endif
-	
-	unsigned long freeclusters=0;
+
+	uint32_t freeclusters=0;
 	for (i=0;i<clusters;i++) {
-		if (isfreecluster(i,sectors_driveusage)) 
+		if (isfreecluster(i,sectors_driveusage))
 		{
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 		//cout << "Cluster " << i << " is free" << endl;
-#endif			
+#endif
 			freeclusters++;
 		}
 	}
 	return freeclusters;
 }
 
-string* hd24fs::freespace(unsigned long rate,unsigned long tracks) 
+string* hd24fs::freespace(uint32_t rate,uint32_t tracks)
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return new string("");
 	}
 
-	unsigned long freeclusters=freeclustercount();
-#if (HD24FSDEBUG_QUICKFORMAT==1)	
+	uint32_t freeclusters=freeclustercount();
+#if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "free clusters=" << freeclusters << endl;
-#endif	
-	__uint64 freesectors=freeclusters*getblocksizeinsectors()*getblockspercluster();
-#if (HD24FSDEBUG_QUICKFORMAT==1)	
+#endif
+	uint64_t freesectors=freeclusters*getblocksizeinsectors()*getblockspercluster();
+#if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "free sectors=" << freesectors << endl;
-#endif	
-	__uint64 freebytes=freesectors*SECTORSIZE;
-#if (HD24FSDEBUG_QUICKFORMAT==1)	
+#endif
+	uint64_t freebytes=freesectors*SECTORSIZE;
+#if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "free bytes=" << freesectors << endl;
-#endif	
-	__uint64 freesamples=(__uint64)(freebytes/3);
+#endif
+	uint64_t freesamples=(uint64_t)(freebytes/3);
 #if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "free samples=" << freesamples << endl;
 #endif
-	__uint64 freeseconds=(__uint64)(freesamples/rate/tracks);
-	unsigned long freehours=(freeseconds-(freeseconds%3600))/3600;
+	uint64_t freeseconds=(uint64_t)(freesamples/rate/tracks);
+	uint32_t freehours=(freeseconds-(freeseconds%3600))/3600;
 	freeseconds-=(freehours*3600);
-	unsigned long freeminutes=(freeseconds-(freeseconds%60))/60;
+	uint32_t freeminutes=(freeseconds-(freeseconds%60))/60;
 	freeseconds-=(freeminutes*60);
        	string* newst=Convert::int2str(freehours);
 	*newst+=" hr ";
@@ -2425,9 +2427,9 @@ string* hd24fs::freespace(unsigned long rate,unsigned long tracks)
       	return newst; // throw exception?
 }
 
-string* hd24fs::version() 
+string* hd24fs::version()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 		return new string("");
 	}
@@ -2440,27 +2442,27 @@ string* hd24fs::version()
 	return newst;
 }
 
-unsigned long hd24fs::maxprojects() 
+uint32_t hd24fs::maxprojects()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
 	getsector_bootinfo();
-	unsigned long maxprojs=Convert::getint32(sector_boot,FSINFO_MAXPROJECTS);
+	uint32_t maxprojs=Convert::getint32(sector_boot,FSINFO_MAXPROJECTS);
 	if (maxprojs>99) {
-		maxprojs=99; 
+		maxprojs=99;
 		/* safety feature while no larger project
-                   counts are known to be valid; gives 
+                   counts are known to be valid; gives
 		   more stability when working with corrupt drives */
 		this->writeprotected=true;
 	}
 	return maxprojs;
 }
 
-unsigned long hd24fs::getblocksizeinsectors() 
+uint32_t hd24fs::getblocksizeinsectors()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
@@ -2468,7 +2470,7 @@ unsigned long hd24fs::getblocksizeinsectors()
 	if (forcemode) {
 		return 0x480;
 	}
-	unsigned long blocksize=Convert::getint32(sector_boot,FSINFO_BLOCKSIZE_IN_SECTORS);
+	uint32_t blocksize=Convert::getint32(sector_boot,FSINFO_BLOCKSIZE_IN_SECTORS);
 	if (blocksize!=0x480)
 	{
 		this->writeprotected=true;
@@ -2476,40 +2478,40 @@ unsigned long hd24fs::getblocksizeinsectors()
 	return blocksize;
 }
 
-unsigned long hd24fs::getbytesperaudioblock()
+uint32_t hd24fs::getbytesperaudioblock()
 {
 	return getblocksizeinsectors()*512;
 }
 
-unsigned long hd24fs::getblockspercluster() 
+uint32_t hd24fs::getblockspercluster()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
 	getsector_bootinfo();
-	unsigned long maxprojs=Convert::getint32(sector_boot,FSINFO_AUDIOBLOCKS_PER_CLUSTER);
+	uint32_t maxprojs=Convert::getint32(sector_boot,FSINFO_AUDIOBLOCKS_PER_CLUSTER);
 	return maxprojs;
 }
 
-unsigned long hd24fs::maxsongsperproject() 
+uint32_t hd24fs::maxsongsperproject()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
 	getsector_bootinfo();
-	unsigned long maxsongs=Convert::getint32(sector_boot,FSINFO_MAXSONGSPERPROJECT);
+	uint32_t maxsongs=Convert::getint32(sector_boot,FSINFO_MAXSONGSPERPROJECT);
 	return maxsongs;
 }
 
-__uint32 hd24fs::getprojectsectornum(__uint32 i) 
+uint32_t hd24fs::getprojectsectornum(uint32_t i)
 {
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::getprojectsectornum("<<i<<")"<< endl;
 #endif
 	// 1-based project sectornum
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
@@ -2517,28 +2519,32 @@ __uint32 hd24fs::getprojectsectornum(__uint32 i)
 	{
 		return 0;
 	}
+        if (i == UINT32_MAX)
+        {
+                return UINT32_MAX;
+        }
 	if (i>maxprojects())
 	{
 		return 0;
 	}
 	getsector_diskinfo();
-	unsigned long projsec=Convert::getint32(sector_diskinfo,	
+	uint32_t projsec=Convert::getint32(sector_diskinfo,
 			DRIVEINFO_PROJECTLIST+((i-1)*4));
-	
+
 #if (HD24FSDEBUG==1)
 	cout << "projsec = " << projsec << endl;
 #endif
 	return projsec;
 }
 
-void hd24fs::lastprojectid(signed long projectid)
+void hd24fs::lastprojectid(int32_t projectid)
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return;
 	}
 	getsector_diskinfo();
-	__uint32 lastprojsec=getprojectsectornum(projectid);
+	uint32_t lastprojsec=getprojectsectornum(projectid);
 	if (lastprojsec==0) {
 		return;
 	}
@@ -2553,14 +2559,14 @@ void hd24fs::lastprojectid(signed long projectid)
 	return;
 }
 
-signed long hd24fs::lastprojectid() 
+int32_t hd24fs::lastprojectid()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return -1;
 	}
 	getsector_diskinfo();
-	unsigned long lastprojsec=Convert::getint32(sector_diskinfo,DRIVEINFO_LASTPROJ);
+	uint32_t lastprojsec=Convert::getint32(sector_diskinfo,DRIVEINFO_LASTPROJ);
 	if (lastprojsec==0) {
 		// TODO: This differs from the real HD24 where even
 		// on a freshly formatted drive there always is at least
@@ -2569,11 +2575,11 @@ signed long hd24fs::lastprojectid()
 	}
 	int i;
 	int maxprojs=maxprojects();
-	for (i=1;i<=maxprojs;i++) 
+	for (i=1;i<=maxprojs;i++)
 	{
-		unsigned long projsec=getprojectsectornum(i);
+		uint32_t projsec=getprojectsectornum(i);
 
-		if (projsec==lastprojsec) 
+		if (projsec==lastprojsec)
 		{
 			return i;
 		}
@@ -2585,9 +2591,9 @@ signed long hd24fs::lastprojectid()
 	return -1;
 }
 
-__uint32 hd24fs::getunusedsongsector()
+uint32_t hd24fs::getunusedsongsector()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0; // return 0- this is an invalid songsector
 			  // so error is detectable
@@ -2597,7 +2603,7 @@ __uint32 hd24fs::getunusedsongsector()
 	unsigned char* songusage=calcsongusage();
 
 	int currsongentry=0;
-	signed long foundentry=-1;
+	int32_t foundentry=-1;
 	int maxprojs=this->maxprojects();
 	int maxsongcount=this->maxsongsperproject();
 	int totentries=maxprojs*maxsongcount; // 99 songs, 99 projects
@@ -2616,24 +2622,24 @@ __uint32 hd24fs::getunusedsongsector()
 	return songentry2sector(foundentry);
 }
 
-void hd24fs::allocsongentry(unsigned long songentry) 
+void hd24fs::allocsongentry(uint32_t songentry)
 {
 	enablebit(songentry,sectors_songusage);
 }
 
-unsigned long hd24fs::projectcount() 
+uint32_t hd24fs::projectcount()
 {
-	if (!(isOpen())) 
+	if (!(isOpen()))
 	{
 	      	return 0;
 	}
 	getsector_diskinfo();
-	unsigned long lastprojsec=Convert::getint32(sector_diskinfo,DRIVEINFO_LASTPROJ);
-	if (lastprojsec==0) 
+	uint32_t lastprojsec=Convert::getint32(sector_diskinfo,DRIVEINFO_LASTPROJ);
+	if (lastprojsec==0)
 	{
 		return 0;
 	}
-	__uint32 projcount=Convert::getint32(sector_diskinfo,DRIVEINFO_PROJECTCOUNT);
+	uint32_t projcount=Convert::getint32(sector_diskinfo,DRIVEINFO_PROJECTCOUNT);
 	if (projcount>maxprojects()) return maxprojects();
 
 	return projcount;
@@ -2642,10 +2648,10 @@ unsigned long hd24fs::projectcount()
 int hd24fs::mode() {
 	return p_mode;
 }
-	
-hd24project* hd24fs::getproject(__sint32 projectid) 
+
+hd24project* hd24fs::getproject(int32_t projectid)
 {
-	__uint32 projsec=getprojectsectornum(projectid); // 1-based
+	uint32_t projsec=getprojectsectornum(projectid); // 1-based
 	if (projsec==0) {
 		return NULL;
 	}
@@ -2662,7 +2668,7 @@ hd24project* hd24fs::createproject(const char* projectname)
            NULL is returned when unsuccessful, a pointer to the
            project otherwise.
         */
-#if (HD24FSDEBUG==1) 
+#if (HD24FSDEBUG==1)
 	cout << "hd24fs asked to create project " << projectname << endl;
 #endif
 	int i;
@@ -2674,11 +2680,11 @@ hd24project* hd24fs::createproject(const char* projectname)
 		// unknown cluster size.
 		return 0;
 	}
-	__uint32 firstprojsec=Convert::getint32(sector_boot,FSINFO_FIRST_PROJECT_SECTOR);
+	uint32_t firstprojsec=Convert::getint32(sector_boot,FSINFO_FIRST_PROJECT_SECTOR);
 #if (HD24FSDEBUG==1)
 	cout << "Firstprojsec="<< firstprojsec << endl;
 #endif
-	__uint32 secsperproj=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_PROJECT);
+	uint32_t secsperproj=Convert::getint32(sector_boot,FSINFO_SECTORS_PER_PROJECT);
 #if (HD24FSDEBUG==1)
 	cout << "Sectors per project="<< secsperproj << endl;
 #endif
@@ -2693,16 +2699,16 @@ hd24project* hd24fs::createproject(const char* projectname)
 		projused[i]=0;
 	}
 
-	for (i=1;i<=maxprojs;i++) { 
-		__uint32 projsec=getprojectsectornum(i); // 1-based
+	for (i=1;i<=maxprojs;i++) {
+		uint32_t projsec=getprojectsectornum(i); // 1-based
 		if (projsec!=0)
 		{
-			/* projects do not necessarily have to 	
-                           be stored on disk in the same order 
-                           as their project numbers- 
+			/* projects do not necessarily have to
+                           be stored on disk in the same order
+                           as their project numbers-
 			   so project 1 can be at sector 0x15
                            while project 2 is at sector 0x14.
-	 		   This is why we have to convert project 
+	 		   This is why we have to convert project
                            sector to project slot. The cast to int
                            makes sure we don't accidentally end up
                            with a float index that can be misinterpreted. */
@@ -2711,19 +2717,19 @@ hd24project* hd24fs::createproject(const char* projectname)
 	}
 
 	int foundslotnum=0;
-	for (i=1;i<=maxprojs;i++) 
+	for (i=1;i<=maxprojs;i++)
 	{
-		__uint32 projsec=getprojectsectornum(i); // 1-based
+		uint32_t projsec=getprojectsectornum(i); // 1-based
 
-		if (projsec==0) 
+		if (projsec==0)
 		{
 			foundslotnum=i;
 			break;
 		}
 	}
-	
+
 	// Now find an unused project sector
-	__uint32 foundsecnum=0;
+	uint32_t foundsecnum=0;
 	for (i=0;i<maxprojs;i++) {
 		if (projused[i]==0) {
 			foundsecnum=(i*secsperproj)+firstprojsec;
@@ -2732,12 +2738,12 @@ hd24project* hd24fs::createproject(const char* projectname)
 	}
 	memutils::myfree("projused",projused);
 
-	if (foundslotnum==0) 
+	if (foundslotnum==0)
 	{
 		// no unused slots.
 		return NULL;
 	}
-	__uint32 projectid=foundslotnum;
+	uint32_t projectid=foundslotnum;
 	foundslotnum--;	// use 0-based slot num
 
 	if (foundsecnum==0) {
@@ -2746,9 +2752,9 @@ hd24project* hd24fs::createproject(const char* projectname)
 		// unused slots- so that should never happen.
 		// Looks like we're dealing with a corrupt FS!
 		this->writeprotected=true;
-		return NULL;			
+		return NULL;
 	}
-	// Now to assign the first unused project sector 
+	// Now to assign the first unused project sector
 	// to the first unused project slot.
 
 	// First, update the drive info.
@@ -2784,7 +2790,7 @@ void hd24fs::setallinput(void)
 }
 
 /* These three functions are for the 'auto input' button
-   (having to do with automatic toggling of monitoring 
+   (having to do with automatic toggling of monitoring
     between 'tape' and inputs during a punch in */
 bool hd24fs::isautoinput()
 {
@@ -2801,16 +2807,16 @@ void hd24fs::setautoinput(void)
 	this->setautoinput(true);
 }
 
-bool hd24fs::comparebackupblock(__uint32 p_sector,__uint32 p_blocksize,
-			      __uint32 lastsec)
+bool hd24fs::comparebackupblock(uint32_t p_sector,uint32_t p_blocksize,
+			      uint32_t lastsec)
 {
 	/** Used by commit. This compares a logical block of file system with its backup
 	    at the end of the drive. */
         unsigned char headerbuf[10000];
         unsigned char footerbuf[10000];
 
-	__uint32 i;
-	__uint32 blocksize=p_blocksize;
+	uint32_t i;
+	uint32_t blocksize=p_blocksize;
 
 #if (HD24FSDEBUG_COMMIT==1)
 	cout << "Read " << blocksize << "sectors starting at " << p_sector << endl;
@@ -2821,25 +2827,25 @@ bool hd24fs::comparebackupblock(__uint32 p_sector,__uint32 p_blocksize,
 #endif
 	readsectors_noheader(this, (lastsec-(p_sector+blocksize))+1, footerbuf,blocksize);
 
-//	__uint32 targetsector=(lastsec-(p_sector+blocksize))+1;
-	//__uint32 targetsector=(lastsec-(p_sector));
+//	uint32_t targetsector=(lastsec-(p_sector+blocksize))+1;
+	//uint32_t targetsector=(lastsec-(p_sector));
 
 	for (i=1;i<=blocksize;i++) {
 
 		// read sector $sector+$i-1
 		// write to sector -($sector+1+$blocksize-$i)
 		// 	(where -1= last sector)
-		__uint32 headeroff=(512* (i-1));
-		//__uint32 footeroff= (512*(blocksize-i));
-		__uint32 footeroff=(512* (i-1));
+		uint32_t headeroff=(512* (i-1));
+		//uint32_t footeroff= (512*(blocksize-i));
+		uint32_t footeroff=(512* (i-1));
 #if (HD24FSDEBUG_COMMIT==1)
 		cout << "compare 512 bytes starting at headerbuf+" << headeroff<< "and footerbuf+" <<footeroff << endl;
 #endif
-		int x=memcmp ( headerbuf+headeroff,footerbuf+footeroff,512);		
-		if (x!=0) 
+		int x=memcmp ( headerbuf+headeroff,footerbuf+footeroff,512);
+		if (x!=0)
 		{
 			for (int j=0;j<512;j++)
-			{ 
+			{
 #if (HD24FSDEBUG_COMMIT==1)
 				cout << (int)(headerbuf[headeroff+j]) << "/" << (int)(footerbuf[footeroff+j]) << "     ";
 #endif
@@ -2852,42 +2858,42 @@ bool hd24fs::comparebackupblock(__uint32 p_sector,__uint32 p_blocksize,
 		}
 	}
 	return true;
-}	
+}
 
 
-void hd24fs::writebackupblock(__uint32 p_sector,__uint32 p_blocksize,
-			      __uint32 lastsec,bool fullcommit)
+void hd24fs::writebackupblock(uint32_t p_sector,uint32_t p_blocksize,
+			      uint32_t lastsec,bool fullcommit)
 {
-	/** Used by commit. This writes a logical block 
+	/** Used by commit. This writes a logical block
             of file system data to the end of the drive. */
         unsigned char backbuf[1024];
 
-	__uint32 i;
-	__uint32 blocksize=p_blocksize;
-	
+	uint32_t i;
+	uint32_t blocksize=p_blocksize;
+
 	if (fullcommit==false)
 	{
 		// we're doing a quick commit, so only backup
 		// changed blocks.
 		if (p_sector>highestFSsectorwritten) return;
 	}
-	
+
 	for (i=1;i<=blocksize;i++) {
 
 		// read sector $sector+$i-1
 		// write to sector -($sector+1+$blocksize-$i)
 		// 	(where -1= last sector)
-		__uint32 currentsourcesector=p_sector+(i-1);
+		uint32_t currentsourcesector=p_sector+(i-1);
 #if (HD24FSDEBUG_COMMIT==1)
 		cout << "Reading 1 source sector, " << currentsourcesector << "; ";
-#endif		
-		__uint32 secsread=readsectors_noheader(this, currentsourcesector, backbuf,1);		
+#endif
+		uint32_t secsread=readsectors_noheader(this, currentsourcesector, backbuf,1);
 		secsread=secsread;
 #if (HD24FSDEBUG_COMMIT==1)
 		cout << "secsread=" << secsread << endl;
-#endif		
-		__uint32 targetsector=(lastsec-(p_sector+1+blocksize-i))+1;
-		if (targetsector<0x1397F6) 
+#endif
+		uint32_t targetsector=(lastsec-(p_sector+1+blocksize-i))+1;
+		if (targetsector<0x1397F6)
 		{
 			/* Skip backup block writing if target sector would be placed before
 			   audio data area (since we seem to be writing a header file)
@@ -2913,7 +2919,7 @@ bool hd24fs::commit()
 
 bool hd24fs::commit(bool fullcommit)
 {
-/*	
+/*
 	// don't try to be smart here. We say commit so commit.
 	if (!this->needcommit)
 	{
@@ -2921,8 +2927,8 @@ bool hd24fs::commit(bool fullcommit)
 		return true;
 	}*/
 	/** This creates a backup of the file system to the end of the drive. */
-	
-	
+
+
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::commit()" << endl;
 #endif
@@ -2934,11 +2940,11 @@ bool hd24fs::commit(bool fullcommit)
 		// (which is to allow safe read-only operation).
 		return true;
 	};
-	__uint32 sector=0;
-	__uint32 blocksize=1;
-	__uint32 count=1;
+	uint32_t sector=0;
+	uint32_t blocksize=1;
+	uint32_t count=1;
 	int lastsecerror=0;
-	__uint32 lastsec=getlastsectornum(&lastsecerror);
+	uint32_t lastsec=getlastsectornum(&lastsecerror);
 #if (HD24FSDEBUG==1)
 	cout << "lastsec before writing backup blocks=" << lastsec << endl;
 #endif
@@ -2964,18 +2970,18 @@ bool hd24fs::commit(bool fullcommit)
 	blocksize=1;
 	count=99;
 
-	__uint32 i;
-	for (i=1;i<=count;i++) 
+	uint32_t i;
+	for (i=1;i<=count;i++)
 	{
 #if (HD24FSDEBUG_COMMIT==1)
 	cout <<"Going to write proj backup block no. " << i << endl;
 #endif
-		writebackupblock(sector+(i-1),blocksize,lastsec,fullcommit); // Backup project 
+		writebackupblock(sector+(i-1),blocksize,lastsec,fullcommit); // Backup project
 	}
 
 	sector+=(blocksize*count);
 	count=99*99;
-	for (i=1;i<=count;i++) 
+	for (i=1;i<=count;i++)
 	{
 #if (HD24FSDEBUG_COMMIT==1)
 	cout <<"Going to write song backup block no. " << i << endl;
@@ -2991,7 +2997,7 @@ bool hd24fs::commit(bool fullcommit)
 	<< "Driveusage pointer after commit=" << this->sectors_driveusage << endl
 	<< "." << endl;
 #endif
-	highestFSsectorwritten=0; // reset 
+	highestFSsectorwritten=0; // reset
 	this->hd24sync();
 	this->needcommit=false;
 	return true;
@@ -3007,20 +3013,20 @@ void hd24fs::hd24sync()
 bool hd24fs::commit_ok()
 {
 	/** This compares the header file with its backup to see if the drive is consistent. */
-	
+
 #if (HD24FSDEBUG==1)
 	cout << "bool hd24fs::commit_ok()" << endl
 	<< "Driveusage pointer before commit=" << this->sectors_driveusage << endl;
 #endif
-	__uint32 sector=0;
-	__uint32 blocksize=1;
-	__uint32 count=1;
+	uint32_t sector=0;
+	uint32_t blocksize=1;
+	uint32_t count=1;
 	int lastsecerror=0;
-	__uint32 lastsec=getlastsectornum(&lastsecerror);
+	uint32_t lastsec=getlastsectornum(&lastsecerror);
 #if (HD24FSDEBUG==1)
 	cout << "lastsec before writing backup blocks=" << lastsec << endl;
 #endif
-	if (!comparebackupblock(sector,blocksize,lastsec)) 
+	if (!comparebackupblock(sector,blocksize,lastsec))
 	{
 		// superblock mismatch
 		return false;
@@ -3030,7 +3036,7 @@ bool hd24fs::commit_ok()
 	blocksize=1;
 	count=1;
 
-	if (!comparebackupblock(sector,blocksize,lastsec)) 
+	if (!comparebackupblock(sector,blocksize,lastsec))
 	{
 		// drive info mismatch
 		return false;
@@ -3043,7 +3049,7 @@ bool hd24fs::commit_ok()
 	{
 		// song usage mismatch
 		return false;
-	} ; 
+	} ;
 
 	sector+=(blocksize*count);
 	blocksize=15;
@@ -3058,8 +3064,8 @@ bool hd24fs::commit_ok()
 	blocksize=1;
 	count=99;
 
-	__uint32 i;
-	for (i=1;i<=count;i++) 
+	uint32_t i;
+	for (i=1;i<=count;i++)
 	{
 		if (!comparebackupblock(sector+(i-1),blocksize,lastsec))
 		{
@@ -3070,7 +3076,7 @@ bool hd24fs::commit_ok()
 
 	sector+=(blocksize*count);
 	count=99*99;
-	for (i=1;i<=count;i++) 
+	for (i=1;i<=count;i++)
 	{
 		blocksize=2;
 		if (!comparebackupblock(sector+(7*(i-1)),blocksize,lastsec))
@@ -3089,21 +3095,21 @@ bool hd24fs::commit_ok()
 	return true;
 }
 
-long unsigned int hd24fs::setsectorchecksum(unsigned char* buffer,unsigned int startoffset,unsigned int startsector,unsigned int sectors)
+uint32_t hd24fs::setsectorchecksum(unsigned char* buffer,uint32_t startoffset,uint32_t startsector,uint32_t sectors)
 {
 	// Calculates and sets the checksum for a block of data.
 	// Data must be in drive-native format.
-	long unsigned int checksum32 = 0;
-	unsigned long int totbytes=(SECTORSIZE*sectors);
+	uint32_t checksum32 = 0;
+	uint32_t totbytes=(SECTORSIZE*sectors);
 
 	buffer[startoffset+totbytes-8]=startsector%256;
 	buffer[startoffset+totbytes-7]=(startsector>>8)%256;
 	buffer[startoffset+totbytes-6]=255-	buffer[startoffset+totbytes-8];
 	buffer[startoffset+totbytes-5]=255-	buffer[startoffset+totbytes-7];
 
-	for (unsigned long i = 0; i < totbytes; i += 4) 
+	for (uint32_t i = 0; i < totbytes; i += 4)
 	{
-		unsigned long num = Convert::getint32(buffer, i+startoffset);
+		uint32_t num = Convert::getint32(buffer, i+startoffset);
 		int byte1 = num % 256;
 		int byte2 = (num >> 8) % 256;
 		int byte3 = (num >> 16) % 256;
@@ -3111,11 +3117,11 @@ long unsigned int hd24fs::setsectorchecksum(unsigned char* buffer,unsigned int s
 		num = byte4 + (byte3 << 8) + (byte2 << 16) + (byte1 << 24);
 		checksum32 += num;
 	}
-	unsigned long oldchecksum=0;
+	uint32_t oldchecksum=0;
 	oldchecksum+=((unsigned char)(buffer[startoffset+totbytes-1])); oldchecksum=oldchecksum <<8;
 	oldchecksum+=((unsigned char)(buffer[startoffset+totbytes-2])); oldchecksum=oldchecksum <<8;
 	oldchecksum+=((unsigned char)(buffer[startoffset+totbytes-3])); oldchecksum=oldchecksum <<8;
-	oldchecksum+=((unsigned char)(buffer[startoffset+totbytes-4])); 
+	oldchecksum+=((unsigned char)(buffer[startoffset+totbytes-4]));
 	oldchecksum-=checksum32;
 	buffer[startoffset+totbytes-4]=oldchecksum%256; oldchecksum=oldchecksum >> 8;
 	buffer[startoffset+totbytes-3]=oldchecksum%256; oldchecksum=oldchecksum >> 8;
@@ -3127,11 +3133,11 @@ long unsigned int hd24fs::setsectorchecksum(unsigned char* buffer,unsigned int s
 void hd24fs::savedriveinfo()
 {
 	// This is capable of handling only 1-sector-per-project projects
-	__uint32 driveinfosector=1;
+	uint32_t driveinfosector=1;
 #if (HD24FSDEBUG==1)
 	gotlastsectornum=false;
 	//int lastsecerror=0;
-	//__uint32 lastsec=getlastsectornum(&lastsecerror);
+	//uint32_t lastsec=getlastsectornum(&lastsecerror);
 #endif
 	if (sector_diskinfo==NULL)
 	{
@@ -3140,34 +3146,34 @@ void hd24fs::savedriveinfo()
 	}
 #if (HD24FSDEBUG==1)
 	cout << "FSTFIX" << endl;
-#endif	
+#endif
 	this->fstfix(sector_diskinfo,512); // sector is now once again in native format
 
 #if (HD24FSDEBUG==1)
 	cout << "set checksum" << endl;
-#endif	
-	this->setsectorchecksum(sector_diskinfo,0,driveinfosector,1);     
+#endif
+	this->setsectorchecksum(sector_diskinfo,0,driveinfosector,1);
 #if (HD24FSDEBUG==1)
 	cout << "write sectors" << endl;
-#endif	
+#endif
 	this->writesectors(this->devhd24,
 			driveinfosector,
 			sector_diskinfo,1);
-	
+
 #if (HD24FSDEBUG==1)
 	cout << "unfix" << endl;
-#endif	
+#endif
 	this->fstfix(sector_diskinfo,512); // sector is now in 'fixed' format
 #if (HD24FSDEBUG==1)
 	cout << "commit" << endl;
-#endif	
+#endif
 	this->commit();
 }
 
-void hd24fs::setname(unsigned char* namebuf,string newname,__uint32 shortnameoff,__uint32 longnameoff)
+void hd24fs::setname(unsigned char* namebuf,string newname,uint32_t shortnameoff,uint32_t longnameoff)
 {
-	/** Used for setting song/project/drive names 
-            Long name is up to 64 characters; short name 
+	/** Used for setting song/project/drive names
+            Long name is up to 64 characters; short name
             is up to 10 chars.
         */
 #if (HD24FSDEBUG==1)
@@ -3176,11 +3182,11 @@ void hd24fs::setname(unsigned char* namebuf,string newname,__uint32 shortnameoff
 		<< "newname=" << newname << ","
 		<< "shortnameoff="<<shortnameoff << ","
 		<< "longnameoff=" << longnameoff <<");" << endl;
-#endif		
+#endif
 	bool foundzero=false;
-	for (__uint32 i=0;i<64;i++) 
+	for (uint32_t i=0;i<64;i++)
 	{
-		if (!foundzero) 
+		if (!foundzero)
 		{
 			namebuf[longnameoff+i]=newname.c_str()[i];
 			if (namebuf[longnameoff+i]==0) {
@@ -3190,21 +3196,21 @@ void hd24fs::setname(unsigned char* namebuf,string newname,__uint32 shortnameoff
 #endif
 			}
 		}
-		else 
+		else
 		{
 			namebuf[longnameoff+i]=0;
 		}
 	}
 	// Now set FST 1.0 short name
-	unsigned char* target=namebuf+shortnameoff;	
+	unsigned char* target=namebuf+shortnameoff;
 	foundzero=false;
-	__uint32 count=0;
-	for (__uint32 i=0;i<10;i++) 
+	uint32_t count=0;
+	for (uint32_t i=0;i<10;i++)
 	{
 		if (!foundzero)
 		{
 			target[count]=newname.c_str()[i];
-			if (target[count]==0) 	
+			if (target[count]==0)
 			{
 				foundzero=true;
 			}
@@ -3213,10 +3219,10 @@ void hd24fs::setname(unsigned char* namebuf,string newname,__uint32 shortnameoff
 		{
 			target[count]=0x20; /* short name is filled out
 					       with spaces */
-					
+
 		}
 		count++;
-		if (count==8) 
+		if (count==8)
 		{
 			count=0;
 			target+=10;
@@ -3227,29 +3233,29 @@ void hd24fs::setname(unsigned char* namebuf,string newname,__uint32 shortnameoff
 
 void hd24fs::savedriveusage()
 {
-	__uint32 driveusagesector=5;
-	__uint32 totsectors=15;
+	uint32_t driveusagesector=5;
+	uint32_t totsectors=15;
 	this->fstfix(sectors_driveusage,totsectors*512); // sector is now once again in native format
 
 	this->setsectorchecksum(sectors_driveusage,0,driveusagesector,totsectors);
 	this->writesectors(this->devhd24,
 			driveusagesector,
 			sectors_driveusage,totsectors);
-	
+
 	this->fstfix(sectors_driveusage,totsectors*512); // sector is now in 'fixed' format
 #if (HD24FSDEBUG==1)
 	cout << "free cluster count=" << freeclustercount() << endl;
 #endif
 	unsigned char* bootrec=readbootinfo();
-	// update FSINFO_FREE_CLUSTERS_ON_DISK	
-	
+	// update FSINFO_FREE_CLUSTERS_ON_DISK
+
 	Convert::setint32(bootrec,FSINFO_FREE_CLUSTERS_ON_DISK,freeclustercount());
 	fstfix(bootrec,512); // convert back into native format
 
 	/* Calculate the proper checksum for the bootinfo */
 	setsectorchecksum(bootrec,
 		0 /* startoffset */,
-		0 /* sector */, 
+		0 /* sector */,
 		1 /*sectorcount */
 	);
 	this->writesectors(this->devhd24, 0,bootrec,1);
@@ -3258,7 +3264,7 @@ void hd24fs::savedriveusage()
 }
 
 
-__uint32 hd24fs::writesuperblock(__uint32 lastsec)
+uint32_t hd24fs::writesuperblock(uint32_t lastsec)
 {
 	// writes a new superblock to an unformatted drive.
 	//
@@ -3267,18 +3273,18 @@ __uint32 hd24fs::writesuperblock(__uint32 lastsec)
 	// fs size=0x77+7*99
 	// so minimum usable drive is 0x1397f6+0x480+(0x77+(7*99*99))
 	// =0x14a8ec sectors.
-	// Sectors are counted from base 0 
+	// Sectors are counted from base 0
 	// so last sector num must be at least 0x14a8ec-1
 	if (lastsec<0x14a8eb)
 	{
-		// drive is smaller than the minimum needed for 
+		// drive is smaller than the minimum needed for
 		// storing at least 1 audio block.
 		return RESULT_FAIL;
 	}
 	unsigned char superblock[512];
 	useinternalboot(superblock,lastsec); // this automatically sets sector checksum
 	writesectors(this->devhd24,0,&superblock[0],1);
-#if (HD24FSDEBUG_QUICKFORMAT==1)	
+#if (HD24FSDEBUG_QUICKFORMAT==1)
 	cout << "Writing superblock." << endl;
 	hd24utils::dumpsector((const char*)superblock);
 
@@ -3287,8 +3293,8 @@ __uint32 hd24fs::writesuperblock(__uint32 lastsec)
 	force_reload();
 
 	readbootinfo();
-	
-#if (HD24FSDEBUG_CLUSTERddCALC==1)	
+
+#if (HD24FSDEBUG_CLUSTERddCALC==1)
 	cout << "Displaying sector after reload." << endl;
 	hd24utils::dumpsector((const char*)sector_boot);
 #endif
@@ -3309,7 +3315,7 @@ void hd24fs::force_reload()
 #if (HD24FSDEBUG==1)
 	cout << "Free diskinfo mem" << endl;
 #endif
-	if (sector_diskinfo!=NULL) 
+	if (sector_diskinfo!=NULL)
 	{
 		memutils::myfree("sectors_diskinfo",sector_diskinfo);
 		sector_diskinfo=NULL;
@@ -3338,14 +3344,14 @@ void hd24fs::force_reload()
 		memutils::myfree("sectors_songusage",sectors_songusage);
 		sectors_songusage=NULL;
 	};
-		
+
 }
-__uint32 hd24fs::writedriveinfo()
+uint32_t hd24fs::writedriveinfo()
 {
 #if (HD24FSDEBUG==1)
 	gotlastsectornum=false;
 	//int lastsecerror=0;
-	//__uint32 lastsec=getlastsectornum(&lastsecerror);
+	//uint32_t lastsec=getlastsectornum(&lastsecerror);
 #endif
 
 	readdiskinfo();
@@ -3358,12 +3364,12 @@ __uint32 hd24fs::writedriveinfo()
 	}
 	hd24project* firstproject=createproject("Proj Name");
 	memutils::myfree("firstproject",firstproject);
-	
+
 	if (sector_diskinfo!=NULL) {
 		memutils::myfree("sector_diskinfo",sector_diskinfo);
 		sector_diskinfo=NULL; // force re-read
 	}
-	__uint32 psec=getprojectsectornum(1);
+	uint32_t psec=getprojectsectornum(1);
 	if (sector_diskinfo!=NULL) {
 		memutils::myfree("sector_diskinfo",sector_diskinfo);
 		sector_diskinfo=NULL; // force re-read
@@ -3371,11 +3377,11 @@ __uint32 hd24fs::writedriveinfo()
 	readdiskinfo();
 	Convert::setint32(sector_diskinfo,DRIVEINFO_LASTPROJ,psec);
 	savedriveinfo();
-	
+
 	return RESULT_SUCCESS;
 }
 
-__uint32 hd24fs::writeemptysongusagetable()
+uint32_t hd24fs::writeemptysongusagetable()
 {
 	// Writes an empty song usage table to the drive.
 	unsigned char* buffer=resetsongusage();
@@ -3383,12 +3389,12 @@ __uint32 hd24fs::writeemptysongusagetable()
 	{
 		return RESULT_FAIL;
 	}
-	__uint32 sectornum=2; 
-	__uint32 sectorcount=3; 
+	uint32_t sectornum=2;
+	uint32_t sectorcount=3;
 	fstfix(buffer,sectorcount*512);
 	setsectorchecksum(buffer,
 		0 /* startoffset */,
-		sectornum /* sector */, 
+		sectornum /* sector */,
 		sectorcount /*sectorcount */
 	);
 	this->writesectors(this->devhd24,
@@ -3399,25 +3405,25 @@ __uint32 hd24fs::writeemptysongusagetable()
 	return RESULT_SUCCESS;
 }
 
-__uint32 hd24fs::writedriveusage()
+uint32_t hd24fs::writedriveusage()
 {
 	if (sectors_driveusage!=NULL)
 	{
 		memutils::myfree("sectors_driveusage",sectors_driveusage);
 		sectors_driveusage=NULL;
 	}
-	
+
 	unsigned char* buffer=resetdriveusage();
 	if (buffer==NULL)
 	{
 		return RESULT_FAIL;
 	}
-	__uint32 sectornum=5; 
-	__uint32 sectorcount=15; 
+	uint32_t sectornum=5;
+	uint32_t sectorcount=15;
 	fstfix(buffer,sectorcount*512);
 	setsectorchecksum(buffer,
 		0 /* startoffset */,
-		sectornum /* sector */, 
+		sectornum /* sector */,
 		sectorcount /*sectorcount */
 	);
 
@@ -3426,34 +3432,34 @@ __uint32 hd24fs::writedriveusage()
 			buffer,
 			sectorcount);
 	fstfix(buffer,sectorcount*512);
-	
+
 	return RESULT_SUCCESS;
 }
 
-__uint32 hd24fs::quickformat(char* message)
+uint32_t hd24fs::quickformat(char* message)
 {
 	// This procedure performs a quickformat on the current drive.
 	// There is no need for the drive to be a valid HD24 drive
 	// for this to work.
 	// Safety confirmations etc. are considered to be the
 	// responsibility of the caller.
-	highestFSsectorwritten=0; // reset 
+	highestFSsectorwritten=0; // reset
 #if (HD24FSDEBUG==1)
 	cout << "hd24fs::quickformat()" << endl;
 #endif
-	
+
 	gotlastsectornum=false; // force re-finding last sector num
 	int lastsecerror=0;
-	__uint32 lastsec=getlastsectornum(&lastsecerror);
-	
+	uint32_t lastsec=getlastsectornum(&lastsecerror);
+
 	formatting=true;
-	
+
 	if (lastsec==0)
 	{
 		if (message!=NULL) strcpy(message,(const char*)&"Lastsec=0");
 		return 0;
 	}
-	__uint32 result=writesuperblock(lastsec);
+	uint32_t result=writesuperblock(lastsec);
 
 	if (result==RESULT_FAIL)
 	{
@@ -3498,18 +3504,18 @@ __uint32 hd24fs::quickformat(char* message)
 	return lastsec;
 }
 
-void hd24fs::setprojectsectornum(int i,__uint32 sector) 
+void hd24fs::setprojectsectornum(int i,uint32_t sector)
 {
 	getsector_diskinfo();
-	Convert::setint32(sector_diskinfo, 
+	Convert::setint32(sector_diskinfo,
 		DRIVEINFO_PROJECTLIST + ((i - 1) * 4),sector);
-		
+
 	return;
 }
 
-__uint32 hd24fs::deleteproject(__sint32 projid) 
+uint32_t hd24fs::deleteproject(int32_t projid)
 {
-	if (projid<1) 
+	if (projid<1)
 	{
 		/* Illegal project id;
                    project IDs are set in base 1. */
@@ -3517,11 +3523,11 @@ __uint32 hd24fs::deleteproject(__sint32 projid)
 	}
 
 	getsector_diskinfo(); // has list of pointers to project sectors
-	__uint32 pcount = Convert::getint32(sector_diskinfo, DRIVEINFO_PROJECTCOUNT);
+	uint32_t pcount = Convert::getint32(sector_diskinfo, DRIVEINFO_PROJECTCOUNT);
 
 	if (pcount<=1)
 	{
-		/* Attempt to delete last project on drive- 
+		/* Attempt to delete last project on drive-
 		   not allowed, a drive must always contain
 		   at least 1 project */
 		return RESULT_FAIL;
@@ -3533,10 +3539,10 @@ __uint32 hd24fs::deleteproject(__sint32 projid)
 	}
 
 	/* If there still are songs in the project, delete them */
-	__uint32 currsongcount=projtodel->songcount();
+	uint32_t currsongcount=projtodel->songcount();
 	if (currsongcount>0)
 	{
-		for (__uint32 j=1; j<=currsongcount;j++) 
+		for (uint32_t j=1; j<=currsongcount;j++)
 		{
 			projtodel->deletesong(1); // songs will shift
 			projtodel->save();
@@ -3548,7 +3554,7 @@ __uint32 hd24fs::deleteproject(__sint32 projid)
 	if (projid<99)
 	{
 	        /* When project 99 is deleted no shifting is needed */
-		for (__uint32 i=projid;i<99;i++) 
+		for (uint32_t i=projid;i<99;i++)
 		{
 			setprojectsectornum(i,getprojectsectornum(i+1));
 		}
@@ -3558,8 +3564,8 @@ __uint32 hd24fs::deleteproject(__sint32 projid)
 
 	Convert::setint32(sector_diskinfo,DRIVEINFO_PROJECTCOUNT,pcount-1);
 
-	/* Set 'last accessed project' to first in list 
-       	   (the project being deleted needs to be accessed 
+	/* Set 'last accessed project' to first in list
+       	   (the project being deleted needs to be accessed
             prior to deletion so this must always be updated)
         */
 	Convert::setint32(sector_diskinfo, DRIVEINFO_LASTPROJECT,getprojectsectornum(1));
@@ -3581,4 +3587,3 @@ void hd24fs::write_disable()
 {
 	this->writeprotected=true;
 }
-

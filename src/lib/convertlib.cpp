@@ -31,7 +31,7 @@ double Convert::str2dbl(string decstr)
 	return strtod(decstr.c_str(), 0);
 }
 
-string* Convert::int2str(int x, unsigned int pad, string padchar) 
+string* Convert::int2str(int x, uint32_t pad, string padchar) 
 {
 	string* newst = int2str(x);
 	
@@ -46,7 +46,7 @@ string* Convert::int2str(int x, unsigned int pad, string padchar)
 	return newst;
 }
 
-string* Convert::int64tostr(__sint64 x) 
+string* Convert::int64tostr(int64_t x) 
 {
 	bool isneg=false;
 	string * newst = new string("");
@@ -84,7 +84,7 @@ string* Convert::int2str(int x)
 	return int64tostr(y);
 }
 
-string* Convert::int32tostr(__uint32 x) 
+string* Convert::int32tostr(uint32_t x) 
 {
 	long long y = x;
 	return int64tostr(y);
@@ -107,9 +107,9 @@ unsigned char Convert::safebyte(unsigned char x)
 	return x;
 }
 
-string* Convert::int64tohex(__sint64 x) 
+string* Convert::int64tohex(int64_t x) 
 {
-	__sint64 q = x;
+	int64_t q = x;
 	unsigned char a = q % 256; q = q >> 8;
 	unsigned char b = q % 256; q = q >> 8;
 	unsigned char c = q % 256; q = q >> 8;
@@ -139,9 +139,9 @@ string* Convert::int64tohex(__sint64 x)
 	return newst;
 }
 
-string* Convert::int32tohex(unsigned long x) 
+string* Convert::int32tohex(uint32_t x) 
 {
-	__sint64 q = x;
+	int64_t q = x;
 	unsigned char a = q % 256; q = q >> 8;
 	unsigned char b = q % 256; q = q >> 8;
 	unsigned char c = q % 256; q = q >> 8;
@@ -159,9 +159,9 @@ string* Convert::int32tohex(unsigned long x)
 	return newst;
 }
 
-unsigned int Convert::getint24(unsigned char * buf, int loc) 
+uint32_t Convert::getint24(unsigned char * buf, int loc) 
 {
-	unsigned int q = 0;
+	uint32_t q = 0;
 
 	q = buf[loc + 2] 
 		+ (buf[loc + 1] << 8) 
@@ -170,9 +170,9 @@ unsigned int Convert::getint24(unsigned char * buf, int loc)
 }
 
 
-unsigned int Convert::getint32(unsigned char * buf, int loc) 
+uint32_t Convert::getint32(unsigned char * buf, int loc) 
 {
-	unsigned int q = 0;
+	uint32_t q = 0;
 
 	q = buf[loc + 3] 
 		+ (buf[loc + 2] << 8) 
@@ -181,7 +181,7 @@ unsigned int Convert::getint32(unsigned char * buf, int loc)
 	return q;
 }
 
-void Convert::setint32(unsigned char * buf, int loc, __uint32 newval)
+void Convert::setint32(unsigned char * buf, int loc, uint32_t newval)
 {
         buf[loc + 0] = (newval >> 24) % 256;
         buf[loc + 1] = (newval >> 16) % 256;
@@ -189,10 +189,10 @@ void Convert::setint32(unsigned char * buf, int loc, __uint32 newval)
         buf[loc + 3] = newval % 256;
 }
 
-void Convert::setfloat80(unsigned char * buf, int loc, __uint32 newval)
+void Convert::setfloat80(unsigned char * buf, int loc, uint32_t newval)
 {
 	/* Thanks, Erik */
-        unsigned int mask = 0x40000000 ;
+        uint32_t mask = 0x40000000 ;
         int     count ;
 
 	for (int i=0;i<10;i++) 

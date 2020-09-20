@@ -26,7 +26,7 @@ cout << "endswith("<<str<<","<<end<<")"<<endl;
 	return strcmp(str_end, end) == 0;
 }
 
-__uint32 hd24devicenamegenerator::hd24filecount(const char* dirname)
+uint32_t hd24devicenamegenerator::hd24filecount(const char* dirname)
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::hd24filecount("<<dirname<<")"<< endl;
@@ -158,7 +158,7 @@ else
 	return (const char*)imagespath;
 }
 
-__uint32 hd24devicenamegenerator::getnumberoffiles()
+uint32_t hd24devicenamegenerator::getnumberoffiles()
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getnumberoffiles()"<< endl;
@@ -176,7 +176,7 @@ cout << "hd24devicenamegenerator::getnumberoffiles()"<< endl;
 	return filecount;
 }
 
-__uint32 hd24devicenamegenerator::getnumberofsysdevs()
+uint32_t hd24devicenamegenerator::getnumberofsysdevs()
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getnumberofsysdevs()"<< endl;
@@ -193,20 +193,20 @@ cout << "hd24devicenamegenerator::getnumberofsysdevs()"<< endl;
 #endif
 }
 
-__uint32 hd24devicenamegenerator::getnumberofnames()
+uint32_t hd24devicenamegenerator::getnumberofnames()
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getnumberofnames()"<< endl;
 #endif
-	__uint32 filecount=this->getnumberoffiles();
-	__uint32 devcount=this->getnumberofsysdevs();
+	uint32_t filecount=this->getnumberoffiles();
+	uint32_t devcount=this->getnumberofsysdevs();
 #if (DEVGENDEBUG==1)	
 	cout << "return: filecount="<<filecount<<", devcount="<<devcount<<endl;
 #endif
 	return filecount+devcount;
 }
 
-const char* hd24devicenamegenerator::getfilename(__uint32 filenum)
+const char* hd24devicenamegenerator::getfilename(uint32_t filenum)
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getfilename("<<filenum<<")"<< endl;
@@ -224,7 +224,7 @@ cout << "hd24devicenamegenerator::getfilename("<<filenum<<")"<< endl;
 }
 
 #ifdef LINUX
-string* hd24devicenamegenerator::getdevicename(__uint32 devicenumber)
+string* hd24devicenamegenerator::getdevicename(uint32_t devicenumber)
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;
@@ -234,7 +234,7 @@ cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;
 		return new string(getfilename(devicenumber-this->getnumberofsysdevs()));
 	}
 	string* devname;
-	__uint32 devgroup = devicenumber;
+	uint32_t devgroup = devicenumber;
 	devicenumber = (devicenumber%26);
 	devgroup -= devicenumber;
 	devgroup /= 26;
@@ -260,7 +260,7 @@ cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;
 
 #ifdef WINDOWS
 
-string* hd24devicenamegenerator::getdevicename(__uint32 devicenumber)
+string* hd24devicenamegenerator::getdevicename(uint32_t devicenumber)
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;
@@ -279,7 +279,7 @@ cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;
 #endif
 
 #ifdef DARWIN
-string* hd24devicenamegenerator::getdevicename(__uint32 devicenumber)
+string* hd24devicenamegenerator::getdevicename(uint32_t devicenumber)
 {
 #if (DEVGENDEBUG==1)
 cout << "hd24devicenamegenerator::getdevicename("<<devicenumber<<")"<< endl;

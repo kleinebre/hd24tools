@@ -2,7 +2,7 @@
 #define __smpte_h__
 
 using namespace std;
-#include "config.h"
+#include <stdint.h>
 #include <string>
 #include <iostream>
 
@@ -27,14 +27,14 @@ class SMPTEgenerator
 		void recalcrates();
 		void fillword(int hour,int min,int sec,int frame);
 
-		void setsamplerate(__uint32 p_samplerate);
-		void setframerate(__uint32 p_samplerate);
+		void setsamplerate(uint32_t p_samplerate);
+		void setframerate(uint32_t p_samplerate);
 
 		int modulate(int currbitval,int bitnum,int halfbit);
 	public:
-		SMPTEgenerator(__uint32 p_samplerate);
+		SMPTEgenerator(uint32_t p_samplerate);
 		~SMPTEgenerator();
-		int getbit(__uint32 insamnum);
+		int getbit(uint32_t insamnum);
 
 };
 

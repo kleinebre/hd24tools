@@ -29,7 +29,7 @@ CCARGS=$(TMPCCARGS) `fltk-config --cxxflags` -DLIBSND=Yes -DLIBJACK -DLIBPORTAUD
 # ===============================================
 ifeq ($(BUILD_ARCH), Win32)
 PLATFORM=win32
-CC=g++ $(DEBUGGING) -Wall -Werror -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"portaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:/WINDOWS\;C\:/WINDOWS/SYSTEM32\"
+CC=g++ $(DEBUGGING) -Wall -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"portaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:/WINDOWS\;C\:/WINDOWS/SYSTEM32\"
 INCLUDEDIRS=-I src/frontend -I src/lib -I src/backend -I /local/include -I /local/lib -I setup -I src -Bsrc -Bsrc/lib 
 LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -Lsrc/
 CONSLIBS=`fltk-config --ldstaticflags` -lm -lkernel32 -lole32 -luuid -lmsvcrt -luser32 -lwsock32 -lcomctl32 -lsupc++ 
@@ -59,7 +59,7 @@ endif
 
 ifeq ($(BUILD_ARCH), LinuxGNU)
 PLATFORM=linux
-CC=g++ $(DEBUGGING) $(TESTFLAGS) -Wall -Werror -DLINUX -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile.so.1\" -DLIBFILE_PORTAUDIO=\"libportaudio.so\" -DLIBFILE_JACK=\"libjack.so\" -DDEFAULTLIBPATH=\"/usr/lib/:/usr/local/lib/:/lib/\"
+CC=g++ $(DEBUGGING) $(TESTFLAGS) -Wall -DLINUX -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile.so.1\" -DLIBFILE_PORTAUDIO=\"libportaudio.so\" -DLIBFILE_JACK=\"libjack.so\" -DDEFAULTLIBPATH=\"/usr/lib/:/usr/local/lib/:/lib/\"
 # a bit of a hack including Xpm here, but that is because we cannot add to UILIBS in a makefile
 LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -lXpm
 INCLUDEDIRS=-I /usr/local/lib -I src/frontend -I src/lib -I src/backend -I /local/include -I setup 
@@ -70,7 +70,7 @@ endif
 
 ifeq ($(BUILD_ARCH), Win32Linux)
 PLATFORM=win32
-CC=mingw32msvc-g++ $(DEBUGGING) -Wall -Werror -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"libportaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:\\WINDOWS\;C\:\\WINDOWS\\SYSTEM32\"
+CC=mingw32msvc-g++ $(DEBUGGING) -Wall -DWINDOWS -DRELEASENUM=$(RELEASENUM) -DLIBFILE_SNDFILE=\"libsndfile-1.dll\" -DLIBFILE_PORTAUDIO=\"libportaudio.dll\" -DLIBFILE_JACK=\"libjackmp.dll\" -DDEFAULTLIBPATH=\"C\:\\WINDOWS\;C\:\\WINDOWS\\SYSTEM32\"
 INCLUDEDIRS=-I src/frontend -I src/lib -I src/backend -I /local/include -I /local/lib -I setup -I src -Bsrc -Bsrc/lib 
 LIBDIRS=-L/usr/local/lib -L/usr/X11R6/lib/ -L/local/lib/ -Lsrc/lib/ -Lsrc/
 CONSLIBS=`fltk-config --ldstaticflags` -lm -lkernel32 -lole32 -luuid -lmsvcrt -luser32 -lwsock32 -lcomctl32 -lsupc++ 

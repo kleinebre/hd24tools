@@ -67,7 +67,7 @@ void hd24test::test_prepareimage(string* testdevname)
 	cout << "Test if creating too small drive images is prevented... " << endl;
 	// counting starts at zero so last sector # of min. legal drive image is MINSECTORS-1
 	// MINSECTORS-2 therefore should be too small.
-	__uint32 lastsector=MINSECTORS-2;
+	uint32_t lastsector=MINSECTORS-2;
 
 	string* strtest=new string("testimage.h24");
 	char message[2048];
@@ -233,14 +233,14 @@ void test_useimage(string* testdevname)
 	cout << "Songs on disk=" << songsondisk << endl;
 	if (songsondisk!=0) fail(); else pass();
 
-	__uint32 lastsector=rawfs->getlastsectornum(&lastsecerror);
-	__uint32 expectedlastsector=biggersize;
+	uint32_t lastsector=rawfs->getlastsectornum(&lastsecerror);
+	uint32_t expectedlastsector=biggersize;
 	cout << "Last sectornum of drive image="<< lastsector << endl;
 	
 	
 	if (lastsector!=expectedlastsector)
 	{
-		sprintf(failmsg,"Expected last sector was %ld but found %ld",expectedlastsector,lastsector);
+		sprintf(failmsg,"Expected last sector was %ld but found %ld",(long int)expectedlastsector,(long int)lastsector);
 		fail(failmsg);
 	}
 	else
@@ -260,7 +260,7 @@ void test_useimage(string* testdevname)
 	if (*volname=="") fail("Volume name of freshly formatted drive must be nonempty"); else pass();
 
 	// set volume name, commit, then test if change OK
-	__uint32 projcount=testfs->projectcount();
+	uint32_t projcount=testfs->projectcount();
 	cout <<"Project count="<<projcount << endl;
 	if (projcount!=1) fail("Newly formatted image must have exactly 1 project."); else pass();
 	hd24project* currproj=NULL;
@@ -273,7 +273,7 @@ void test_useimage(string* testdevname)
 		delete currproj;
 		currproj=testfs->getproject(1); // must not error
 		cout << "Check zero songcount for supposedly empty project" << endl;
-		__uint32 songcount=currproj->songcount();
+		uint32_t songcount=currproj->songcount();
 		if (songcount!=0) fail(); else pass();
 
 		cout << "Check getting nonexisting/invalid project numbers" << endl;
@@ -338,8 +338,8 @@ void test_commit(string* testdevname)
 	// after commit, drive size must be preserved.
 	hd24raw* rawfs=new hd24raw(testfs);
 	int lastsecerror=0;
-	__uint32 lastsector=rawfs->getlastsectornum(&lastsecerror);
-	__uint32 expectedlastsector=biggersize;
+	uint32_t lastsector=rawfs->getlastsectornum(&lastsecerror);
+	uint32_t expectedlastsector=biggersize;
  	cout << "Test if image has remained same size: "<< lastsector << endl;
 	if (lastsector!=expectedlastsector) fail(); else pass();
 	
@@ -362,8 +362,8 @@ void test_project(string* testdevname)
 	delete strtest;
 	hd24raw* rawfs=new hd24raw(testfs);
 	int lastsecerror=0;
-	__uint32 lastsector=rawfs->getlastsectornum(&lastsecerror);
-	__uint32 expectedlastsector=biggersize;
+	uint32_t lastsector=rawfs->getlastsectornum(&lastsecerror);
+	uint32_t expectedlastsector=biggersize;
  	cout << "Test if image has still remained same size: "<< lastsector << endl;
 	if (lastsector!=expectedlastsector) fail(); else pass();
 	cout << "Checking current project count... (should be 1): ";
@@ -512,7 +512,7 @@ void test_project(string* testdevname)
 	if (pcount!=50) fail("Incorrect project count"); else pass();
 
 	cout << "Checking project sector of first project (must be 0x14 or 20)" << endl;
-	__uint32 projsec= rawfs->getprojectsectornum(1);
+	uint32_t projsec= rawfs->getprojectsectornum(1);
 	cout << "Proj sector=" << projsec << endl;
 	if (projsec!=0x14) fail("Incorrect sector"); else pass();
 	
@@ -536,7 +536,7 @@ void test_project(string* testdevname)
 	pcount=testfs->projectcount();	
 	cout << "Expecting project count of 50 again, in reality it is " << pcount << endl;
 	if (pcount!=50) fail("Incorrect project count"); else pass();
-	__sint32 projid=newproj->projectid();
+	int32_t projid=newproj->projectid();
 	cout << "Project id=" << projid << endl;
 	if (projid!=50) {
 		fail("Unexpected project id");
@@ -640,7 +640,7 @@ void test_demoimage(string* testdevname)
 	delete version;
 
 	cout << "Checking max. project count (99 expected)..." << endl;
-	__uint32 maxprojcount=testfs->maxprojects();
+	uint32_t maxprojcount=testfs->maxprojects();
 	if (maxprojcount!=99) fail("Unexpected max project count"); else pass();
 
 	cout << "Checking block size..." << endl;
@@ -780,10 +780,10 @@ void test_demoimage(string* testdevname)
 	if (currsong->songid()==8) pass(); else fail("Incorrect songid.");
 	string* freespacebefore=testfs->freespace(48000,24);
 	cout << "Lengthening song..." << endl;
-	__uint32 oldlen=currsong->songlength_in_wamples();
-	__uint32 desiredlen=10416000; //00:03:37.00
+	uint32_t oldlen=currsong->songlength_in_wamples();
+	uint32_t desiredlen=10416000; //00:03:37.00
 	if (oldlen==desiredlen) fail("Song was already the desired length.");
-	__uint32 newlen=currsong->songlength_in_wamples(desiredlen);
+	uint32_t newlen=currsong->songlength_in_wamples(desiredlen);
 	if (newlen!=desiredlen)
 	{
 		fail("Song lengthening failed.");  

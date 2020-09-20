@@ -1,8 +1,6 @@
 #ifndef __portaudiotest_h__
 #define __portaudiotest_h__
-#ifndef __uint32
-#define __uint32 unsigned long
-#endif
+#include <stdint.h>
 class HD24UserInterface
 {
 private:
@@ -15,7 +13,7 @@ private:
 	(
 		const void *inputBuffer, 
 		void *outputBuffer, 
-		__uint32 nframes, 
+		uint32_t nframes, 
 		const PaStreamCallbackTimeInfo* timeinfo,
 		PaStreamCallbackFlags, 
 		void *userData

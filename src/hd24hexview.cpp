@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
+#include <stdint.h>
 #include "hd24fs.h"
 #include "convertlib.h"
 
@@ -34,7 +34,7 @@
 
 string device;
 string headerfilename;
-__uint64 writeoffset;
+uint64_t writeoffset;
 int force;
 int expertmode;
 int graphmode;
@@ -75,12 +75,12 @@ void expertmodemessage(string feature)
 }
 
 // Seek to a position in the drive
-void hd24seek(FSHANDLE devhd24, __uint64 seekpos) 
+void hd24seek(FSHANDLE devhd24, uint64_t seekpos) 
 {
 #ifdef WINDOWS
 	LARGE_INTEGER li;
 	li.HighPart = seekpos >> 32;
-	li.LowPart = seekpos % ((__uint64) 1 << 32);
+	li.LowPart = seekpos % ((uint64_t) 1 << 32);
 	SetFilePointerEx(devhd24, li, NULL, FILE_BEGIN);
 #else
 	lseek64(devhd24, seekpos, 0);
@@ -89,9 +89,9 @@ void hd24seek(FSHANDLE devhd24, __uint64 seekpos)
 }
 
 // Calculate a 32-bit checksum for a block
-long unsigned int calcblockchecksum(hd24raw* rawdevice, unsigned long firstsector, unsigned long endsector)
+long uint32_t calcblockchecksum(hd24raw* rawdevice, unsigned long firstsector, unsigned long endsector)
 {
-	long unsigned int checksum32 = 0;
+	long uint32_t checksum32 = 0;
 	unsigned char origblock[5120];
 
 	for (unsigned long k = firstsector; k < endsector; k++)
@@ -117,7 +117,7 @@ long unsigned int calcblockchecksum(hd24raw* rawdevice, unsigned long firstsecto
 long writesectors(FSHANDLE devhd24, unsigned long sectornum, unsigned char * buffer, int sectors)
 {
 	int WRITESIZE = SECTORSIZE * sectors; // allows searching across sector boundaries
-	hd24seek(devhd24, (__uint64) sectornum * 512);
+	hd24seek(devhd24, (uint64_t) sectornum * 512);
 
 #ifdef WINDOWS
 	DWORD dummy;
@@ -127,7 +127,7 @@ long writesectors(FSHANDLE devhd24, unsigned long sectornum, unsigned char * buf
 		bytes = WRITESIZE;
 	};
 #else
-	long bytes = pwrite64(devhd24, buffer, WRITESIZE, (__uint64) sectornum * 512);
+	long bytes = pwrite64(devhd24, buffer, WRITESIZE, (uint64_t) sectornum * 512);
 #endif
 
 	return bytes;
@@ -155,11 +155,11 @@ void writetofile(hd24raw* rawdevice,string filename, long firstsector,long endse
 		cout << "Cannot open file "<<filename <<" for writing. Access denied?" << endl;
 		return;
 	}
-	cout << "Write range from offset "<< *Convert::int64tohex((__uint64)firstsector*512)<< " to offset " << *Convert::int64tohex((__uint64)endsector*512-1) << endl;
+	cout << "Write range from offset "<< *Convert::int64tohex((uint64_t)firstsector*512)<< " to offset " << *Convert::int64tohex((uint64_t)endsector*512-1) << endl;
 	for (i=firstsector;i<endsector;i++) {
 		rawdevice->readsectors(i,bootblock,1);
 #if defined(LINUX) || defined(DARWIN)
-		__uint64 targetoff=i;
+		uint64_t targetoff=i;
 		targetoff-=firstsector;
 		targetoff+=writeoffset;
 		targetoff*=512;
@@ -168,10 +168,10 @@ void writetofile(hd24raw* rawdevice,string filename, long firstsector,long endse
 #ifdef WINDOWS
 		//DWORD dummy;
 		//long bytes=0;
-		__uint64 targetoff=i;
+		uint64_t targetoff=i;
 		targetoff-=firstsector;
 		targetoff+=writeoffset;
-		__uint64 byteswritten=writesectors(handle,targetoff,bootblock,1);
+		uint64_t byteswritten=writesectors(handle,targetoff,bootblock,1);
 #endif
 		if (byteswritten==0) {
 			cout << "Wrote 0 bytes to file. Access denied?" << endl;
@@ -184,7 +184,7 @@ void writetofile(hd24raw* rawdevice,string filename, long firstsector,long endse
 			return;
 		}
 		if ((i%1000)==0) {
-			string* x=Convert::int64tohex((__uint64)i*0x200);
+			string* x=Convert::int64tohex((uint64_t)i*0x200);
 			cout << "Write offset " << *x << "\r";	
 			if (x!=NULL) { delete x; 	x=NULL; }
 		}
@@ -208,7 +208,7 @@ string getbinstr(string tofind)
 		string binstr="";
 		string tmp="";
 		tofind+=" ";
-		unsigned int i;
+		uint32_t i;
 		for (i=0;i<tofind.length();i++) {
 			string onechar=tofind.substr(i,1);
 			if (onechar!=" ") {
@@ -315,13 +315,13 @@ long editbytes(unsigned char* bootblock,string editstr)
 
 void compareblock(hd24raw* rawdevice,unsigned long firstsector,unsigned long endsector,long current)
 {
-	unsigned int i;
-	unsigned int j;
-	unsigned int k;
+	uint32_t i;
+	uint32_t j;
+	uint32_t k;
 	unsigned char origblock[5120];
 	unsigned char destblock[5120];
-	string* startoff=Convert::int64tohex((__uint64)firstsector*512);
-	string* endoff=Convert::int64tohex((__uint64)endsector*512-1);
+	string* startoff=Convert::int64tohex((uint64_t)firstsector*512);
+	string* endoff=Convert::int64tohex((uint64_t)endsector*512-1);
 	cout << "Compare range from offset "<< *startoff << " to offset " << *endoff <<endl;
 	delete startoff; 	startoff=NULL;
 	delete endoff;		endoff=NULL;
@@ -388,7 +388,7 @@ void compareblock(hd24raw* rawdevice,unsigned long firstsector,unsigned long end
 
 long scanforblock(hd24raw* rawdevice,string tofind,unsigned long firstsector,unsigned long endsector,long current) 
 {
-	unsigned int i;
+	uint32_t i;
 	unsigned char bootblock[5120];
 	tofind=getbinstr(tofind);
 	if (tofind=="") return current;
@@ -397,15 +397,15 @@ long scanforblock(hd24raw* rawdevice,string tofind,unsigned long firstsector,uns
 	 * Note that we can search across sector boundaries because we read
 	 * 2 sectors at a time.
 	 */
-	string* startoff= Convert::int64tohex((__uint64)firstsector*512);
-	string* endoff=Convert::int64tohex((__uint64)endsector*512-1);
+	string* startoff= Convert::int64tohex((uint64_t)firstsector*512);
+	string* endoff=Convert::int64tohex((uint64_t)endsector*512-1);
 	cout << "Scan range from offset "<< *startoff << " to offset " << *endoff << endl;
 	delete startoff; startoff=NULL;
 	delete endoff;	endoff=NULL;
 	for (i=firstsector; i<endsector; i++) {
 		rawdevice->readsectors(i,bootblock,2);
 		if ((i%0x1000)==0) {
-			string* curroff=Convert::int64tohex((__uint64)i*0x200);
+			string* curroff=Convert::int64tohex((uint64_t)i*0x200);
 			cout << "Scan offset " << *curroff << "\r";
 			delete curroff;	curroff=NULL;
 		}	
@@ -414,7 +414,7 @@ long scanforblock(hd24raw* rawdevice,string tofind,unsigned long firstsector,uns
 		for (j=0;j<512;j++) {
 			
 			if (memcmp((const void *)&bootblock[j],(const void *)tofind.c_str(),(size_t)tofind.length())==0) {
-				string* foundoff=Convert::int64tohex((__uint64)i*512+j);
+				string* foundoff=Convert::int64tohex((uint64_t)i*512+j);
 				cout << endl << "Found on offset " << *foundoff << endl;
 				delete foundoff; foundoff=NULL;
 				return i;
@@ -659,7 +659,7 @@ try{
 		}
 		if (userinput.substr(0,1)=="-") {
 			long sectoadd=Convert::hex2long(userinput.substr(1,userinput.length()-1));
-			if ((__uint32)sectoadd>(__uint32)sectornum)
+			if ((uint32_t)sectoadd>(uint32_t)sectornum)
 			{
 				sectornum=0;
 			} else {

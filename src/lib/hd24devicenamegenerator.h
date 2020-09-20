@@ -1,7 +1,7 @@
 #ifndef __hd24devnamegenerator_h__
 #define __hd24devnamegenerator_h__
 
-#include <config.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -15,19 +15,19 @@ class hd24devicenamegenerator
 	private:
 		char* imagespath; // path of device images
 		vector<string>* filelist;
-		__uint32 getnumberoffiles();
-		__uint32 filecount; // cache for getnumberoffiles
-		__uint32 getnumberofsysdevs();
-		__uint32 hd24filecount(const char* imagedir);
+		uint32_t getnumberoffiles();
+		uint32_t filecount; // cache for getnumberoffiles
+		uint32_t getnumberofsysdevs();
+		uint32_t hd24filecount(const char* imagedir);
 		void initvars();
-		const char* getfilename(__uint32 filenum);
+		const char* getfilename(uint32_t filenum);
 		void clearfilelist();
 	public:
 		~hd24devicenamegenerator();
 		hd24devicenamegenerator();
 		
-		__uint32 getnumberofnames();
-		string* getdevicename(__uint32 number);
+		uint32_t getnumberofnames();
+		string* getdevicename(uint32_t number);
 		
 		const char* imagedir();
 		

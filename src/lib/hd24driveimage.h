@@ -1,7 +1,7 @@
 #ifndef __hd24driveimage_h__
 #define __hd24driveimage_h__
 
-#include <config.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string>
 #include "convertlib.h"
@@ -25,45 +25,45 @@ class hd24driveimage
 {
 private:
 	FSHANDLE m_handle;
-	bool isreserved(__uint32 blocknum);
-	void reserveblock(__uint32 blocknum);
+	bool isreserved(uint32_t blocknum);
+	void reserveblock(uint32_t blocknum);
         static bool isinvalidhandle(FSHANDLE handle);
 
-	__uint32 blocknumtosector(__uint32 blocknum);
+	uint32_t blocknumtosector(uint32_t blocknum);
 
 	/* Read/write sectors from/to file without translation- 
            meaning it can read outside drive image boundaries and 
            access "smart drive image" info as well. */
-        long rawreadsectors(unsigned long sectornum,
-                            unsigned char * buffer,int sectors);
-        long rawwritesectors(unsigned long sectornum,
-                            unsigned char * buffer,int sectors);
+        int32_t rawreadsectors(uint32_t sectornum,
+                            unsigned char * buffer,int32_t sectors);
+        int32_t rawwritesectors(uint32_t sectornum,
+                            unsigned char * buffer,int32_t sectors);
 
 	/* Read/write sectors from/to clusters in drive image file. 
 	   Will do a sector lookup, but will not cross cluster boundaries.
 	   Can only access the wrapped drive image. */
-        long readblocksectors(__uint32 blocknum, 
-			__uint32 secnum,unsigned char* buffer,int sectors);
-        long writeblocksectors(__uint32 blocknum, 
-			__uint32 secnum,unsigned char* buffer,int sectors);
+        long readblocksectors(uint32_t blocknum, 
+			uint32_t secnum,unsigned char* buffer,int sectors);
+        long writeblocksectors(uint32_t blocknum, 
+			uint32_t secnum,unsigned char* buffer,int sectors);
 
-	void rawseek(__uint64 seekpos);
+	void rawseek(uint64_t seekpos);
 	bool suppresslogs;
 public:
 	hd24driveimage();
 	~hd24driveimage();
         void initvars();
-	int initimage(string* imagefilename,__uint32 endsector);
+	int initimage(string* imagefilename,uint32_t endsector);
 	FSHANDLE open(string* imagefilename);
 	FSHANDLE handle(FSHANDLE p_handle);
 	FSHANDLE handle();
-	long content_readsectors(__uint32 secnum, 
+	long content_readsectors(uint32_t secnum, 
                           unsigned char* buffer,int sectors);
-	long content_writesectors(__uint32 secnum, 
+	long content_writesectors(uint32_t secnum, 
                           unsigned char* buffer,int sectors);
 	void close();
-	__uint32 getcontainerlastsectornum();
-	__uint32 getcontentlastsectornum();
+	uint32_t getcontainerlastsectornum();
+	uint32_t getcontentlastsectornum();
 	int test(string* imagefilename);
 };
 

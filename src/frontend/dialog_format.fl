@@ -1,15 +1,15 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
-header_name {.h} 
+version 1.0107
+header_name {.h}
 code_name {.cxx}
 decl {\#include <hd24fs.h>} {public
-} 
+}
 
 decl {\#include <hd24devicenamegenerator.h>} {public
-} 
+}
 
 decl {\#include <vector>} {public
-} 
+}
 
 class dialog_format {open
 } {
@@ -28,13 +28,13 @@ class dialog_format {open
   } {
     code {hd24devicenamegenerator* dng=new hd24devicenamegenerator();
 
-__uint32 totnames=dng->getnumberofnames();
+uint32_t totnames=dng->getnumberofnames();
 device->add("--Format current device--",0,NULL,(void*)this);
 int n=0;
-for (__uint32 i=0;i<totnames;i++)
+for (uint32_t i=0;i<totnames;i++)
 {
    string* devname=dng->getdevicename(i);
-   if (currfs->isexistingdevice(devname)) 
+   if (currfs->isexistingdevice(devname))
    {
    	string* devtype=currfs->drivetype(devname);
         *devname+=" ("+*devtype+")";
@@ -42,7 +42,7 @@ for (__uint32 i=0;i<totnames;i++)
         devtype=NULL;
 	device->add(devname->c_str(),0,NULL,(void*)this);
 	n++;
-	devnums[n]=i;	   
+	devnums[n]=i;
    }
    delete(devname);
 }
@@ -64,7 +64,7 @@ if (device->value()==0) {
    devicename=new string(currfs->getdevicename()->c_str());
 } else {
    hd24devicenamegenerator* dng=new hd24devicenamegenerator();
-   devicename=dng->getdevicename((__uint32)devnums[device->value()]);
+   devicename=dng->getdevicename((uint32_t)devnums[device->value()]);
    delete dng;
 }
 volumelabel=new string(newdrivelabel->value());
@@ -99,19 +99,19 @@ int src=0;
 int filtered=0;
 for (int i=0;i<x;i++) {
  	if (
- 	   (o->value()[i]=='\\\\') 
- 	|| (o->value()[i]=='/') 
- 	|| (o->value()[i]==':') 
- 	|| (o->value()[i]=='*') 
- 	|| (o->value()[i]=='?') 
- 	|| (o->value()[i]=='"') 
- 	|| (o->value()[i]=='<') 
- 	|| (o->value()[i]=='>') 
- 	|| (o->value()[i]=='\\\\') 
+ 	   (o->value()[i]=='\\\\')
+ 	|| (o->value()[i]=='/')
+ 	|| (o->value()[i]==':')
+ 	|| (o->value()[i]=='*')
+ 	|| (o->value()[i]=='?')
+ 	|| (o->value()[i]=='"')
+ 	|| (o->value()[i]=='<')
+ 	|| (o->value()[i]=='>')
+ 	|| (o->value()[i]=='\\\\')
  	|| (o->value()[i]=='|'))
  	{
  		filtered=1;
- 		continue; 	
+ 		continue;
  	}
 	filteredname[src]=o->value()[i];
 	src++;
@@ -129,4 +129,4 @@ if (filtered==1) {
       }
     }
   }
-} 
+}

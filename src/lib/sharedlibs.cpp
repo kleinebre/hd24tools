@@ -8,19 +8,21 @@ void SmartLoader::SmartFind(const char* filename,const char* absprogpath,char* r
  *          Then the environment PATH variable
  *             and finally any predefined library paths */
 	result[0]=(char)0;
+        cout << "Smartfind..." << endl;
 	hd24utils::findfile(filename,absprogpath,result);
 	if (strlen(result)!=0) 
 	{
 	    // found it already
 	   return;
 	}
-
+        cout << "Not in prog path" << endl; 
 	hd24utils::findfile(filename,getenv("PATH"),result);
    	if (strlen(result)!=0) 
    	{
        		// found it already
            	return;
         }
+        cout << "Not in PATH" << endl; 
 
         hd24utils::findfile(filename,DEFAULTLIBPATH,result);
         if (strlen(result)!=0) 
@@ -28,6 +30,7 @@ void SmartLoader::SmartFind(const char* filename,const char* absprogpath,char* r
         	// found it already
                 return;
         }
+        cout << "Not in DEFAULTLIBPATH" << endl; 
         return;
 };
 
@@ -37,8 +40,9 @@ PortAudioWrapper::PortAudioWrapper(char* absprogpath)
 	Pa_Initialize=NULL;
 	Pa_Terminate=NULL;
 	char result[2048];
+        cout << "Finding portaudio" << endl;
 	SmartFind(LIBFILE_PORTAUDIO,absprogpath,&result[0]);
-
+        cout << "result = " << result << endl;
 	string abslib="";
 	abslib+=result;
 	abslib+=LIBFILE_PORTAUDIO;

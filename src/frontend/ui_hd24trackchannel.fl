@@ -1,15 +1,15 @@
 # data file for the Fltk User Interface Designer (fluid)
-version 1.0107 
-header_name {.h} 
+version 1.0107
+header_name {.h}
 code_name {.cxx}
-decl {\#include <config.h>} {public
-} 
+decl {\#include <stdint.h>} {public
+}
 
 decl {\#include <FL/FLTKstuff.H>} {public
-} 
+}
 
 decl {\#include <ui_hd24connect.h>} {public
-} 
+}
 
 class HD24TrackChannel {open : {public Fl_Group}
 } {
@@ -31,7 +31,7 @@ class HD24TrackChannel {open : {public Fl_Group}
   decl {Fl_Box* levelled[10];} {public
   }
   decl {Fl_Window* win;} {}
-  decl {unsigned int channel;} {}
+  decl {uint32_t channel;} {}
   Function {make_window()} {open
   } {
     Fl_Window ledchannel {open
@@ -98,14 +98,14 @@ double myval=(double)levelval;
 
 // reset peaks if desired
 switch (mode) {
-	case PEAKMODE_NOHOLD: this->peakreset(); break;	
-	case PEAKMODE_TEMPHOLD: 		
+	case PEAKMODE_NOHOLD: this->peakreset(); break;
+	case PEAKMODE_TEMPHOLD:
 		if (this->holdtime>PEAKMODE_MAXHOLD) {
-			peakreset(); 
+			peakreset();
 		} else {
 			this->holdtime++;
 		}
-		break;	
+		break;
 	case PEAKMODE_CONTHOLD:
 		break;
 	default:
@@ -148,13 +148,13 @@ this->maxledslit=0;
 this->holdtime=0;
 this->ledlimit[0]=(double)pow(10,(double)((double)-30/(double)10)); // -30 dB
 this->ledlimit[1]=(double)pow(10,(double)((double)-24/(double)10)); // -24 dB
-this->ledlimit[2]=(double)pow(10,(double)((double)-18/(double)10)); 
+this->ledlimit[2]=(double)pow(10,(double)((double)-18/(double)10));
 this->ledlimit[3]=(double)pow(10,(double)((double)-12/(double)10)); //...
 this->ledlimit[4]=(double)pow(10,(double)((double)-7.5/(double)10));
 this->ledlimit[5]=(double)pow(10,(double)((double)-4.5/(double)10));
-this->ledlimit[6]=(double)pow(10,(double)((double)-3/(double)10)); 
+this->ledlimit[6]=(double)pow(10,(double)((double)-3/(double)10));
 this->ledlimit[7]=(double)pow(10,(double)((double)-1.5/(double)10));
-this->ledlimit[8]=(double)pow(10,(double)((double)-.5/(double)10)); 
+this->ledlimit[8]=(double)pow(10,(double)((double)-.5/(double)10));
 this->ledlimit[9]=(double)pow(10,(double)((double)0/(double)10)); // -0 dB
 
 this->setval(0);
@@ -169,7 +169,7 @@ return;} {}
   } {
     code {init_window();} {}
   }
-  Function {setchnum(__uint32 i)} {open
+  Function {setchnum(uint32_t i)} {open
   } {
     code {/* As copy_label does not work on older versions of fltk,
    the label now persists within the object but outside this
@@ -201,16 +201,16 @@ if (ui->currenthd24->isallinput()) {
 		// no song, show all input leds
 		showinputled=true;
 	} else {
-		// song selected, only show as many 
+		// song selected, only show as many
 		// input leds as channels in the song
 		if (channel<=ui->control->song()->logical_channels()) {
-			showinputled=ui->control->song()->istrackmonitoringinput(channel);			
-		}		
+			showinputled=ui->control->song()->istrackmonitoringinput(channel);
+		}
 	}
 } else {
 */
 	if (ui->control->song()!=NULL) {
-			showinputled=ui->control->song()->istrackmonitoringinput(channel);			
+			showinputled=ui->control->song()->istrackmonitoringinput(channel);
 	}
 /*
 }
@@ -222,19 +222,19 @@ if (ui->control->song()->logical_channels()<channel) {
 } else {
 	if (ui->control->song()->trackarmed(channel)) {
 		if (ui->blinkcounter<8) {
-		   this->recled->hide();  
+		   this->recled->hide();
 		} else {
-		   this->recled->show(); 
+		   this->recled->show();
 		}
 	} else {
-		this->recled->hide(); 
+		this->recled->hide();
 	}
 }
 }
 if (showinputled) {
 	this->inputled->show();
 } else {
-	this->inputled->hide();  
+	this->inputled->hide();
 }
 
 return;} {}
@@ -251,7 +251,7 @@ holdtime=0;} {}
 peakreset();} {}
   }
   decl {char labeltext[10];} {}
-} 
+}
 
 class TrackInfo {: {public Fl_Group}
 } {
@@ -319,4 +319,4 @@ class TrackInfo {: {public Fl_Group}
   } {
     code {make_window();} {}
   }
-} 
+}
